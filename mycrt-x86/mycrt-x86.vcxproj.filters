@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="_cfgcheckthunk_.obj" />
+    <Object Include="_chandler4gs_.obj" />
+    <Object Include="_convert_.obj" />
+    <Object Include="_cpu_disp_.obj" />
+    <Object Include="_error_.obj" />
+    <Object Include="_ftol2_.obj" />
+    <Object Include="_ftol3_.obj" />
+    <Object Include="_init_.obj" />
+    <Object Include="_initsect_.obj" />
+    <Object Include="_pdblkup_.obj" />
+    <Object Include="_secchk_.obj" />
+    <Object Include="_sehprolg_.obj" />
+    <Object Include="_sehprolg4_.obj" />
+    <Object Include="_sehprolg4gs_.obj" />
+    <Object Include="_stack_.obj" />
+    <Object Include="_userapi_.obj" />
+    <Object Include="alloca16.obj" />
+    <Object Include="argv_mode.obj" />
+    <Object Include="atlssup.obj" />
+    <Object Include="chandler4_noexcept.obj" />
+    <Object Include="checkcfg.obj" />
+    <Object Include="chkstk.obj" />
+    <Object Include="commit_mode.obj" />
+    <Object Include="default_local_stdio_options.obj" />
+    <Object Include="default_precision.obj" />
+    <Object Include="delete_array.obj" />
+    <Object Include="delete_array_align.obj" />
+    <Object Include="delete_array_align_nothrow.obj" />
+    <Object Include="delete_array_nothrow.obj" />
+    <Object Include="delete_array_size.obj" />
+    <Object Include="delete_array_size_align.obj" />
+    <Object Include="delete_debug.obj" />
+    <Object Include="delete_scalar.obj" />
+    <Object Include="delete_scalar_align.obj" />
+    <Object Include="delete_scalar_align_nothrow.obj" />
+    <Object Include="delete_scalar_nothrow.obj" />
+    <Object Include="delete_scalar_size.obj" />
+    <Object Include="delete_scalar_size_align.obj" />
+    <Object Include="denormal_control.obj" />
+    <Object Include="dll_dllmain.obj" />
+    <Object Include="dll_dllmain_stub.obj" />
+    <Object Include="dllsupp.obj" />
+    <Object Include="dyn_tls_dtor.obj" />
+    <Object Include="dyn_tls_init.obj" />
+    <Object Include="ehprolg2.obj" />
+    <Object Include="ehprolg3.obj" />
+    <Object Include="ehprolg3a.obj" />
+    <Object Include="ehprolog.obj" />
+    <Object Include="ehvccctr.obj" />
+    <Object Include="ehvcccvb.obj" />
+    <Object Include="ehvecctr.obj" />
+    <Object Include="ehveccvb.obj" />
+    <Object Include="ehvecdtr.obj" />
+    <Object Include="env_mode.obj" />
+    <Object Include="exe_main.obj" />
+    <Object Include="exe_winmain.obj" />
+    <Object Include="exe_wmain.obj" />
+    <Object Include="exe_wwinmain.obj" />
+    <Object Include="file_mode.obj" />
+    <Object Include="fltused.obj" />
+    <Object Include="gs_cookie.obj" />
+    <Object Include="gs_report.obj" />
+    <Object Include="gs_support.obj" />
+    <Object Include="guard_support.obj" />
+    <Object Include="huge.obj" />
+    <Object Include="initializers.obj" />
+    <Object Include="invalid_parameter_handler.obj" />
+    <Object Include="lconv_unsigned_char.obj" />
+    <Object Include="lldiv.obj" />
+    <Object Include="lldvrm.obj" />
+    <Object Include="llmul.obj" />
+    <Object Include="llrem.obj" />
+    <Object Include="llshl.obj" />
+    <Object Include="llshr.obj" />
+    <Object Include="loadcfg.obj" />
+    <Object Include="matherr.obj" />
+    <Object Include="matherr_detection.obj" />
+    <Object Include="mpxinit.obj" />
+    <Object Include="new_array.obj" />
+    <Object Include="new_array_align.obj" />
+    <Object Include="new_array_align_nothrow.obj" />
+    <Object Include="new_array_nothrow.obj" />
+    <Object Include="new_debug.obj" />
+    <Object Include="new_mode.obj" />
+    <Object Include="new_scalar.obj" />
+    <Object Include="new_scalar_align.obj" />
+    <Object Include="new_scalar_align_nothrow.obj" />
+    <Object Include="new_scalar_nothrow.obj" />
+    <Object Include="pesect.obj" />
+    <Object Include="std_nothrow.obj" />
+    <Object Include="std_type_info_static.obj" />
+    <Object Include="thread_locale.obj" />
+    <Object Include="thread_safe_statics.obj" />
+    <Object Include="throw_bad_alloc.obj" />
+    <Object Include="tlsdtor.obj" />
+    <Object Include="tlsdyn.obj" />
+    <Object Include="tlssup.obj" />
+    <Object Include="tncleanup.obj" />
+    <Object Include="ucrt_detection.obj" />
+    <Object Include="ucrt_stubs.obj" />
+    <Object Include="ulldiv.obj" />
+    <Object Include="ulldvrm.obj" />
+    <Object Include="ullrem.obj" />
+    <Object Include="ullshr.obj" />
+    <Object Include="utility.obj" />
+    <Object Include="utility_desktop.obj" />
+    <Object Include="vcruntime_stubs.obj" />
+  </ItemGroup>
+</Project>

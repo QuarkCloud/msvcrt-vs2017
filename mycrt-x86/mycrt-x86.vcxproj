@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="alloca16.obj" />
+    <Object Include="argv_mode.obj" />
+    <Object Include="atlssup.obj" />
+    <Object Include="chandler4_noexcept.obj" />
+    <Object Include="checkcfg.obj" />
+    <Object Include="chkstk.obj" />
+    <Object Include="commit_mode.obj" />
+    <Object Include="default_local_stdio_options.obj" />
+    <Object Include="default_precision.obj" />
+    <Object Include="delete_array.obj" />
+    <Object Include="delete_array_align.obj" />
+    <Object Include="delete_array_align_nothrow.obj" />
+    <Object Include="delete_array_nothrow.obj" />
+    <Object Include="delete_array_size.obj" />
+    <Object Include="delete_array_size_align.obj" />
+    <Object Include="delete_debug.obj" />
+    <Object Include="delete_scalar.obj" />
+    <Object Include="delete_scalar_align.obj" />
+    <Object Include="delete_scalar_align_nothrow.obj" />
+    <Object Include="delete_scalar_nothrow.obj" />
+    <Object Include="delete_scalar_size.obj" />
+    <Object Include="delete_scalar_size_align.obj" />
+    <Object Include="denormal_control.obj" />
+    <Object Include="dllsupp.obj" />
+    <Object Include="dll_dllmain.obj" />
+    <Object Include="dll_dllmain_stub.obj" />
+    <Object Include="dyn_tls_dtor.obj" />
+    <Object Include="dyn_tls_init.obj" />
+    <Object Include="ehprolg2.obj" />
+    <Object Include="ehprolg3.obj" />
+    <Object Include="ehprolg3a.obj" />
+    <Object Include="ehprolog.obj" />
+    <Object Include="ehvccctr.obj" />
+    <Object Include="ehvcccvb.obj" />
+    <Object Include="ehvecctr.obj" />
+    <Object Include="ehveccvb.obj" />
+    <Object Include="ehvecdtr.obj" />
+    <Object Include="env_mode.obj" />
+    <Object Include="exe_main.obj" />
+    <Object Include="exe_winmain.obj" />
+    <Object Include="exe_wmain.obj" />
+    <Object Include="exe_wwinmain.obj" />
+    <Object Include="file_mode.obj" />
+    <Object Include="fltused.obj" />
+    <Object Include="gs_cookie.obj" />
+    <Object Include="gs_report.obj" />
+    <Object Include="gs_support.obj" />
+    <Object Include="guard_support.obj" />
+    <Object Include="huge.obj" />
+    <Object Include="initializers.obj" />
+    <Object Include="invalid_parameter_handler.obj" />
+    <Object Include="lconv_unsigned_char.obj" />
+    <Object Include="lldiv.obj" />
+    <Object Include="lldvrm.obj" />
+    <Object Include="llmul.obj" />
+    <Object Include="llrem.obj" />
+    <Object Include="llshl.obj" />
+    <Object Include="llshr.obj" />
+    <Object Include="loadcfg.obj" />
+    <Object Include="matherr.obj" />
+    <Object Include="matherr_detection.obj" />
+    <Object Include="mpxinit.obj" />
+    <Object Include="new_array.obj" />
+    <Object Include="new_array_align.obj" />
+    <Object Include="new_array_align_nothrow.obj" />
+    <Object Include="new_array_nothrow.obj" />
+    <Object Include="new_debug.obj" />
+    <Object Include="new_mode.obj" />
+    <Object Include="new_scalar.obj" />
+    <Object Include="new_scalar_align.obj" />
+    <Object Include="new_scalar_align_nothrow.obj" />
+    <Object Include="new_scalar_nothrow.obj" />
+    <Object Include="pesect.obj" />
+    <Object Include="std_nothrow.obj" />
+    <Object Include="std_type_info_static.obj" />
+    <Object Include="thread_locale.obj" />
+    <Object Include="thread_safe_statics.obj" />
+    <Object Include="throw_bad_alloc.obj" />
+    <Object Include="tlsdtor.obj" />
+    <Object Include="tlsdyn.obj" />
+    <Object Include="tlssup.obj" />
+    <Object Include="tncleanup.obj" />
+    <Object Include="ucrt_detection.obj" />
+    <Object Include="ucrt_stubs.obj" />
+    <Object Include="ulldiv.obj" />
+    <Object Include="ulldvrm.obj" />
+    <Object Include="ullrem.obj" />
+    <Object Include="ullshr.obj" />
+    <Object Include="utility.obj" />
+    <Object Include="utility_desktop.obj" />
+    <Object Include="vcruntime_stubs.obj" />
+    <Object Include="_cfgcheckthunk_.obj" />
+    <Object Include="_chandler4gs_.obj" />
+    <Object Include="_convert_.obj" />
+    <Object Include="_cpu_disp_.obj" />
+    <Object Include="_error_.obj" />
+    <Object Include="_ftol2_.obj" />
+    <Object Include="_ftol3_.obj" />
+    <Object Include="_initsect_.obj" />
+    <Object Include="_init_.obj" />
+    <Object Include="_pdblkup_.obj" />
+    <Object Include="_secchk_.obj" />
+    <Object Include="_sehprolg4gs_.obj" />
+    <Object Include="_sehprolg4_.obj" />
+    <Object Include="_sehprolg_.obj" />
+    <Object Include="_stack_.obj" />
+    <Object Include="_userapi_.obj" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{F9778B81-CC1D-4DCA-85EA-CB157FF62FBE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>mycrt-x86</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)win32\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)win32\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,697 @@
+1>------ 已启动全部重新生成: 项目: startup-dll-withcrt, 配置: Release Win32 ------
+1>dllmain.cpp
+1>
+1>正在启动传递 1
+1>已处理 /DEFAULTLIB: MSVCRT
+1>已处理 /DEFAULTLIB: OLDNAMES
+1>
+1>正在搜索库
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\MSVCRT.lib:
+1>      已找到 __DllMainCRTStartup@12
+1>        已加载 MSVCRT.lib(dll_dllmain.obj)
+1>      已找到 ___security_init_cookie
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(gs_support.obj)
+1>      已找到 _DllMain@12
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(dll_dllmain_stub.obj)
+1>      已找到 "void __cdecl __scrt_initialize_type_info(void)" (?__scrt_initialize_type_info@@YAXXZ)
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(tncleanup.obj)
+1>      已找到 ___scrt_initialize_default_local_stdio_options
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(default_local_stdio_options.obj)
+1>      已找到 ___scrt_is_nonwritable_in_current_image
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(utility.obj)
+1>      已找到 ___scrt_get_dyn_tls_init_callback
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(dyn_tls_init.obj)
+1>      已找到 ___scrt_fastfail
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 MSVCRT.lib(utility_desktop.obj)
+1>      已找到 __RTC_Initialize
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(_initsect_.obj)
+1>      已找到 @_guard_check_icall@4
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已在 MSVCRT.lib(_initsect_.obj) 中引用
+1>        已加载 MSVCRT.lib(checkcfg.obj)
+1>      已找到 __SEH_epilog4
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 MSVCRT.lib(_sehprolg4_.obj)
+1>      已找到 __except_handler4
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已在 MSVCRT.lib(_sehprolg4_.obj) 中引用
+1>        已加载 MSVCRT.lib(_chandler4gs_.obj)
+1>      已找到 ___xi_a
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 MSVCRT.lib(initializers.obj)
+1>已处理 /DEFAULTLIB: kernel32.lib
+1> 已处理 /DISALLOWLIB: msvcrtd.lib
+1> 已处理 /DISALLOWLIB: libcmt.lib
+1> 已处理 /DISALLOWLIB: libcmtd.lib
+1>已处理 /DEFAULTLIB: vcruntime.lib
+1> 已处理 /DISALLOWLIB: vcruntimed.lib
+1> 已处理 /DISALLOWLIB: libvcruntime.lib
+1> 已处理 /DISALLOWLIB: libvcruntimed.lib
+1>已处理 /DEFAULTLIB: ucrt.lib
+1> 已处理 /DISALLOWLIB: ucrtd.lib
+1> 已处理 /DISALLOWLIB: libucrt.lib
+1> 已处理 /DISALLOWLIB: libucrtd.lib
+1>      已找到 ___security_cookie
+1>        已在 MSVCRT.lib(gs_support.obj) 中引用
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已在 MSVCRT.lib(_sehprolg4_.obj) 中引用
+1>        已在 MSVCRT.lib(_chandler4gs_.obj) 中引用
+1>        已加载 MSVCRT.lib(gs_cookie.obj)
+1>      已找到 ___isa_available_init
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 MSVCRT.lib(_cpu_disp_.obj)
+1>      已找到 __get_startup_argv_mode
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 MSVCRT.lib(argv_mode.obj)
+1>      已找到 ___scrt_is_ucrt_dll_in_use
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 MSVCRT.lib(ucrt_detection.obj)
+1>      已找到 ___guard_check_icall_fptr
+1>        已在 MSVCRT.lib(checkcfg.obj) 中引用
+1>        已加载 MSVCRT.lib(guard_support.obj)
+1>      已找到 @__security_check_cookie@4
+1>        已在 MSVCRT.lib(_sehprolg4_.obj) 中引用
+1>        已在 MSVCRT.lib(_chandler4gs_.obj) 中引用
+1>        已加载 MSVCRT.lib(_secchk_.obj)
+1>      已找到 ___report_gsfailure
+1>        已在 MSVCRT.lib(_secchk_.obj) 中引用
+1>        已加载 MSVCRT.lib(gs_report.obj)
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\vcruntime.lib:
+1>      已找到 ___std_type_info_destroy_list
+1>        已在 MSVCRT.lib(tncleanup.obj) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>      已找到 _memset
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>      已找到 __except_handler4_common
+1>        已在 MSVCRT.lib(_chandler4gs_.obj) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>      已找到 __IMPORT_DESCRIPTOR_VCRUNTIME140
+1>        已在 vcruntime.lib(VCRUNTIME140.dll) 中引用
+1>        已在 vcruntime.lib(VCRUNTIME140.dll) 中引用
+1>        已在 vcruntime.lib(VCRUNTIME140.dll) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>      已找到 __NULL_IMPORT_DESCRIPTOR
+1>        已在 vcruntime.lib(VCRUNTIME140.dll) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>      已找到 VCRUNTIME140_NULL_THUNK_DATA
+1>        已在 vcruntime.lib(VCRUNTIME140.dll) 中引用
+1>        已加载 vcruntime.lib(VCRUNTIME140.dll)
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86\ucrt.lib:
+1>      已找到 __initterm
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __initterm_e
+1>        已在 MSVCRT.lib(dll_dllmain.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __seh_filter_dll
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __configure_narrow_argv
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __initialize_narrow_environment
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __initialize_onexit_table
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __register_onexit_function
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __execute_onexit_table
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __crt_atexit
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __crt_at_quick_exit
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __cexit
+1>        已在 MSVCRT.lib(utility.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 _terminate
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 __IMPORT_DESCRIPTOR_api-ms-win-crt-runtime-l1-1-0
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>      已找到 api-ms-win-crt-runtime-l1-1-0_NULL_THUNK_DATA
+1>        已在 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中引用
+1>        已加载 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>      已找到 __imp__QueryPerformanceCounter@4
+1>        已在 MSVCRT.lib(gs_support.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetCurrentProcessId@0
+1>        已在 MSVCRT.lib(gs_support.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetCurrentThreadId@0
+1>        已在 MSVCRT.lib(gs_support.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetSystemTimeAsFileTime@4
+1>        已在 MSVCRT.lib(gs_support.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__DisableThreadLibraryCalls@4
+1>        已在 MSVCRT.lib(dll_dllmain_stub.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__InitializeSListHead@4
+1>        已在 MSVCRT.lib(tncleanup.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__IsDebuggerPresent@0
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__UnhandledExceptionFilter@4
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已在 MSVCRT.lib(gs_report.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__SetUnhandledExceptionFilter@4
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已在 MSVCRT.lib(gs_report.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetStartupInfoW@4
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 _IsProcessorFeaturePresent@4
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已在 MSVCRT.lib(_cpu_disp_.obj) 中引用
+1>        已在 MSVCRT.lib(gs_report.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetModuleHandleW@4
+1>        已在 MSVCRT.lib(utility_desktop.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__GetCurrentProcess@0
+1>        已在 MSVCRT.lib(gs_report.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __imp__TerminateProcess@8
+1>        已在 MSVCRT.lib(gs_report.obj) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 __IMPORT_DESCRIPTOR_KERNEL32
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>      已找到 KERNEL32_NULL_THUNK_DATA
+1>        已在 kernel32.lib(KERNEL32.dll) 中引用
+1>        已加载 kernel32.lib(KERNEL32.dll)
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\MSVCRT.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\vcruntime.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86\ucrt.lib:
+1>
+1>已完成库搜索
+1>
+1>正在搜索库
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\MSVCRT.lib:
+1>      已找到 ___scrt_stub_for_acrt_initialize
+1>        已加载 MSVCRT.lib(ucrt_stubs.obj)
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\vcruntime.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86\ucrt.lib:
+1>
+1>已完成库搜索
+1>
+1>已完成传递 1
+1>
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$4”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 __imp___register_onexit_function(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp___crt_atexit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp___crt_at_quick_exit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp__terminate(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp__GetStartupInfoW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 __imp__GetModuleHandleW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$6”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 "int __stdcall dllmain_raw(struct HINSTANCE__ * const,unsigned long,void * const)" (?dllmain_raw@@YGHQAUHINSTANCE__@@KQAX@Z)(从 MSVCRT.lib(dll_dllmain.obj) 中)
+1>    已丢弃 __CRT_INIT@12(从 MSVCRT.lib(dll_dllmain.obj) 中)
+1>    已丢弃 "void (__cdecl** __cdecl __crt_fast_decode_pointer<void (__cdecl**)(void)>(void (__cdecl** const)(void)))(void)" (??$__crt_fast_decode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "void (__cdecl** __cdecl __crt_fast_encode_pointer<void (__cdecl**)(void)>(void (__cdecl** const)(void)))(void)" (??$__crt_fast_encode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "unsigned int __cdecl __crt_rotate_pointer_value(unsigned int,int)" (?__crt_rotate_pointer_value@@YAIIH@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "public: static int __cdecl __scrt_narrow_argv_policy::configure_argv(void)" (?configure_argv@__scrt_narrow_argv_policy@@SAHXZ)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "public: static int __cdecl __scrt_narrow_environment_policy::initialize_environment(void)" (?initialize_environment@__scrt_narrow_environment_policy@@SAHXZ)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "bool __cdecl is_potentially_valid_image_base(void * const)" (?is_potentially_valid_image_base@@YA_NQAX@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _NtCurrentTeb(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 __onexit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _at_quick_exit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _atexit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 ___scrt_get_show_window_mode(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_initialize_winrt(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_is_managed_app(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_set_unhandled_exception_filter(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_unhandled_exception_filter@4(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 _ReadNoFence(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 _ReadPointerNoFence(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 __guard_icall_checks_enforced(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 ___report_rangecheckfailure(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 ___report_securityfailure(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 ___report_securityfailureEx(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 __register_onexit_function(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __crt_atexit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __crt_at_quick_exit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 _terminate(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 _GetStartupInfoW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetModuleHandleW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>正在生成代码
+1>已完成代码的生成
+1>
+1>正在搜索库
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\MSVCRT.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\vcruntime.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86\ucrt.lib:
+1>
+1>已完成库搜索
+1>
+1>正在搜索库
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\MSVCRT.lib:
+1>      已找到 __load_config_used
+1>        已加载 MSVCRT.lib(loadcfg.obj)
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib:
+1>    正在搜索 D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\vcruntime.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x86\ucrt.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\kernel32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib:
+1>    正在搜索 C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib:
+1>
+1>已完成库搜索
+1>
+1>正在调用 rc.exe:
+1> /v
+1> /x
+1> /fo
+1> "C:\Users\romandion\AppData\Local\Temp\lnk{04010133-28D4-4B2D-BA2D-3D7171759B2B}.tmp"
+1> "C:\Users\romandion\AppData\Local\Temp\lnk{354A8816-ED2E-4264-8833-EFE6B6555369}.tmp"
+1>Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
+1>
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>
+1>
+1>Creating C:\Users\romandion\AppData\Local\Temp\lnk{04010133-28D4-4B2D-BA2D-3D7171759B2B}.tmp
+1>
+1>Using codepage 936 as default
+1>
+1>C:\Users\romandion\AppData\Local\Temp\lnk{354A8816-ED2E-4264-8833-EFE6B6555369}.tmp.
+1>Writing 24:2,	lang:0x409,	size 381
+1>
+1>正在调用 cvtres.exe:
+1> /machine:x86
+1> /verbose
+1> /out:"C:\Users\romandion\AppData\Local\Temp\lnk{6132FB7E-6664-4071-913F-A1715D63234E}.tmp"
+1> /readonly
+1> "C:\Users\romandion\AppData\Local\Temp\lnk{04010133-28D4-4B2D-BA2D-3D7171759B2B}.tmp"
+1>Microsoft(R) Windows Resource To Object Converter 版本 14.12.25834.0
+1>版权所有 (C) Microsoft Corporation。保留所有权利。
+1>
+1>正在添加资源。类型: MANIFEST，名称: 2，语言: 0x0409，标记: 0x30，大小: 381
+1>
+1>未使用的库:
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\user32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\gdi32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\winspool.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\comdlg32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\advapi32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\shell32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\ole32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\oleaut32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\uuid.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbc32.lib
+1>  C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x86\odbccp32.lib
+1>  D:\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.12.25827\lib\x86\OLDNAMES.lib
+1>
+1>
+1>正在处理 /ORDER 选项
+1>  未在 /ORDER 文件中列出的外部代码对象:
+1>
+1>        _imp___execute_onexit_table		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        SetUnhandledExceptionFilter@4		; kernel32.lib(KERNEL32.dll)
+1>        _get_startup_argv_mode		; MSVCRT.lib(argv_mode.obj)
+1>        DisableThreadLibraryCalls@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_stub_for_acrt_uninitialize_critical		; MSVCRT.lib(ucrt_stubs.obj)
+1>        _crt_debugger_hook		; MSVCRT.lib(utility_desktop.obj)
+1>        _imp__GetCurrentProcess@0		; kernel32.lib(KERNEL32.dll)
+1>        _DllMainCRTStartup@12		; MSVCRT.lib(dll_dllmain.obj)
+1>        _imp___except_handler4_common		; vcruntime.lib(VCRUNTIME140.dll)
+1>        ReadPointerNoFence		; MSVCRT.lib(guard_support.obj)
+1>        _imp__SetUnhandledExceptionFilter@4		; kernel32.lib(KERNEL32.dll)
+1>        _imp__GetCurrentProcessId@0		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_stub_for_acrt_initialize		; MSVCRT.lib(ucrt_stubs.obj)
+1>        _imp__UnhandledExceptionFilter@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_fastfail		; MSVCRT.lib(utility_desktop.obj)
+1>        __scrt_is_ucrt_dll_in_use		; MSVCRT.lib(ucrt_detection.obj)
+1>        _imp__GetCurrentThreadId@0		; kernel32.lib(KERNEL32.dll)
+1>        _CRT_INIT@12		; MSVCRT.lib(dll_dllmain.obj)
+1>        NtCurrentTeb		; MSVCRT.lib(utility.obj)
+1>        _imp____std_type_info_destroy_list		; vcruntime.lib(VCRUNTIME140.dll)
+1>        _except_handler4_common		; vcruntime.lib(VCRUNTIME140.dll)
+1>        _imp__memset		; vcruntime.lib(VCRUNTIME140.dll)
+1>        _initterm_e		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp__GetModuleHandleW@4		; kernel32.lib(KERNEL32.dll)
+1>        _imp___initterm		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_initialize_winrt		; MSVCRT.lib(utility_desktop.obj)
+1>        __scrt_stub_for_acrt_uninitialize		; MSVCRT.lib(ucrt_stubs.obj)
+1>        GetStartupInfoW@4		; kernel32.lib(KERNEL32.dll)
+1>        _cexit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        atexit		; MSVCRT.lib(utility.obj)
+1>        memset		; vcruntime.lib(VCRUNTIME140.dll)
+1>        GetCurrentThreadId@0		; kernel32.lib(KERNEL32.dll)
+1>        _RTC_Initialize		; MSVCRT.lib(_initsect_.obj)
+1>        _imp__GetStartupInfoW@4		; kernel32.lib(KERNEL32.dll)
+1>        GetCurrentProcess@0		; kernel32.lib(KERNEL32.dll)
+1>        __report_securityfailure		; MSVCRT.lib(gs_report.obj)
+1>        _imp__QueryPerformanceCounter@4		; kernel32.lib(KERNEL32.dll)
+1>        __std_type_info_destroy_list		; vcruntime.lib(VCRUNTIME140.dll)
+1>        ?_OptionsStorage@?1??__local_stdio_scanf_options@@9@4_KA		; MSVCRT.lib(default_local_stdio_options.obj)
+1>        _imp__terminate		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        QueryPerformanceCounter@4		; kernel32.lib(KERNEL32.dll)
+1>        _load_config_used		; MSVCRT.lib(loadcfg.obj)
+1>        __isa_available_init		; MSVCRT.lib(_cpu_disp_.obj)
+1>        __scrt_is_managed_app		; MSVCRT.lib(utility_desktop.obj)
+1>        ??$__crt_fast_decode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z		; MSVCRT.lib(utility.obj)
+1>        at_quick_exit		; MSVCRT.lib(utility.obj)
+1>        GetSystemTimeAsFileTime@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_unhandled_exception_filter@4		; MSVCRT.lib(utility_desktop.obj)
+1>        __dyn_tls_init_callback
+1>        __report_rangecheckfailure		; MSVCRT.lib(gs_report.obj)
+1>        GetModuleHandleW@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_set_unhandled_exception_filter		; MSVCRT.lib(utility_desktop.obj)
+1>        __scrt_uninitialize_crt		; MSVCRT.lib(utility.obj)
+1>        _crt_at_quick_exit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_dllmain_after_initialize_c		; MSVCRT.lib(utility.obj)
+1>        _RTC_Terminate		; MSVCRT.lib(_initsect_.obj)
+1>        _imp___initterm_e		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        ?__crt_rotate_pointer_value@@YAIIH@Z		; MSVCRT.lib(utility.obj)
+1>        __scrt_stub_for_acrt_thread_attach		; MSVCRT.lib(ucrt_stubs.obj)
+1>        GetCurrentProcessId@0		; kernel32.lib(KERNEL32.dll)
+1>        _imp___crt_at_quick_exit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_stub_for_acrt_thread_detach		; MSVCRT.lib(ucrt_stubs.obj)
+1>        __raise_securityfailure		; MSVCRT.lib(gs_report.obj)
+1>        __report_securityfailureEx		; MSVCRT.lib(gs_report.obj)
+1>        _initialize_onexit_table		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp___configure_narrow_argv		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _guard_icall_checks_enforced		; MSVCRT.lib(guard_support.obj)
+1>        _initialize_narrow_environment		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __local_stdio_scanf_options		; MSVCRT.lib(default_local_stdio_options.obj)
+1>        __security_init_cookie		; MSVCRT.lib(gs_support.obj)
+1>        ?_OptionsStorage@?1??__local_stdio_printf_options@@9@4_KA		; MSVCRT.lib(default_local_stdio_options.obj)
+1>        ?__scrt_initialize_type_info@@YAXXZ		; MSVCRT.lib(tncleanup.obj)
+1>        terminate		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        ?__scrt_uninitialize_type_info@@YAXXZ		; MSVCRT.lib(tncleanup.obj)
+1>        __scrt_initialize_onexit_tables		; MSVCRT.lib(utility.obj)
+1>        __scrt_dllmain_exception_filter		; MSVCRT.lib(utility.obj)
+1>        _imp__InitializeSListHead@4		; kernel32.lib(KERNEL32.dll)
+1>        UnhandledExceptionFilter@4		; kernel32.lib(KERNEL32.dll)
+1>        __guard_check_icall_fptr		; MSVCRT.lib(guard_support.obj)
+1>        __scrt_initialize_default_local_stdio_options		; MSVCRT.lib(default_local_stdio_options.obj)
+1>        ?configure_argv@__scrt_narrow_argv_policy@@SAHXZ		; MSVCRT.lib(utility.obj)
+1>        _onexit		; MSVCRT.lib(utility.obj)
+1>        _seh_filter_dll		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_dllmain_uninitialize_c		; MSVCRT.lib(utility.obj)
+1>        _imp___initialize_onexit_table		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        @__security_check_cookie@4		; MSVCRT.lib(_secchk_.obj)
+1>        __scrt_get_dyn_tls_init_callback		; MSVCRT.lib(dyn_tls_init.obj)
+1>        _imp___register_onexit_function		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _register_onexit_function		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_initialize_crt		; MSVCRT.lib(utility.obj)
+1>        @_guard_check_icall_nop@4		; MSVCRT.lib(guard_support.obj)
+1>        __scrt_get_show_window_mode		; MSVCRT.lib(utility_desktop.obj)
+1>        IsDebuggerPresent@0		; kernel32.lib(KERNEL32.dll)
+1>        DllMain@12		; MSVCRT.lib(dll_dllmain_stub.obj)
+1>        _imp___seh_filter_dll		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp__IsDebuggerPresent@0		; kernel32.lib(KERNEL32.dll)
+1>        _imp___cexit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_dllmain_crt_thread_attach		; MSVCRT.lib(utility.obj)
+1>        __scrt_dllmain_crt_thread_detach		; MSVCRT.lib(utility.obj)
+1>        _imp___initialize_narrow_environment		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp___crt_atexit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        @_guard_check_icall@4		; MSVCRT.lib(checkcfg.obj)
+1>        __report_gsfailure		; MSVCRT.lib(gs_report.obj)
+1>        _initterm		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp__IsProcessorFeaturePresent@4		; kernel32.lib(KERNEL32.dll)
+1>        _configure_narrow_argv		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        ReadNoFence		; MSVCRT.lib(guard_support.obj)
+1>        TerminateProcess@8		; kernel32.lib(KERNEL32.dll)
+1>        ??$__crt_fast_encode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z		; MSVCRT.lib(utility.obj)
+1>        IsProcessorFeaturePresent@4		; kernel32.lib(KERNEL32.dll)
+1>        ?initialize_environment@__scrt_narrow_environment_policy@@SAHXZ		; MSVCRT.lib(utility.obj)
+1>        InitializeSListHead@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_stub_for_is_c_termination_complete		; MSVCRT.lib(ucrt_stubs.obj)
+1>        __scrt_release_startup_lock		; MSVCRT.lib(utility.obj)
+1>        _imp__GetSystemTimeAsFileTime@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_acquire_startup_lock		; MSVCRT.lib(utility.obj)
+1>        _imp__TerminateProcess@8		; kernel32.lib(KERNEL32.dll)
+1>        _crt_atexit		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        __scrt_dllmain_before_initialize_c		; MSVCRT.lib(utility.obj)
+1>        _except_handler4		; MSVCRT.lib(_chandler4gs_.obj)
+1>        __local_stdio_printf_options		; MSVCRT.lib(default_local_stdio_options.obj)
+1>        _execute_onexit_table		; ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>        _imp__DisableThreadLibraryCalls@4		; kernel32.lib(KERNEL32.dll)
+1>        __scrt_dllmain_uninitialize_critical		; MSVCRT.lib(utility.obj)
+1>        __scrt_is_nonwritable_in_current_image		; MSVCRT.lib(utility.obj)
+1>
+1>已完成对 /ORDER 选项的处理
+1>    已丢弃“.idata$4”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$4”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$4”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp__GetModuleHandleW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 __imp__GetStartupInfoW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 __imp___crt_at_quick_exit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp___crt_atexit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp___register_onexit_function(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __imp__terminate(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃“.idata$6”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃“.idata$6”(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 "int __stdcall dllmain_raw(struct HINSTANCE__ * const,unsigned long,void * const)" (?dllmain_raw@@YGHQAUHINSTANCE__@@KQAX@Z)(从 MSVCRT.lib(dll_dllmain.obj) 中)
+1>    已丢弃 __CRT_INIT@12(从 MSVCRT.lib(dll_dllmain.obj) 中)
+1>    已丢弃 "void (__cdecl** __cdecl __crt_fast_decode_pointer<void (__cdecl**)(void)>(void (__cdecl** const)(void)))(void)" (??$__crt_fast_decode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "void (__cdecl** __cdecl __crt_fast_encode_pointer<void (__cdecl**)(void)>(void (__cdecl** const)(void)))(void)" (??$__crt_fast_encode_pointer@PAP6AXXZ@@YAPAP6AXXZQAP6AXXZ@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "unsigned int __cdecl __crt_rotate_pointer_value(unsigned int,int)" (?__crt_rotate_pointer_value@@YAIIH@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "public: static int __cdecl __scrt_narrow_argv_policy::configure_argv(void)" (?configure_argv@__scrt_narrow_argv_policy@@SAHXZ)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "public: static int __cdecl __scrt_narrow_environment_policy::initialize_environment(void)" (?initialize_environment@__scrt_narrow_environment_policy@@SAHXZ)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 "bool __cdecl is_potentially_valid_image_base(void * const)" (?is_potentially_valid_image_base@@YA_NQAX@Z)(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _NtCurrentTeb(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 __onexit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _at_quick_exit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 _atexit(从 MSVCRT.lib(utility.obj) 中)
+1>    已丢弃 ___scrt_get_show_window_mode(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_initialize_winrt(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_is_managed_app(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_set_unhandled_exception_filter(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 ___scrt_unhandled_exception_filter@4(从 MSVCRT.lib(utility_desktop.obj) 中)
+1>    已丢弃 _ReadNoFence(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 _ReadPointerNoFence(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 __guard_icall_checks_enforced(从 MSVCRT.lib(guard_support.obj) 中)
+1>    已丢弃 ___report_rangecheckfailure(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 ___report_securityfailure(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 ___report_securityfailureEx(从 MSVCRT.lib(gs_report.obj) 中)
+1>    已丢弃 __register_onexit_function(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __crt_atexit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 __crt_at_quick_exit(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 _terminate(从 ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) 中)
+1>    已丢弃 _QueryPerformanceCounter@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetCurrentProcessId@0(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetCurrentThreadId@0(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetSystemTimeAsFileTime@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _DisableThreadLibraryCalls@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _InitializeSListHead@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _IsDebuggerPresent@0(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _UnhandledExceptionFilter@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _SetUnhandledExceptionFilter@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetStartupInfoW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetModuleHandleW@4(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _GetCurrentProcess@0(从 kernel32.lib(KERNEL32.dll) 中)
+1>    已丢弃 _TerminateProcess@8(从 kernel32.lib(KERNEL32.dll) 中)
+1>
+1>  已选择符号:
+1>    ___scrt_stub_for_acrt_initialize (在 MSVCRT.lib(ucrt_stubs.obj) 中)
+1>  已替换符号:
+1>    ___scrt_stub_for_acrt_thread_attach (在 MSVCRT.lib(ucrt_stubs.obj) 中)
+1>    ___scrt_stub_for_acrt_thread_detach (在 MSVCRT.lib(ucrt_stubs.obj) 中)
+1>    ___scrt_stub_for_acrt_uninitialize (在 MSVCRT.lib(ucrt_stubs.obj) 中)
+1>    ___scrt_stub_for_acrt_uninitialize_critical (在 MSVCRT.lib(ucrt_stubs.obj) 中)
+1>
+1>  ICF 总节省量: 12 字节
+1>
+1>正在启动传递 2
+1>     * CIL library *(* CIL module *)
+1>     * linker generated manifest res *
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     kernel32.lib(KERNEL32.dll)
+1>     MSVCRT.lib(_cpu_disp_.obj)
+1>     MSVCRT.lib(_initsect_.obj)
+1>     MSVCRT.lib(_sehprolg4_.obj)
+1>     MSVCRT.lib(_chandler4gs_.obj)
+1>     MSVCRT.lib(_secchk_.obj)
+1>     MSVCRT.lib(gs_cookie.obj)
+1>     MSVCRT.lib(gs_report.obj)
+1>     MSVCRT.lib(gs_support.obj)
+1>     MSVCRT.lib(checkcfg.obj)
+1>     MSVCRT.lib(guard_support.obj)
+1>     MSVCRT.lib(loadcfg.obj)
+1>     MSVCRT.lib(dyn_tls_init.obj)
+1>     MSVCRT.lib(ucrt_detection.obj)
+1>     MSVCRT.lib(argv_mode.obj)
+1>     MSVCRT.lib(default_local_stdio_options.obj)
+1>     MSVCRT.lib(tncleanup.obj)
+1>     MSVCRT.lib(dll_dllmain.obj)
+1>     MSVCRT.lib(dll_dllmain_stub.obj)
+1>     MSVCRT.lib(initializers.obj)
+1>     MSVCRT.lib(utility.obj)
+1>     MSVCRT.lib(ucrt_stubs.obj)
+1>     MSVCRT.lib(utility_desktop.obj)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     vcruntime.lib(VCRUNTIME140.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>     ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll)
+1>已完成传递 2
+1>startup-dll-withcrt.vcxproj -> E:\vs2017-source\test-msvc\win32\startup-dll-withcrt.dll
+========== 全部重新生成: 成功 1 个，失败 0 个，跳过 0 个 ==========

@@ -1,0 +1,442 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\startup">
+      <UniqueIdentifier>{448764c0-544f-45ef-8e42-629af54a46fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\misc">
+      <UniqueIdentifier>{37819c82-ad1e-439a-8f59-a35cbc0f4888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\heap">
+      <UniqueIdentifier>{036dd14a-9717-44dc-aaab-1d972e806576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\runtime">
+      <UniqueIdentifier>{f4bee842-a485-4797-b3e5-2eda01a0c0b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\internal">
+      <UniqueIdentifier>{72cd0538-4500-4db2-9803-be7e4e478d1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\convert">
+      <UniqueIdentifier>{d13bf4fe-1ad7-42c8-ac28-a09d4416774a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\locale">
+      <UniqueIdentifier>{03e9b7fb-e822-45f1-ac03-207a227b4ac5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\string">
+      <UniqueIdentifier>{6e4f24f3-d1fc-426f-85c1-f97f8677056e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\stdio">
+      <UniqueIdentifier>{65d3acd7-e82d-44c2-be94-b73c82dd912a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\lowio">
+      <UniqueIdentifier>{d2810cfd-b9c4-4d23-a7c4-5f7ba8f67f26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\time">
+      <UniqueIdentifier>{4063450c-bbaa-44f2-b61b-a9dbde6854d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\stdlib">
+      <UniqueIdentifier>{218c5ac8-143a-4dcd-97bd-ac4a695dce2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\env">
+      <UniqueIdentifier>{cd6d61e2-305b-41d2-aac8-ffbb85159a72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\filesystem">
+      <UniqueIdentifier>{32f96c73-1cda-4e1a-a029-d3359f9c51e0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="startup\abort.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\argv_data.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\argv_parsing.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\argv_winmain.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\assert.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\exit.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\initterm.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\onexit.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\thread.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\drivemap.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\drivfree.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\errno.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\exception_filter.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\getcwd.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\getpid.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\invalid_parameter.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\perror.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\resetstk.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\set_error_mode.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\seterrm.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\slbeep.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\strerror.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\syserr.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\systime.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\terminate.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\_strerr.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\drive.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\align.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\calloc.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\calloc_base.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\expand.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\free.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\free_base.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\heap_handle.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\heapchk.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\heapmin.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\heapwalk.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\malloc.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\malloc_base.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\msize.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\new_handler.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\new_mode.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\realloc.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\realloc_base.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\recalloc.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\signal.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memcpy.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memmove.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memset.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\locks.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\report_runtime_error.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\shared_initialization.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\string_utilities.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\winapi_thunks.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\winapi_thunks_runtime.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\per_thread_data.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\_ctype.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\_fptostr.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\fp_flags.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\swab.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\locale_update.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\localeconv.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\setlocale.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\ctype.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\glstatus.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\initctype.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\initmon.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\initnum.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\inittime.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\lconv_unsigned_char_initialization.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\locale_refcounting.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\nlsdata.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\isctype.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strlen.c">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\output.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\osfinfo.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\ioinit.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcscpy_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcscpy.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strnlen.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strcpy_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strcat_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcscat_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strncat_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strncpy_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsncat_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\xtoa.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\write.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="time\mktime.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\crtmbox.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="startup\argv_wildcards.cpp">
+      <Filter>源文件\startup</Filter>
+    </ClCompile>
+    <ClCompile Include="stdlib\qsort.cpp">
+      <Filter>源文件\stdlib</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsncpy_s.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcspbrk.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strpbrk.c">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\_file.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\closeall.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fflush.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fclose.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\chandler4.c">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\myvcruntime\std_type_info.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="env\environment_initialization.cpp">
+      <Filter>源文件\env</Filter>
+    </ClCompile>
+    <ClCompile Include="env\get_environment_from_os.cpp">
+      <Filter>源文件\env</Filter>
+    </ClCompile>
+    <ClCompile Include="env\setenv.cpp">
+      <Filter>源文件\env</Filter>
+    </ClCompile>
+    <ClCompile Include="..\myvcruntime\strchr.c">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\myvcruntime\wcschr.c">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strnicol.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsnicol.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strnicmp.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\tolower_toupper.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\CompareStringA.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\CompareStringW.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strncnt.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="filesystem\makepath.cpp">
+      <Filter>源文件\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="filesystem\splitpath.cpp">
+      <Filter>源文件\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\myvcruntime\fixup-lost.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\setmode.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\ncommode.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\txtmode.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\wsetlocale.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\ehhelpers.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\dbgrpt.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\dbgrptt.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="misc\debug_fill_threshold.cpp">
+      <Filter>源文件\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\debug_heap.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="heap\debug_heap_hook.cpp">
+      <Filter>源文件\heap</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
