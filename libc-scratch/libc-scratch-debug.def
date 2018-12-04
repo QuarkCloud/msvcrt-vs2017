@@ -1,0 +1,3 @@
+LIBRARY libc-scratch-debug
+EXPORTS
+
