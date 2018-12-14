@@ -2508,6 +2508,9 @@ RegCloseKey (HKEY hKey);
 
 WINBASEAPI BOOL WINAPI OpenProcessToken(HANDLE ProcessHandle,DWORD DesiredAccess,PHANDLE TokenHandle);
 
+WINBASEAPI ULONGLONG WINAPI GetTickCount64();
+
+WINBASEAPI BOOL WINAPI QueryPerformanceCounter(LARGE_INTEGER* lpPerformanceCount);
 
 #ifdef __cplusplus
 }

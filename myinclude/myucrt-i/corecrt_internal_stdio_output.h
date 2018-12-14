@@ -852,7 +852,7 @@ bool __cdecl is_wide_character_specifier(
 template <typename Character>
 class common_data
 {
-protected:
+public:
 
     common_data()
         : _options           {0            },
@@ -937,7 +937,7 @@ protected:
 // more easily value-initialize all of the members of the common data base.
 template <typename Character, typename OutputAdapter>
 class output_adapter_data
-    : protected common_data<Character>
+    : public common_data<Character>
 {
 protected:
 

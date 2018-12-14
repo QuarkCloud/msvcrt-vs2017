@@ -282,9 +282,6 @@
     <ClCompile Include="string\strlen.c">
       <Filter>源文件\string</Filter>
     </ClCompile>
-    <ClCompile Include="stdio\output.cpp">
-      <Filter>源文件\stdio</Filter>
-    </ClCompile>
     <ClCompile Include="lowio\osfinfo.cpp">
       <Filter>源文件\lowio</Filter>
     </ClCompile>
@@ -437,6 +434,9 @@
     </ClCompile>
     <ClCompile Include="heap\debug_heap_hook.cpp">
       <Filter>源文件\heap</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\output.cpp">
+      <Filter>源文件\stdio</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

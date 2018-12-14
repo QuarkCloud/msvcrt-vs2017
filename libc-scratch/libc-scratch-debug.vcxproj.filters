@@ -13,12 +13,26 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="外部对象">
+      <UniqueIdentifier>{4e2a041e-f0fa-4c25-9d63-6ac59e4247d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
+    <ClInclude Include="..\include\libc-scratch\compile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="internal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dll_dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="dll_dllmain.cpp">
+    <ClCompile Include="gs_support.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="gs_cookie.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

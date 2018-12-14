@@ -19,8 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
+    <ClInclude Include="..\include\libc-scratch\compile.h" />
+    <ClInclude Include="internal.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="dll_dllmain.cpp" />
+    <ClCompile Include="gs_cookie.cpp" />
+    <ClCompile Include="gs_support.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -95,19 +100,20 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LIBC_SCRATCH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PrecompiledHeaderFile />
-      <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\winapi</AdditionalIncludeDirectories>
-      <CompileAs>CompileAsCpp</CompileAs>
+      <ShowIncludes>true</ShowIncludes>
+      <AdditionalIncludeDirectories>$(SolutionDir)include;$(SolutionDir)include\winapi;$(SolutionDir)include\libc-scratch</AdditionalIncludeDirectories>
+      <CompileAs>Default</CompileAs>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ShowProgress>NotSet</ShowProgress>
+      <ShowProgress>LinkVerbose</ShowProgress>
       <AdditionalDependencies>kernel32.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
