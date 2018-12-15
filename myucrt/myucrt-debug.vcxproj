@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CRTBLD;CRTDLL;_WINDOWS;_USRDLL;_CORECRT_BUILD;_DLL;_CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY;_VCRT_BUILD;_VCRT_ALLOW_INTERNALS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PrecompiledHeaderFile />
