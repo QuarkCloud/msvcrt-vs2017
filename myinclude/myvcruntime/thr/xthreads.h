@@ -10,6 +10,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -88,32 +89,15 @@ _CRTIMP2_PURE void __cdecl _Cnd_register_at_thread_exit(_Cnd_t,
 _CRTIMP2_PURE void __cdecl _Cnd_unregister_at_thread_exit(_Mtx_t);
 _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit(void);
 
-	/* thread specific storage */
-typedef _Tss_imp_t _Tss_t;
-typedef void (*_Tss_dtor_t)(void *);
-_CRTIMP2_PURE int __cdecl _Tss_create(_Tss_t *, _Tss_dtor_t);
-
-_CRTIMP2_PURE int __cdecl _Tss_delete(_Tss_t);
-_CRTIMP2_PURE int __cdecl _Tss_set(_Tss_t, void *);
-_CRTIMP2_PURE void *__cdecl _Tss_get(_Tss_t);
-
-#define _TSS_DTOR_ITERATIONS	_TSS_DTOR_ITERATIONS_IMP
-
- #if _TSS_USE_MACROS
-  #define _Tss_create(key, dtor)	_TSS_CREATE(key, dtor)
-  #define _Tss_delete(key)			_TSS_DELETE(key)
-  #define _Tss_set(key, value)		_TSS_SET(key, value)
-  #define _Tss_get(key)				_TSS_GET(key)
- #endif	/* TSS_USE_MACROS */
-
 	/* utility functions */
 _CRTIMP2_PURE void __cdecl _Thrd_abort(const char *);
 _END_EXTERN_C
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */
-#endif	/* _THR_XTHREADS_H */
+#endif /* _THR_XTHREADS_H */
 
 /*
  * This file is derived from software bearing the following

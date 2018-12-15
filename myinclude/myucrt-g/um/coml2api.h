@@ -1,4 +1,3 @@
- 
 //+---------------------------------------------------------------------------
 //
 //  Microsoft Windows
@@ -21,28 +20,11 @@
 #include <apiset.h>
 #include <apisetcconv.h>
 
-/* APISET_NAME: api-ms-win-core-com-l2 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_COML2_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINPHONEBLUE
-#define _APISET_COML2_VER 0x0101
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #include <combaseapi.h>
 #include <objidl.h>
 #include <propidlbase.h>
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 
 //
@@ -50,7 +32,6 @@
 // Also contains Storage error codes, which should be moved into the storage
 // idl files.
 //
-
 
 #define CWCSTORAGENAME 32
 
@@ -70,7 +51,6 @@
 
 #define STGM_PRIORITY           0x00040000L
 #define STGM_DELETEONRELEASE    0x04000000L
-
 #if (WINVER >= 400)
 #define STGM_NOSCRATCH          0x00100000L
 #endif /* WINVER */
@@ -80,7 +60,6 @@
 #define STGM_FAILIFTHERE        0x00000000L
 
 #define STGM_NOSNAPSHOT         0x00200000L
-
 #if (_WIN32_WINNT >= 0x0500)
 #define STGM_DIRECT_SWMR        0x00400000L
 #endif
@@ -100,76 +79,74 @@ typedef DWORD STGFMT;
 _Check_return_
 WINOLEAPI
 StgCreateDocfile(
-    _In_opt_ _Null_terminated_ const WCHAR * pwcsName,
+    _In_opt_ _Null_terminated_ const WCHAR* pwcsName,
     _In_ DWORD grfMode,
     _Reserved_ DWORD reserved,
-    _Outptr_ IStorage ** ppstgOpen
+    _Outptr_ IStorage** ppstgOpen
     );
 
 
 _Check_return_
 WINOLEAPI
 StgCreateDocfileOnILockBytes(
-    _In_ ILockBytes * plkbyt,
+    _In_ ILockBytes* plkbyt,
     _In_ DWORD grfMode,
     _In_ DWORD reserved,
-    _Outptr_ IStorage ** ppstgOpen
+    _Outptr_ IStorage** ppstgOpen
     );
 
 
 _Check_return_
 WINOLEAPI
 StgOpenStorage(
-    _In_opt_ _Null_terminated_ const WCHAR * pwcsName,
-    _In_opt_ IStorage * pstgPriority,
+    _In_opt_ _Null_terminated_ const WCHAR* pwcsName,
+    _In_opt_ IStorage* pstgPriority,
     _In_ DWORD grfMode,
     _In_opt_z_ SNB snbExclude,
     _In_ DWORD reserved,
-    _Outptr_ IStorage ** ppstgOpen
+    _Outptr_ IStorage** ppstgOpen
     );
 
 
 _Check_return_
 WINOLEAPI
 StgOpenStorageOnILockBytes(
-    _In_ ILockBytes * plkbyt,
-    _In_opt_ IStorage * pstgPriority,
+    _In_ ILockBytes* plkbyt,
+    _In_opt_ IStorage* pstgPriority,
     _In_ DWORD grfMode,
     _In_opt_z_ SNB snbExclude,
     _Reserved_ DWORD reserved,
-    _Outptr_ IStorage ** ppstgOpen
+    _Outptr_ IStorage** ppstgOpen
     );
 
 
 _Check_return_
 WINOLEAPI
 StgIsStorageFile(
-    _In_ _Null_terminated_ const WCHAR * pwcsName
+    _In_ _Null_terminated_ const WCHAR* pwcsName
     );
 
 
 _Check_return_
 WINOLEAPI
 StgIsStorageILockBytes(
-    _In_ ILockBytes * plkbyt
+    _In_ ILockBytes* plkbyt
     );
 
 
 _Check_return_
 WINOLEAPI
 StgSetTimes(
-    _In_ _Null_terminated_ const WCHAR * lpszName,
-    _In_opt_ const FILETIME * pctime,
-    _In_opt_ const FILETIME * patime,
-    _In_opt_ const FILETIME * pmtime
+    _In_ _Null_terminated_ const WCHAR* lpszName,
+    _In_opt_ const FILETIME* pctime,
+    _In_opt_ const FILETIME* patime,
+    _In_opt_ const FILETIME* pmtime
     );
 
 
 // STG initialization options for StgCreateStorageEx and StgOpenStorageEx
-
 #if _WIN32_WINNT == 0x500
 #define STGOPTIONS_VERSION 1
-
 #elif _WIN32_WINNT > 0x500
 #define STGOPTIONS_VERSION 2
 #else
@@ -181,7 +158,6 @@ typedef struct tagSTGOPTIONS
     USHORT usVersion;            // Versions 1 and 2 supported
     USHORT reserved;             // must be 0 for padding
     ULONG ulSectorSize;          // docfile header sector size (512)
-
 #if STGOPTIONS_VERSION >= 2
     const WCHAR *pwcsTemplateFile;  // version 2 or above
 #endif
@@ -190,28 +166,28 @@ typedef struct tagSTGOPTIONS
 _Check_return_
 WINOLEAPI
 StgCreateStorageEx(
-    _In_opt_ _Null_terminated_ const WCHAR * pwcsName,
+    _In_opt_ _Null_terminated_ const WCHAR* pwcsName,
     _In_ DWORD grfMode,
     _In_ DWORD stgfmt,
     _In_ DWORD grfAttrs,
-    _Inout_opt_ STGOPTIONS * pStgOptions,
+    _Inout_opt_ STGOPTIONS* pStgOptions,
     _In_opt_ PSECURITY_DESCRIPTOR pSecurityDescriptor,
     _In_ REFIID riid,
-    _Outptr_ void ** ppObjectOpen
+    _Outptr_ void** ppObjectOpen
     );
 
 
 _Check_return_
 WINOLEAPI
 StgOpenStorageEx(
-    _In_ _Null_terminated_ const WCHAR * pwcsName,
+    _In_ _Null_terminated_ const WCHAR* pwcsName,
     _In_ DWORD grfMode,
     _In_ DWORD stgfmt,
     _In_ DWORD grfAttrs,
-    _Inout_opt_ STGOPTIONS * pStgOptions,
+    _Inout_opt_ STGOPTIONS* pStgOptions,
     _In_opt_ PSECURITY_DESCRIPTOR pSecurityDescriptor,
     _In_ REFIID riid,
-    _Outptr_ void ** ppObjectOpen
+    _Outptr_ void** ppObjectOpen
     );
 
 
@@ -220,32 +196,32 @@ StgOpenStorageEx(
 _Check_return_
 WINOLEAPI
 StgCreatePropStg(
-    _In_ IUnknown * pUnk,
+    _In_ IUnknown* pUnk,
     _In_ REFFMTID fmtid,
-    _In_ const CLSID * pclsid,
+    _In_ const CLSID* pclsid,
     _In_ DWORD grfFlags,
     _Reserved_ DWORD dwReserved,
-    _Outptr_ IPropertyStorage ** ppPropStg
+    _Outptr_ IPropertyStorage** ppPropStg
     );
 
 
 _Check_return_
 WINOLEAPI
 StgOpenPropStg(
-    _In_ IUnknown * pUnk,
+    _In_ IUnknown* pUnk,
     _In_ REFFMTID fmtid,
     _In_ DWORD grfFlags,
     _Reserved_ DWORD dwReserved,
-    _Outptr_ IPropertyStorage ** ppPropStg
+    _Outptr_ IPropertyStorage** ppPropStg
     );
 
 
 _Check_return_
 WINOLEAPI
 StgCreatePropSetStg(
-    _In_ IStorage * pStorage,
+    _In_ IStorage* pStorage,
     _Reserved_ DWORD dwReserved,
-    _Outptr_ IPropertySetStorage ** ppPropSetStg
+    _Outptr_ IPropertySetStorage** ppPropSetStg
     );
 
 
@@ -254,8 +230,8 @@ StgCreatePropSetStg(
 _Check_return_
 WINOLEAPI
 FmtIdToPropStgName(
-    _In_ const FMTID * pfmtid,
-    _Out_writes_(CCH_MAX_PROPSTG_NAME+1) LPOLESTR oszName
+    _In_ const FMTID* pfmtid,
+    _Out_writes_(CCH_MAX_PROPSTG_NAME + 1) LPOLESTR oszName
     );
 
 
@@ -263,7 +239,7 @@ _Check_return_
 WINOLEAPI
 PropStgNameToFmtId(
     _In_ const LPOLESTR oszName,
-    _Out_ FMTID * pfmtid
+    _Out_ FMTID* pfmtid
     );
 
 
@@ -273,7 +249,7 @@ PropStgNameToFmtId(
 WINOLEAPI
 ReadClassStg(
     _In_ LPSTORAGE pStg,
-    _Out_ CLSID FAR * pclsid
+    _Out_ CLSID  FAR * pclsid
     );
 
 
@@ -287,7 +263,7 @@ WriteClassStg(
 WINOLEAPI
 ReadClassStm(
     _In_ LPSTREAM pStm,
-    _Out_ CLSID FAR * pclsid
+    _Out_ CLSID  FAR * pclsid
     );
 
 
@@ -303,7 +279,7 @@ _Check_return_
 WINOLEAPI
 GetHGlobalFromILockBytes(
     _In_ LPLOCKBYTES plkbyt,
-    _Out_ HGLOBAL FAR * phglobal
+    _Out_ HGLOBAL  FAR * phglobal
     );
 
 
@@ -312,7 +288,7 @@ WINOLEAPI
 CreateILockBytesOnHGlobal(
     _In_opt_ HGLOBAL hGlobal,
     _In_ BOOL fDeleteOnRelease,
-    _Outptr_ LPLOCKBYTES FAR * pplkbyt
+    _Outptr_ LPLOCKBYTES  FAR * pplkbyt
     );
 
 

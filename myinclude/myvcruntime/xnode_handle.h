@@ -13,6 +13,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 _STD_BEGIN
@@ -36,11 +37,11 @@ template<class _Derived_type,
 	using key_type = _KeyTy;
 	using mapped_type = _ValueTy;
 
-	key_type& key() const _NOEXCEPT // strengthened
+	key_type& key() const noexcept // strengthened
 		{
 		return (_Datum().first);
 		}
-	mapped_type& mapped() const _NOEXCEPT // strengthened
+	mapped_type& mapped() const noexcept // strengthened
 		{
 		return (_Datum().second);
 		}
@@ -62,7 +63,7 @@ template<class _Derived_type,
 	{	// set-specific node handle behavior
 	using value_type = _ValueTy;
 
-	value_type& value() const _NOEXCEPT // strengthened
+	value_type& value() const noexcept // strengthened
 		{
 		const auto& _Self = static_cast<const _Derived_type&>(*this);
 		return (_Self._Getptr()->_Myval);
@@ -87,7 +88,7 @@ private:
 	_Nodeptr _Ptr{};
 	aligned_union_t<0, _Alloc> _Alloc_storage;	// Invariant: contains a live _Alloc iff _Ptr != nullptr
 
-	void _Clear() _NOEXCEPT
+	void _Clear() noexcept
 		{	// destroy any contained node and return to the empty state
 		if (_Ptr)
 			{
@@ -100,26 +101,26 @@ private:
 			}
 		}
 
-	_Node_handle(const _Nodeptr _My_ptr, const _Alloc& _My_alloc) _NOEXCEPT
+	_Node_handle(const _Nodeptr _My_ptr, const _Alloc& _My_alloc) noexcept
 		: _Ptr{_My_ptr}
 		{	// Initialize a _Node_handle that holds the specified node
-			// Pre: _My_ptr != nullptr
-			// Pre: _Alloc can release _Ptr
+			// pre: _My_ptr != nullptr
+			// pre: _Alloc can release _Ptr
 		_Construct_in_place(_Getal(), _My_alloc);
 		}
 
 public:
-	constexpr _Node_handle() _NOEXCEPT
+	constexpr _Node_handle() noexcept
 		: _Alloc_storage{}
 		{	// initialize node handle in the empty state
 		}
 
-	~_Node_handle() _NOEXCEPT
+	~_Node_handle() noexcept
 		{	// destroy any contained node/allocator
 		_Clear();
 		}
 
-	_Node_handle(_Node_handle&& _That) _NOEXCEPT
+	_Node_handle(_Node_handle&& _That) noexcept
 		: _Ptr{_That._Ptr}
 		{	// steal node and allocator (if any) from _That
 		if (_Ptr)
@@ -131,7 +132,7 @@ public:
 			}
 		}
 
-	_Node_handle& operator=(_Node_handle&& _That) _NOEXCEPT // strengthened
+	_Node_handle& operator=(_Node_handle&& _That) noexcept // strengthened
 		{	// steal state from _That
 		if (!_Ptr)
 			{
@@ -172,43 +173,43 @@ public:
 		return (*this);
 		}
 
-	_Nodeptr _Getptr() const _NOEXCEPT
+	_Nodeptr _Getptr() const noexcept
 		{
 		return (_Ptr);
 		}
 
-	_Alloc& _Getal() _NOEXCEPT
-		{	// Pre: !empty()
+	_Alloc& _Getal() noexcept
+		{	// pre: !empty()
 		return (reinterpret_cast<_Alloc&>(_Alloc_storage));
 		}
-	const _Alloc& _Getal() const _NOEXCEPT
-		{	// Pre: !empty()
+	const _Alloc& _Getal() const noexcept
+		{	// pre: !empty()
 		return (reinterpret_cast<const _Alloc&>(_Alloc_storage));
 		}
 
-	allocator_type get_allocator() const _NOEXCEPT // strengthened
-		{	// Pre: !empty()
+	_NODISCARD allocator_type get_allocator() const noexcept // strengthened
+		{	// pre: !empty()
 		return (_Getal());
 		}
 
-	explicit operator bool() const _NOEXCEPT
+	explicit operator bool() const noexcept
 		{	// determine if node handle is not empty
 		return (_Ptr != nullptr);
 		}
 
-	bool empty() const _NOEXCEPT
+	_NODISCARD bool empty() const noexcept
 		{	// determine if node handle is empty
 		return (_Ptr == nullptr);
 		}
 
-	_Nodeptr _Release() _NOEXCEPT
+	_Nodeptr _Release() noexcept
 		{	// extract the node from *this
-			// Pre: !empty()
+			// pre: !empty()
 		_Destroy_in_place(_Getal());
 		return (_STD exchange(_Ptr, nullptr));
 		}
 
-	void swap(_Node_handle& _That) _NOEXCEPT // strengthened
+	void swap(_Node_handle& _That) noexcept // strengthened
 		{	// exchange values of *this and _That
 		if (_Ptr)
 			{
@@ -223,10 +224,8 @@ public:
 					}
 				else if constexpr (_ITERATOR_DEBUG_LEVEL == 2)
 					{
-					if (_Getal() != _That._Getal())
-						{
-						_DEBUG_ERROR("Can't swap node handles with non-equal, non-POCS allocators");
-						}
+					_STL_VERIFY(_Getal() == _That._Getal(),
+						"Can't swap node handles with non-equal, non-POCS allocators");
 					}
 #endif /* TRANSITION, if constexpr */
 				}
@@ -250,21 +249,22 @@ public:
 			}
 		_Swap_adl(_Ptr, _That._Ptr);
 		}
-	friend void swap(_Node_handle& _Left, _Node_handle& _Right) _NOEXCEPT // strengthened, sort of
+	friend void swap(_Node_handle& _Left, _Node_handle& _Right) noexcept // strengthened, sort of
 		{
 		_Left.swap(_Right);
 		}
 
 	static _Node_handle _Make(const _Nodeptr _Ptr, const allocator_type& _Al)
 		{	// initialize a _Node_handle that holds _Ptr and _Al
-			// Pre: _Ptr != nullptr
-			// Pre: _Al can release _Ptr
+			// pre: _Ptr != nullptr
+			// pre: _Al can release _Ptr
 		return (_Node_handle{_Ptr, _Al});
 		}
 	};
 
 _STD_END
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

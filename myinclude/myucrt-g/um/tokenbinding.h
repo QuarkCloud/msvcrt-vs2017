@@ -127,6 +127,12 @@ TokenBindingGenerateID(
     _Outptr_ TOKENBINDING_RESULT_DATA **resultData
 );
 
+STDAPI_(SECURITY_STATUS)
+TokenBindingGetHighestSupportedVersion(
+    _Out_ BYTE *majorVersion,
+    _Out_ BYTE *minorVersion
+);
+
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */

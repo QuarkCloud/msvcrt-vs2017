@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * Pathcch.h -- ApiSet Contract for api-ms-win-core-Path-l1                      *
@@ -7,6 +6,8 @@
 *                                                                               *
 ********************************************************************************/
 
+
+
 #pragma once
 
 #include <apiset.h>
@@ -14,28 +15,11 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-path-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_PATH_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_PATH_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 typedef enum PATHCCH_OPTIONS
@@ -90,7 +74,7 @@ BOOL
 APIENTRY
 PathIsUNCEx(
     _In_ PCWSTR pszPath,
-    _Outptr_opt_ PCWSTR * ppszServer
+    _Outptr_opt_ PCWSTR* ppszServer
     );
 
 
@@ -108,8 +92,8 @@ APIENTRY
 PathCchAddBackslashEx(
     _Inout_updates_(cchPath) PWSTR pszPath,
     _In_ size_t cchPath,
-    _Outptr_opt_result_buffer_(*pcchRemaining) PWSTR * ppszEnd,
-    _Out_opt_ size_t * pcchRemaining
+    _Outptr_opt_result_buffer_(*pcchRemaining) PWSTR* ppszEnd,
+    _Out_opt_ size_t* pcchRemaining
     );
 
 
@@ -128,8 +112,8 @@ APIENTRY
 PathCchRemoveBackslashEx(
     _Inout_updates_(_Inexpressible_(cchPath)) PWSTR pszPath,
     _In_ size_t cchPath,
-    _Outptr_opt_result_buffer_(*pcchRemaining) PWSTR * ppszEnd,
-    _Out_opt_ size_t * pcchRemaining
+    _Outptr_opt_result_buffer_(*pcchRemaining) PWSTR* ppszEnd,
+    _Out_opt_ size_t* pcchRemaining
     );
 
 
@@ -147,7 +131,7 @@ HRESULT
 APIENTRY
 PathCchSkipRoot(
     _In_ PCWSTR pszPath,
-    _Outptr_ PCWSTR * ppszRootEnd
+    _Outptr_ PCWSTR* ppszRootEnd
     );
 
 
@@ -169,14 +153,13 @@ PathCchRemoveFileSpec(
     );
 
 
-
 WINPATHCCHAPI
 HRESULT
 APIENTRY
 PathCchFindExtension(
     _In_reads_(_Inexpressible_(cchPath)) PCWSTR pszPath,
     _In_ size_t cchPath,
-    _Outptr_ PCWSTR * ppszExt
+    _Outptr_ PCWSTR* ppszExt
     );
 
 
@@ -198,7 +181,6 @@ PathCchRenameExtension(
     _In_ size_t cchPath,
     _In_ PCWSTR pszExt
     );
-
 
 
 WINPATHCCHAPI
@@ -291,7 +273,7 @@ PathAllocCombine(
     _In_opt_ PCWSTR pszPathIn,
     _In_opt_ PCWSTR pszMore,
     _In_ ULONG dwFlags,
-    _Outptr_ PWSTR * ppszPathOut
+    _Outptr_ PWSTR* ppszPathOut
     );
 
 
@@ -301,7 +283,7 @@ APIENTRY
 PathAllocCanonicalize(
     _In_ PCWSTR pszPathIn,
     _In_ ULONG dwFlags,
-    _Outptr_ PWSTR * ppszPathOut
+    _Outptr_ PWSTR* ppszPathOut
     );
 
 
@@ -333,11 +315,9 @@ PathAllocCanonicalize(
 }
 #endif
 
-
 #ifdef __cplusplus
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 // non-const overload (C++ only)
@@ -369,5 +349,4 @@ PathCchFindExtension(
 #pragma endregion
 
 #endif
-
 

@@ -14,7 +14,6 @@
 
 extern "C" static wchar_t* __cdecl call_wsetlocale(int const category, char const* const narrow_locale)
 {
-	/*
     if (narrow_locale == nullptr)
         return _wsetlocale(category, nullptr);
 
@@ -29,8 +28,6 @@ extern "C" static wchar_t* __cdecl call_wsetlocale(int const category, char cons
         return nullptr;
 
     return _wsetlocale(category, wide_locale.get());
-	*/
-	return NULL ;
 }
 
 extern "C" char* __cdecl setlocale(int _category, char const* _locale)
@@ -59,9 +56,9 @@ extern "C" char* __cdecl setlocale(int _category, char const* _locale)
         // the versions of the wide-to-multibyte conversions that do not update the
         // current thread's locale.
         size_t size = 0;
-        //if (_ERRCHECK_EINVAL_ERANGE(_wcstombs_s_l(&size, nullptr, 0, outwlocale, 0, &locale)) != 0)
+        if (_ERRCHECK_EINVAL_ERANGE(_wcstombs_s_l(&size, nullptr, 0, outwlocale, 0, &locale)) != 0)
         {
-        //    return nullptr;
+            return nullptr;
         }
 
         long* const refcount = static_cast<long*>(_malloc_crt(size + sizeof(long)));
@@ -73,10 +70,10 @@ extern "C" char* __cdecl setlocale(int _category, char const* _locale)
         char* outlocale = reinterpret_cast<char*>(&refcount[1]);
 
         /* convert return value to ASCII */
-        //if (_ERRCHECK_EINVAL_ERANGE(_wcstombs_s_l(nullptr, outlocale, size, outwlocale, _TRUNCATE, &locale)) != 0)
+        if (_ERRCHECK_EINVAL_ERANGE(_wcstombs_s_l(nullptr, outlocale, size, outwlocale, _TRUNCATE, &locale)) != 0)
         {
-        //    _free_crt(refcount);
-       //     return nullptr;
+            _free_crt(refcount);
+            return nullptr;
         }
 
         __crt_locale_data* ptloci = locale.locinfo;

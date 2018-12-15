@@ -146,13 +146,14 @@ extern "C" {
         };
 
         template <typename _Ty>
-        void __vcrt_va_start_verify_argument_type() throw()
+        struct __vcrt_assert_va_start_is_not_reference
         {
-            static_assert(!__vcrt_va_list_is_reference<_Ty>::__the_value, "va_start argument must not have reference type and must not be parenthesized");
-        }
+            static_assert(!__vcrt_va_list_is_reference<_Ty>::__the_value,
+                "va_start argument must not have reference type and must not be parenthesized");
+        };
     } // extern "C++"
 
-    #define __crt_va_start(ap, x) ((void)(__vcrt_va_start_verify_argument_type<decltype(x)>(), __crt_va_start_a(ap, x)))
+    #define __crt_va_start(ap, x) ((void)(__vcrt_assert_va_start_is_not_reference<decltype(x)>(), __crt_va_start_a(ap, x)))
 
 #else // ^^^ __cplusplus ^^^ // vvv !__cplusplus vvv //
 

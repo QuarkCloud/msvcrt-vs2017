@@ -50,6 +50,12 @@ extern "C" _VCRTIMP void __cdecl RENAME_EH_EXTERN(__BuildCatchObject)(
     CatchableType *
 );
 
+extern "C" _VCRTIMP int __cdecl RENAME_EH_EXTERN(__TypeMatch4)(
+    HandlerType4 *,
+    CatchableType *,
+    ThrowInfo *
+    );
+
 extern "C" _VCRTIMP int __cdecl RENAME_EH_EXTERN(__TypeMatch)(
     HandlerType *,
     CatchableType *,
@@ -59,28 +65,23 @@ extern "C" _VCRTIMP int __cdecl RENAME_EH_EXTERN(__TypeMatch)(
 //
 // Prototype for the internal handler
 //
-extern "C" EXCEPTION_DISPOSITION __cdecl RENAME_EH_EXTERN(__InternalCxxFrameHandler)(
-    EHExceptionRecord  *pExcept,
-    EHRegistrationNode *pRN,
-    CONTEXT            *pContext,
-    DispatcherContext  *pDC,
-    FuncInfo           *pFuncInfo,
-    int                 CatchDepth,
-    EHRegistrationNode *pMarkerRN,
-    BOOLEAN             recursive);
 
+template<class T>
+EXCEPTION_DISPOSITION __InternalCxxFrameHandler(
+    EHExceptionRecord    *pExcept,
+    EHRegistrationNode   *pRN,
+    CONTEXT              *pContext,
+    DispatcherContext    *pDC,
+    typename T::FuncInfo *pFuncInfo,
+    int                  CatchDepth,
+    EHRegistrationNode   *pMarkerRN,
+    BOOLEAN              recursive);
 
-extern "C" void __cdecl RENAME_EH_EXTERN(__FrameUnwindToState)(
-    EHRegistrationNode *,
-    DispatcherContext *,
-    FuncInfo *,
-    __ehstate_t);
-
-#if defined(_M_X64) || defined(_M_ARM_NT) || defined(_M_ARM64)
+#if _EH_RELATIVE_TYPEINFO
 
 #undef THROW_COUNT
 #define THROW_COUNT(ti)         THROW_COUNT_IB(ti, _GetThrowImageBase())
 #undef THROW_CTLIST
 #define THROW_CTLIST(ti)        THROW_CTLIST_IB(ti, _GetThrowImageBase())
 
-#endif
+#endif // _EH_RELATIVE_TYPEINFO

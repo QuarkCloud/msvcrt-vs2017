@@ -19,7 +19,7 @@ static __forceinline int __cdecl fast_check(int const c, int const mask) throw()
     #ifdef _DEBUG
     return _chvalidator(c, mask);
     #else
-    return __acrt_initial_locale_data._public._locale_pctype[c] & mask;
+    return __acrt_locale_get_ctype_array_value(__acrt_initial_locale_data._public._locale_pctype, c, mask);
     #endif
 }
 
@@ -27,12 +27,9 @@ static __forceinline int __cdecl fast_check(int const c, int const mask) throw()
 
 extern "C" extern __inline int (__cdecl _isalpha_l)(int const c, _locale_t const locale)
 {
-	return 0 ;
-	/**
     _LocaleUpdate locale_update(locale);
 
     return _isalpha_l(c, locale_update.GetLocaleT());
-	*/
 }
 
 extern "C" extern __inline int (__cdecl isalpha)(int const c)
@@ -44,12 +41,9 @@ extern "C" extern __inline int (__cdecl isalpha)(int const c)
 
 extern "C" extern __inline int (__cdecl _isupper_l)(int const c, _locale_t const locale)
 {
-	/**
     _LocaleUpdate locale_update(locale);
 
     return _isupper_l(c, locale_update.GetLocaleT());
-	*/
-	return 0 ;
 }
 
 extern "C" extern __inline int (__cdecl isupper)(int const c)
@@ -61,12 +55,9 @@ extern "C" extern __inline int (__cdecl isupper)(int const c)
 
 extern "C" extern __inline int (__cdecl _islower_l)(int const c, _locale_t const locale)
 {
-	/**
     _LocaleUpdate locale_update(locale);
 
     return _islower_l(c, locale_update.GetLocaleT());
-	*/
-	return 0 ;
 }
 
 extern "C" extern __inline int (__cdecl islower)(int const c)
@@ -141,6 +132,10 @@ extern "C" extern __inline int (__cdecl _isblank_l)(int const c, _locale_t const
 
 extern "C" extern __inline int (__cdecl isblank)(int const c)
 {
+
+    // \t is a blank character, but is not registered as _Blank on the table, because that will make it
+    //printable. Also Windows (via GetStringType()) considered all _BLANK characters to also be _PRINT characters,
+    //so does not have a way to specify blank, non-printable.
     return __acrt_locale_changed()
         ? (_isblank_l)(c, nullptr)
         : ((c == '\t') ? _BLANK : fast_check(c, _BLANK));

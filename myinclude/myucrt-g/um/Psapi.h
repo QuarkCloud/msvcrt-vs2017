@@ -114,11 +114,12 @@ extern "C" {
 
 BOOL
 WINAPI
-EnumProcesses (
-    _Out_writes_bytes_(cb) DWORD * lpidProcess,
+EnumProcesses(
+    _Out_writes_bytes_(cb) DWORD* lpidProcess,
     _In_ DWORD cb,
     _Out_ LPDWORD lpcbNeeded
     );
+
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
@@ -129,21 +130,23 @@ EnumProcesses (
 BOOL
 WINAPI
 EnumProcessModules(
-    _In_  HANDLE hProcess,
-    _Out_writes_bytes_(cb) HMODULE *lphModule,
-    _In_  DWORD cb,
+    _In_ HANDLE hProcess,
+    _Out_writes_bytes_(cb) HMODULE* lphModule,
+    _In_ DWORD cb,
     _Out_ LPDWORD lpcbNeeded
     );
+
 
 BOOL
 WINAPI
 EnumProcessModulesEx(
-    _In_  HANDLE hProcess,
-    _Out_writes_bytes_(cb)  HMODULE *lphModule,
-    _In_  DWORD cb,
-    _Out_  LPDWORD lpcbNeeded,
-    _In_  DWORD dwFilterFlag
+    _In_ HANDLE hProcess,
+    _Out_writes_bytes_(cb) HMODULE* lphModule,
+    _In_ DWORD cb,
+    _Out_ LPDWORD lpcbNeeded,
+    _In_ DWORD dwFilterFlag
     );
+
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion

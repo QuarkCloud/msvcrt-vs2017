@@ -1,3 +1,4 @@
+
 include kxamd64.inc
 
 ;
@@ -48,7 +49,22 @@ WaitAll equ 00000H
 AsApcListHead equ 00000H
 AsProcess equ 00020H
 AsKernelApcPending equ 00029H
-AsUserApcPending equ 0002AH
+AsUserApcPendingAll equ 0002AH
+KAPC_STATE_ANY_USER_APC_PENDING_MASK equ 00003H
+
+
+;
+;  Apc Record Structure Offset Definitions
+;
+
+ArNormalRoutine equ 00000H
+ArNormalContext equ 00008H
+ArSystemArgument1 equ 00010H
+ArSystemArgument2 equ 00018H
+ArFlags equ 00020H
+KAPC_RECORD_LENGTH equ 00030H
+KAPC_RECORD_FLAGS_CHECK_ALERT equ 00001H
+
 
 ;
 ;  Bug Check Code Definitions
@@ -193,6 +209,7 @@ PS_MITIGATION_OPTION_ALWAYS_OFF equ 00002H
 PS_MITIGATION_OPTION_MASK equ 00003H
 PS_MITIGATION_OPTION_RETURN_FLOW_GUARD equ 00010H
 PS_MITIGATION_OPTION_RESTRICT_SET_THREAD_CONTEXT equ 00013H
+PS_MITIGATION_OPTION_CET_SHADOW_STACKS equ 0001FH
 
 ;
 ;  User Shared Data Structure Offset Definitions
@@ -446,7 +463,7 @@ PrKernelTime equ 0026CH
 PrUserTime equ 00270H
 PrInstrumentationCallback equ 002C8H
 KernelProcessObjectLength equ 002D8H
-ExecutiveProcessObjectLength equ 00838H
+ExecutiveProcessObjectLength equ 00850H
 Win32BatchFlushCallout equ 00007H
 
 ;
@@ -483,7 +500,7 @@ QueueObjectLength equ 00040H
 ;
 
 EtCid equ 00638H
-EtPicoContext equ 007A0H
+EtPicoContext equ 00798H
 
 ;
 ;  User Mode Scheduling Definitions
@@ -503,7 +520,7 @@ THREAD_FLAGS_COUNTER_PROFILING_LOCK equ 020000H
 THREAD_FLAGS_GROUP_SCHEDULING equ 00004H
 THREAD_FLAGS_AFFINITY_SET equ 00008H
 THREAD_FLAGS_ACCOUNTING_CSWITCH equ 00036H
-THREAD_FLAGS_ACCOUNTING_INTERRUPT equ 00032H
+THREAD_FLAGS_ACCOUNTING_INTERRUPT equ 00072H
 THREAD_FLAGS_ACCOUNTING_ANY equ 0003EH
 ThDebugActive equ 00003H
 ThThreadControlFlags equ 00002H
@@ -516,6 +533,7 @@ ThStackLimit equ 00030H
 ThKernelStack equ 00058H
 ThThreadLock equ 00040H
 ThApcState equ 00098H
+ThProcess equ 00220H
 ThNextProcessor equ 00218H
 ThAdjustReason equ 00236H
 ThAdjustIncrement equ 00237H
@@ -536,6 +554,7 @@ KTHREAD_RESTRICTED_GUI_THREAD_MASK equ 0200000H
 KTHREAD_SYSTEM_THREAD_BIT equ 0000AH
 KTHREAD_QUEUE_DEFER_PREEMPTION_BIT equ 0000BH
 KTHREAD_BAM_QOS_LEVEL_MASK equ 00003H
+KTHREAD_CET_SHADOW_STACK_BIT equ 00014H
 DEBUG_ACTIVE_PRIMARY_THREAD equ 00080H
 DEBUG_ACTIVE_PRIMARY_THREAD_BIT equ 00007H
 DEBUG_ACTIVE_PRIMARY_THREAD_LOCK_BIT equ 0001FH
@@ -557,12 +576,11 @@ ThTrapFrame equ 00090H
 ThFirstArgument equ 00088H
 ThApcStateIndex equ 0024AH
 ThSystemCallNumber equ 00080H
-ThProcess equ 00220H
 ThWin32Thread equ 001C8H
 ThStackBase equ 00038H
 ThLegoData equ 002D0H
 KernelThreadObjectLength equ 005F0H
-ExecutiveThreadObjectLength equ 00818H
+ExecutiveThreadObjectLength equ 00810H
 
 
 ;
@@ -646,7 +664,7 @@ UmsSchedulerThreadYield equ 00002H
 PeBeingDebugged equ 00002H
 PeProcessParameters equ 00020H
 PeKernelCallbackTable equ 00058H
-ProcessEnvironmentBlockLength equ 007B0H
+ProcessEnvironmentBlockLength equ 007C8H
 
 ;
 ;  Process Parameters Block Structure Offset Definitions
@@ -763,8 +781,13 @@ PERF_INTERRUPT_OFFSET equ 00004H
 PERF_INTERRUPT_FLAG equ 04000H
 PERF_SYSCALL_OFFSET equ 00008H
 PERF_SYSCALL_FLAG equ 00040H
+PERF_SPEC_CONTROL_OFFSET equ 00014H
+PERF_SPEC_CONTROL_FLAG equ 00002H
 NTOS_YIELD_MACRO equ 00001H
-EtwTSLength equ 00018H
+EtwTSLength equ 00020H
+CONTEXT_SWAP_TRACING equ 00001H
+LAST_BRANCH_RECORD_IN_USE equ 00002H
+PROCESSOR_TRACE_ON_EACH_CORE_ENABLED equ 00004H
 
 ;
 ;  Enlightenment structure definitions
@@ -810,6 +833,7 @@ XSTATE_MASK_LEGACY_FLOATING_POINT equ 00001H
 XSTATE_MASK_LEGACY_SSE equ 00002H
 XSTATE_MASK_LEGACY equ 00003H
 XSTATE_MASK_GSSE equ 00004H
+XSTATE_MASK_IPT equ 00100H
 
 ;
 ;  Extended context structure offset definitions
@@ -843,17 +867,6 @@ P3Home equ 00018H
 P4Home equ 00020H
 
 ;
-;  Apc Record Structure Offset Definitions
-;
-
-ArNormalRoutine equ 00000H
-ArNormalContext equ 00008H
-ArSystemArgument1 equ 00010H
-ArSystemArgument2 equ 00018H
-ApcRecordLength equ 00020H
-
-
-;
 ;  Special Register Structure Offset Definition
 ;
 
@@ -883,11 +896,15 @@ SrMsrFsBase equ 000E0H
 PcGdt equ 00000H
 PcTss equ 00008H
 PcUserRsp equ 00010H
+PcUserRspShadow equ 07010H
 PcSelf equ 00018H
 PcCurrentPrcb equ 00020H
 PcLockArray equ 00028H
 PcTeb equ 00030H
 PcIdt equ 00038H
+PcDbgMceNestingLevel equ 0701CH
+PcDbgMceFlags equ 07020H
+PcProcessorDescriptorArea equ 00038H
 PcIrql equ 00050H
 PcStallScaleFactor equ 00064H
 PcHalReserved equ 000C0H
@@ -902,6 +919,8 @@ PcIpiFrozen equ 02F08H
 PcNestingLevel equ 001A0H
 PcNumber equ 001A4H
 PcRspBase equ 001A8H
+PcRspBaseShadow equ 07008H
+PcShadowFlags equ 07018H
 PcPrcbLock equ 001B0H
 PcCr0 equ 00280H
 PcCr2 equ 00288H
@@ -931,8 +950,11 @@ PcCpuVendor equ 0020DH
 PcVirtualApicAssist equ 06208H
 PcFeatureBits equ 06420H
 PcNmiActive equ 05A66H
-PcSfCode equ 066A8H
-PcSfVa equ 066B0H
+PcSfCode equ 066E8H
+PcSfVa equ 066F0H
+PcKernelDirectoryTableBase equ 07000H
+;
+;
 CPU_AMD equ 00001H
 CPU_INTEL equ 00002H
 CPU_VIA equ 00003H
@@ -944,7 +966,15 @@ PcDpcRoutineActive equ 02FEAH
 PcInterruptCount equ 05D00H
 PcDebuggerSavedIRQL equ 05D18H
 PcStartCycles equ 05D40H
-ProcessorControlRegisterLength equ 01AAC0H
+RTL_RETPOLINE_STUBS_UNWIND_INFO_MAX_SIZE equ 001F4H
+ProcessorControlRegisterLength equ 01C000H
+
+;
+;  Defines kernel process structure
+;
+
+PrUserDirectoryTableBase equ 00278H
+PrAddressPolicy equ 00280H
 
 ;
 ;  Defines for user shared data
@@ -955,6 +985,7 @@ MM_SHARED_USER_DATA_VA equ 0000000007FFE0000H
 PF_COMPARE_EXCHANGE128 equ 0000000000000000EH
 PF_RDWRFSGSBASE_AVAILABLE equ 00000000000000016H
 PF_RDTSCP_INSTRUCTION_AVAILABLE equ 00000000000000020H
+PF_RDPID_INSTRUCTION_AVAILABLE equ 00000000000000021H
 SYSTEM_CALL_INT_2E equ 00001H
 UsTickCountMultiplier equ 00004H
 UsInterruptTime equ 00008H
@@ -1023,6 +1054,7 @@ PbIdleThread equ 00018H
 PbNestingLevel equ 00020H
 PbNumber equ 00024H
 PbRspBase equ 00028H
+PbRspBaseShadow equ 06E88H
 PbPrcbLock equ 00030H
 PbKeSpinLockOrdering equ 058F0H
 KI_SPINLOCK_ORDER_PRCB_LOCK equ 00040H
@@ -1044,7 +1076,7 @@ PbApicMask equ 000DCH
 PbCFlushSize equ 000E8H
 PbAcpiReserved equ 000E0H
 PbInitialApicId equ 000D4H
-PbBamFlags equ 000ECH
+PbPrcbFlags equ 000ECH
 PbPriorityState equ 00038H
 PbLockQueue equ 006F0H
 PbPPLookasideList equ 00800H
@@ -1063,8 +1095,8 @@ PbOtherTransferCount equ 02D78H
 PbContextSwitches equ 02D3CH
 PbTargetCount equ 02D84H
 PbIpiFrozen equ 02D88H
-PbRequestMailbox equ 06940H
-PbMailbox equ 06900H
+PbRequestMailbox equ 07E80H
+PbMailbox equ 06940H
 PbDpcList equ 02E00H
 PbDpcLock equ 02E10H
 PbDpcCount equ 02E1CH
@@ -1104,7 +1136,9 @@ PbCopyReadNoWaitMiss equ 02D58H
 PbAlignmentFixupCount equ 06038H
 PbExceptionDispatchCount equ 05BB0H
 PbVendorString equ 06290H
-ProcessorBlockLength equ 06980H
+ProcessorBlockLength equ 07EC0H
+PbShadowFlags equ 06E98H
+PbTrappedSecurityDomain equ 000F0H
 
 ;
 ;  Time Fields (TIME_FIELDS) Structure Offset Definitions
@@ -1162,7 +1196,9 @@ CR4_MCE equ 00040H
 CR4_PGE equ 00080H
 CR4_FXSR equ 00200H
 CR4_XMMEXCPT equ 00400H
+CR4_LA57 equ 01000H
 CR4_XSAVE equ 040000H
+CR4_PCIDE equ 020000H
 
 ;
 ;  Legacy Floating Status Bit Masks
@@ -1220,6 +1256,8 @@ MSR_GS_SWAP equ 0C0000102H
 MSR_MCG_STATUS equ 0017AH
 MSR_AMD_ACCESS equ 09C5A203AH
 MSR_IA32_MISC_ENABLE equ 001A0H
+MSR_IA32_U_CET equ 006A0H
+MSR_IA32_PL3_SSP equ 006A7H
 
 ;
 ;  Flags within MSR_EFER
@@ -1239,11 +1277,23 @@ MSR_DEBUG_CTL equ 001D9H
 MSR_XD_ENABLE_MASK equ 0FFFFFFFBH
 
 ;
+;  Flags within MSR_IA32_U_CET
+;
+
+IA32_CET_SH_STK_EN equ 00001H
+
+;
 ;  Flags within MSR_DEGUG_CTL
 ;
 
 MSR_DEBUG_CTL_LBR equ 00001H
 MSR_DEBUG_CTL_BTF equ 00002H
+
+;
+;  Flags within MSR_IA32_MCG_STATUS
+;
+
+MSR_IA32_MCG_STATUS_MCIP equ 00004H
 
 ;
 ;  Miscellaneous Definitions
@@ -1260,11 +1310,23 @@ SPIN_LOCK_NOT_OWNED equ 00010H
 Executive equ 00000H
 FALSE equ 00000H
 TRUE equ 00001H
+NMI_BLOCKING_MASK equ 00004H
 KERNEL_MCA_EXCEPTION_STACK_SIZE equ 02000H
 NMI_STACK_SIZE equ 02000H
 ISR_STACK_SIZE equ 06000H
 EXCEPTION_EXECUTE_FAULT equ 00008H
 KCACHE_ERRATA_MONITOR_FLAGS equ 00003H
+
+;
+;  Machine check nesting simulation debug controls
+;
+
+DBG_MCE_NMI_ON_MCE equ 00000H
+DBG_MCE_MCE_ON_NMI equ 00001H
+DBG_MCE_MCE_ON_NMI_MCE_TAIL equ 00002H
+DBG_MCE_MCE_ON_MCE_MCE_TAIL equ 00003H
+DBG_MCE_NMI_ON_MCE_MCE_TAIL equ 00004H
+DBG_MCE_NMI_PENDING equ 0001FH
 
 ;
 ;  Fast Fail Definitions
@@ -1274,6 +1336,7 @@ FAST_FAIL_GUARD_ICALL_CHECK_FAILURE equ 0000AH
 FAST_FAIL_INVALID_JUMP_BUFFER equ 00012H
 FAST_FAIL_INVALID_SET_OF_CONTEXT equ 0000DH
 FAST_FAIL_GUARD_SS_FAILURE equ 0002CH
+FAST_FAIL_CONTROL_INVALID_RETURN_ADDRESS equ 00039H
 BASE_PRIORITY_THRESHOLD equ 00008H
 EVENT_INCREMENT equ 00001H
 LOW_REALTIME_PRIORITY equ 00010H
@@ -1320,6 +1383,7 @@ EXCEPTION_GP_FAULT equ 0000DH
 EXCEPTION_RESERVED_TRAP equ 0000FH
 EXCEPTION_NPX_ERROR equ 00010H
 EXCEPTION_ALIGNMENT_CHECK equ 00011H
+EXCEPTION_CP_FAULT equ 00015H
 EXCEPTION_VIRTUALIZATION_FAULT equ 00020H
 
 ;
@@ -1374,6 +1438,14 @@ KUMS_UCH_VOLATILE_MASK equ 00001H
 KUMS_CONTEXT_HEADER_LENGTH equ 00070H
 
 
+Enable_Feature_DTrace equ 00001H
+
+;
+;  Kernel Dynamic Tracing flags
+;
+
+KI_DYNAMIC_TRACE_SYSCALL_FLAG equ 00001H
+
 
 ;
 ;  Processor Descriptor Area definitions
@@ -1381,7 +1453,54 @@ KUMS_CONTEXT_HEADER_LENGTH equ 00070H
 
 PdaGdt equ 02FB0H
 PdaKernelGsBase equ 01070H
+PdaIdleStack equ 01078H
+PdaKernelTransitionStack equ 04200H
+PdaMceTransitionStack equ 04600H
+PdaNmiTransitionStack equ 04800H
+KSHADOW_FLAG_DEFERRED_FLUSH equ 00001H
+KSHADOW_FLAG_DEFERRED_FLUSH_BIT equ 00000H
+KSHADOW_FLAG_KERNEL_DIRECTORY equ 00002H
+KSHADOW_FLAG_KERNEL_DIRECTORY_BIT equ 00001H
 
+
+;
+;  IST Base Frame definitions
+;
+
+IbfKernelGsBase equ 00000H
+IbfIstStack equ 00008H
+IbfPreviousGsBase equ 00010H
+IbfPreviousCr3 equ 00018H
+IstBaseFrameLength equ 00020H
+IstLinkFrameLength equ 00020H
+IST_TRANSITION_STACK_SIZE equ 001E0H
+
+
+;
+;  IST Link Frame definitions
+;
+
+KIST_LINK_FRAME_SIGNATURE equ 0464C494BH
+IlfIstBaseFrame equ 00000H
+IlfSignature equ 00008H
+IstLinkFrameLength equ 00020H
+
+
+;
+;  PCID definitions
+;
+
+PCID_MASK equ 00003H
+PCID_USER equ 00001H
+PCID_USER_BIT equ 00000H
+PCID_KERNEL equ 00002H
+PCID_KERNEL_BIT equ 00001H
+PCID_PRESERVE_TB_BIT equ 0003FH
+
+KI_FLUSH_PCID equ 00001H
+KI_FLUSH_INVPCID equ 00002H
+
+KvaShadowEnabledUserGlobal equ 00002H
 
 ;
 ;  Jump Offset Definitions and Length
@@ -1502,6 +1621,8 @@ TrLogging equ 000F3H
 TrEFlags equ 000F8H
 TrRsp equ 00100H
 TrSegSs equ 00108H
+;
+;
 
 KTRAP_FRAME_LENGTH equ 00190H
 
@@ -1726,6 +1847,7 @@ PsbMsrEFER equ 00088H
 PsbProcessorState equ 00090H
 PsbFlags equ 00008H
 PROCESSOR_START_FLAG_FORCE_ENABLE_NX equ 00001H
+PROCESSOR_START_FLAG_LA57 equ 00002H
 ProcessorStartBlockLength equ 00650H
 XHF_NOEXECUTE equ 0100000H
 
@@ -1751,14 +1873,17 @@ KMRC_TERMINATE_PROCESS equ 00008H
 ;
 
 ThNpxState equ 00250H
+ThSpecCtrl equ 0007FH
+KTHREAD_RUNNING_NON_RETPOLINE_CODE_BIT equ 00001H
+KTHREAD_RUNNING_NON_RETPOLINE_CODE equ 00002H
 
 ;
 ;  ETHREAD
 ;
 
-ThSetContextState equ 007E0H
-ThUserFsBase equ 007A8H
-ThUserGsBase equ 007B0H
+ThSetContextState equ 007D8H
+ThUserFsBase equ 007A0H
+ThUserGsBase equ 007A8H
 
 ;
 ;  EPROCESS
@@ -1766,6 +1891,10 @@ ThUserGsBase equ 007B0H
 
 EpDebugPort equ 00420H
 EpWoW64Process equ 00428H
+EpFlags3 equ 006CCH
+PS_PROCESS_FLAGS3_SECURITY_DOMAIN_CHANGED_V equ 00015H
+;
+;
 
 ;
 ;  Machine type definitions (Temporarily)
@@ -1791,7 +1920,9 @@ KF_XSAVEOPT_BIT equ 0000FH
 KF_XSTATE_BIT equ 00017H
 KF_XSAVES_BIT equ 00026H
 KF_RDWRFSGSBASE_BIT equ 0001CH
+KF_CET_SS equ 00000400000000000H
 KF_FPU_LEAKAGE_BIT equ 00029H
+KF_CAT_BIT equ 0002CH
 
 ;
 ;  LoaderParameterBlock offsets relative to base
@@ -1833,6 +1964,9 @@ HV_APIC_ENLIGHTENED equ 00010H
 HV_KE_USE_HYPERCALL_FOR_LONG_SPIN_WAIT equ 00040H
 HV_DEPRECATE_AUTO_EOI equ 01000H
 HV_X64_MSR_EOI equ 040000070H
+HV_X64_MSR_ICR equ 040000071H
+APIC_DELIVER_NMI equ 00400H
+LAPIC_ICR_SELF equ 040000H
 HV_VIRTUAL_APIC_NO_EOI_REQUIRED equ 00000H
 HvApicFlags equ 00000H
 HvVirtualFaultCode equ 00044H
@@ -1858,3 +1992,5 @@ AffinityExLength equ 000A8H
 ;
 
 ServiceCpupReturnFromSimulatedCode equ 0001FH
+HV_VECTOR equ 00030H
+;

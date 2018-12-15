@@ -27,6 +27,8 @@ Abstract:
 #if _MSC_VER >= 1200
 #pragma warning(push)
 #pragma warning(disable:4820) /* padding added after data member */
+#pragma warning(disable:4201) /* Disable warning C4201:nameless struct/union */
+#pragma warning(disable:4214) /* Disable warning C4201:bit field types other than int */
 #endif
 
 //
@@ -297,6 +299,31 @@ extern "C" {
     CTL_CODE(FILE_DEVICE_FULLSCREEN_VIDEO, 0x205, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 //
+// Panel control IOCLTs must/can be handled by the monitor, oem-panel, port/miniport
+// driver
+//
+
+#define IOCTL_PANEL_QUERY_BRIGHTNESS_CAPS \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x300, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_QUERY_BRIGHTNESS_RANGES \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x301, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_GET_BRIGHTNESS \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x302, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_SET_BRIGHTNESS \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x303, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_SET_BRIGHTNESS_STATE \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x304, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_SET_BACKLIGHT_OPTIMIZATION \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x305, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
+#define IOCTL_PANEL_GET_BACKLIGHT_REDUCTION \
+    CTL_CODE(FILE_DEVICE_VIDEO, 0x306, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
 // Many of the video IOCTLs are modal. When ever the palette is set, or the
 // cursor is set or queried, it is done for the current mode.
 //
@@ -461,6 +488,7 @@ typedef enum _VIDEO_WIN32K_CALLBACKS_PARAMS_TYPE {
     VideoRepaintDesktop = 12,
     VideoUpdateCursor = 13,
     VideoDisableMultiPlaneOverlay = 14,
+    VideoDesktopDuplicationChange = 15,
 } VIDEO_WIN32K_CALLBACKS_PARAMS_TYPE;
 
 #define DXGK_WIN32K_PARAM_FLAG_UPDATEREGISTRY 1         // Saves the mode switch information into the registry.
@@ -488,6 +516,7 @@ typedef struct _VIDEO_WIN32K_CALLBACKS_PARAMS {
     BOOLEAN     LockUserSession;
     BOOLEAN     IsPostDevice;
     BOOLEAN     SurpriseRemoval;
+    BOOLEAN     WaitForQueueReady;
 } VIDEO_WIN32K_CALLBACKS_PARAMS, *PVIDEO_WIN32K_CALLBACKS_PARAMS;
 
 typedef
@@ -1934,6 +1963,180 @@ typedef struct _VIDEO_QUERY_PERFORMANCE_COUNTER
    ULONG BufferSize;
    PVIDEO_PERFORMANCE_COUNTER Buffer;
 } VIDEO_QUERY_PERFORMANCE_COUNTER, *PVIDEO_QUERY_PERFORMANCE_COUNTER;
+
+//
+// IOCTL_PANEL_QUERY_BRIGHTNESS_CAPS
+//
+
+typedef enum _BRIGHTNESS_INTERFACE_VERSION
+{
+    BRIGHTNESS_INTERFACE_VERSION_1             = 1,
+    BRIGHTNESS_INTERFACE_VERSION_2             = 2,
+    BRIGHTNESS_INTERFACE_VERSION_3             = 3,
+} BRIGHTNESS_INTERFACE_VERSION;
+
+typedef struct _PANEL_QUERY_BRIGHTNESS_CAPS{
+    BRIGHTNESS_INTERFACE_VERSION Version;
+    union
+    {
+        struct
+        {
+            ULONG Smooth        : 1;
+            ULONG Adaptive      : 1;
+            ULONG NitsCalibrated: 1;
+            ULONG Reserved      : 29;
+        };
+        ULONG  Value;
+    };
+} PANEL_QUERY_BRIGHTNESS_CAPS, *PPANEL_QUERY_BRIGHTNESS_CAPS;
+
+//
+// IOCTL_PANEL_QUERY_BRIGHTNESS_RANGES
+//
+
+#define BRIGHTNESS_MAX_LEVEL_COUNT    103
+
+typedef struct _BRIGHTNESS_LEVEL
+{
+    UCHAR   Count;
+    UCHAR   Level[BRIGHTNESS_MAX_LEVEL_COUNT];
+} BRIGHTNESS_LEVEL, *PBRIGHTNESS_LEVEL;
+
+typedef struct _BRIGHTNESS_NIT_RANGE
+{
+    ULONG MinLevelInMillinit;
+    ULONG MaxLevelInMillinit;
+    ULONG StepSizeInMillinit;
+} BRIGHTNESS_NIT_RANGE, *PBRIGHTNESS_NIT_RANGE;
+
+#define BRIGHTNESS_MAX_NIT_RANGE_COUNT 16
+
+typedef struct BRIGHTNESS_NIT_RANGES
+{
+    ULONG                  NormalRangeCount;
+    ULONG                  RangeCount;
+    ULONG                  PreferredMaximumBrightness;
+    BRIGHTNESS_NIT_RANGE   SupportedRanges[BRIGHTNESS_MAX_NIT_RANGE_COUNT];
+} BRIGHTNESS_NIT_RANGES, *PBRIGHTNESS_NIT_RANGES;
+
+typedef struct _PANEL_QUERY_BRIGHTNESS_RANGES{
+    BRIGHTNESS_INTERFACE_VERSION Version;
+    union
+    {
+        BRIGHTNESS_LEVEL        BrightnessLevel;
+        BRIGHTNESS_NIT_RANGES   NitRanges;
+    };
+} PANEL_QUERY_BRIGHTNESS_RANGES, *PPANEL_QUERY_BRIGHTNESS_RANGES;
+
+//
+// IOCTL_PANEL_GET_BRIGHTNESS
+//
+
+typedef struct _PANEL_GET_BRIGHTNESS{
+    BRIGHTNESS_INTERFACE_VERSION Version;
+    union
+    {
+        UCHAR       Level;
+        struct
+        {
+            ULONG   CurrentInMillinits;
+            ULONG   TargetInMillinits;
+        };
+    };
+} PANEL_GET_BRIGHTNESS, *PPANEL_GET_BRIGHTNESS;
+
+//
+// IOCTL_PANEL_SET_BRIGHTNESS
+//
+
+typedef struct _CHROMATICITY_COORDINATE
+{
+    float x;
+    float y;
+} CHROMATICITY_COORDINATE;
+
+typedef struct _PANEL_BRIGHTNESS_SENSOR_DATA
+{
+    union
+    {
+        struct
+        {
+            ULONG AlsReadingValid               : 1;
+            ULONG ChromaticityCoordinateValid   : 1;
+            ULONG ColorTemperatureValid         : 1;
+            ULONG Reserved                      : 29;
+        };
+        ULONG Value;
+    };
+    float                    AlsReading;
+    CHROMATICITY_COORDINATE  ChromaticityCoordinate;
+    float                    ColorTemperature;
+} PANEL_BRIGHTNESS_SENSOR_DATA;
+
+typedef struct _PANEL_SET_BRIGHTNESS{
+    BRIGHTNESS_INTERFACE_VERSION Version;
+    union
+    {
+        UCHAR   Level;
+        struct
+        {
+            ULONG                           Millinits;
+            ULONG                           TransitionTimeInMs;
+            PANEL_BRIGHTNESS_SENSOR_DATA    SensorData;
+        };
+    };
+} PANEL_SET_BRIGHTNESS, *PPANEL_SET_BRIGHTNESS;
+
+//
+// IOCTL_PANEL_SET_BRIGHTNESS_STATE 
+//
+
+typedef struct _PANEL_SET_BRIGHTNESS_STATE{
+    union
+    {
+        struct
+        {
+            ULONG Smooth    :    1; // 0x00000001
+            ULONG Reserved  :   31; // 0xFFFFFFFE
+        };
+
+        ULONG  Value;
+    };
+} PANEL_SET_BRIGHTNESS_STATE, *PPANEL_SET_BRIGHTNESS_STATE;
+
+//
+// IOCTL_PANEL_SET_BACKLIGHT_OPTIMIZATION 
+//
+
+typedef enum _BACKLIGHT_OPTIMIZATION_LEVEL
+{
+    BacklightOptimizationDisable    = 0,
+    BacklightOptimizationDesktop    = 1,
+    BacklightOptimizationDynamic    = 2,
+    BacklightOptimizationDimmed     = 3,
+    BacklightOptimizationEDR        = 4,
+} BACKLIGHT_OPTIMIZATION_LEVEL;
+
+typedef struct _PANEL_SET_BACKLIGHT_OPTIMIZATION{
+    BACKLIGHT_OPTIMIZATION_LEVEL Level;
+} PANEL_SET_BACKLIGHT_OPTIMIZATION, *PPANEL_SET_BACKLIGHT_OPTIMIZATION;
+
+//
+// IOCTL_PANEL_GET_BACKLIGHT_REDUCTION
+//
+
+typedef struct _BACKLIGHT_REDUCTION_GAMMA_RAMP
+{
+    USHORT  R[256];
+    USHORT  G[256];
+    USHORT  B[256];
+} BACKLIGHT_REDUCTION_GAMMA_RAMP;
+
+typedef struct _PANEL_GET_BACKLIGHT_REDUCTION{
+    USHORT                          BacklightUsersetting;
+    USHORT                          BacklightEffective;
+    BACKLIGHT_REDUCTION_GAMMA_RAMP  GammaRamp;
+} PANEL_GET_BACKLIGHT_REDUCTION, *PPANEL_GET_BACKLIGHT_REDUCTION;
 
 #ifdef __cplusplus
 }

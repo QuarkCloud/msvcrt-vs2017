@@ -97,15 +97,16 @@ public:
     typedef typename _Traits::value_type value_type;
     typedef typename _Traits::key_type key_type;
     typedef typename _Traits::allocator_type allocator_type;
-    typedef typename allocator_type::pointer pointer;
-    typedef typename allocator_type::const_pointer const_pointer;
-    typedef typename allocator_type::reference reference;
-    typedef typename allocator_type::const_reference const_reference;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef std::allocator_traits<allocator_type> _Al_traits;
+    typedef typename _Al_traits::pointer pointer;
+    typedef typename _Al_traits::const_pointer const_pointer;
 
-    typedef typename allocator_type::size_type size_type;
-    typedef typename allocator_type::difference_type difference_type;
+    typedef typename _Al_traits::size_type size_type;
+    typedef typename _Al_traits::difference_type difference_type;
 
-    typedef typename std::conditional<std::is_same<key_type, value_type>::value, typename _Mylist::const_iterator, typename _Mylist::iterator>::type iterator;
+    typedef std::conditional_t<std::is_same_v<key_type, value_type>, typename _Mylist::const_iterator, typename _Mylist::iterator> iterator;
     typedef typename _Mylist::const_iterator const_iterator;
     typedef iterator local_iterator;
     typedef const_iterator const_local_iterator;
@@ -115,6 +116,8 @@ public:
     // Iterators that walk the entire split-order list, including dummy nodes
     typedef typename _Mylist::_Full_iterator _Full_iterator;
     typedef typename _Mylist::_Full_const_iterator _Full_const_iterator;
+
+    typedef typename _Al_traits::template rebind_traits<_Full_iterator> _Alfi_traits;
 
     static const size_type _Initial_bucket_number = 8;                               // Initial number of buckets
     static const size_type _Initial_bucket_load = 4;                                 // Initial maximum number of elements per bucket
@@ -171,12 +174,12 @@ public:
         // Delete all node segments
         for (size_type _Index = 0; _Index < _Pointers_per_table; ++_Index)
         {
-            if (_M_buckets[_Index] != NULL)
+            if (_M_buckets[_Index] != nullptr)
             {
                 size_type _Seg_size = _Segment_size(_Index);
                 for (size_type _Index2 = 0; _Index2 < _Seg_size; ++_Index2)
                 {
-                    _M_allocator.destroy(&_M_buckets[_Index][_Index2]);
+                    _Alfi_traits::destroy(_M_allocator, &_M_buckets[_Index][_Index2]);
                 }
                 _M_allocator.deallocate(_M_buckets[_Index], _Seg_size);
             }
@@ -445,12 +448,12 @@ public:
         // Clear buckets
         for (size_type _Index = 0; _Index < _Pointers_per_table; ++_Index)
         {
-            if (_M_buckets[_Index] != NULL)
+            if (_M_buckets[_Index] != nullptr)
             {
                 size_type _Seg_size = _Segment_size(_Index);
                 for (size_type _Index2 = 0; _Index2 < _Seg_size; ++_Index2)
                 {
-                    _M_allocator.destroy(&_M_buckets[_Index][_Index2]);
+                    _Alfi_traits::destroy(_M_allocator, &_M_buckets[_Index][_Index2]);
                 }
                 _M_allocator.deallocate(_M_buckets[_Index], _Seg_size);
             }
@@ -1245,12 +1248,12 @@ private:
         size_type _Segment = _Segment_index_of(_Bucket);
         _Bucket -= _Segment_base(_Segment);
 
-        if (_M_buckets[_Segment] == NULL)
+        if (_M_buckets[_Segment] == nullptr)
         {
             size_type _Seg_size = _Segment_size(_Segment);
             _Full_iterator * _New_segment = _M_allocator.allocate(_Seg_size);
             std::_Uninitialized_value_construct_n(_New_segment, _Seg_size, _M_allocator);
-            if (_InterlockedCompareExchangePointer((void * volatile *) &_M_buckets[_Segment], _New_segment, NULL) != NULL)
+            if (_InterlockedCompareExchangePointer((void * volatile *) &_M_buckets[_Segment], _New_segment, nullptr) != nullptr)
             {
                 _M_allocator.deallocate(_New_segment, _Seg_size);
             }
@@ -1263,13 +1266,13 @@ private:
         size_type _Segment = _Segment_index_of(_Bucket);
         _Bucket -= _Segment_base(_Segment);
 
-        if (_M_buckets[_Segment] == NULL)
+        if (_M_buckets[_Segment] == nullptr)
         {
             return false;
         }
 
         _Full_iterator _Iterator = _M_buckets[_Segment][_Bucket];
-        return (_Iterator._Ptr != NULL);
+        return (_Iterator._Ptr != nullptr);
     }
 
     // Utilities for keys
@@ -1304,7 +1307,7 @@ private:
     // Shared variables
     _Full_iterator *                                                _M_buckets[_Pointers_per_table]; // The segment table
     _Mylist                                                         _M_split_ordered_list;           // List where all the elements are kept
-    typename allocator_type::template rebind<_Full_iterator>::other _M_allocator;                    // Allocator object for segments
+    typename _Alfi_traits::allocator_type                           _M_allocator;                    // Allocator object for segments
     size_type                                                       _M_number_of_buckets;            // Current table size
     float                                                           _M_maximum_bucket_size;          // Maximum size of the bucket
 };

@@ -1,3 +1,4 @@
+
 ;++
 ;
 ; Copyright (c) Microsoft Corporation.  All rights reserved.
@@ -17,19 +18,44 @@
 include macamd64.inc
 
 ;
-; If this is an Xbox system and the actual CFG dispatch code is not being
-; assembled, then declare the guard dispatch function as external.
+; If the actual CFG dispatch code is not being assembled, then declare the
+; guard dispatch function as external.
 ;
 
-ifdef XBOX_SYSTEMOS
-
-ifndef XBOX_SYSTEMOS_CFG_ASM
+ifdef CAPXCALL_VIA_CFG
+ifndef CFG_ASM
 
         extern  _guard_dispatch_icall:proc
 
+endif ; CFG_ASM
 endif
 
-endif
+;
+;
+
+;
+; Retpoline macros
+;
+
+RETPOLINEDIRECTIVE macro RetpolineType
+
+ifdef _RETPOLINE
+    ifidn <RetpolineType>,<RetpolineRax>
+    .retpolinerax
+    elseifidn <RetpolineType>,<RetpolineSwitchTable>
+    .retpolineswitchtable
+    elseifidn <RetpolineType>,<RetpolineImport>
+    .retpolineimport
+    elseifidn <RetpolineType>,<RetpolineCfgDispatch>
+    .retpolineguardicall
+    elseifidn <RetpolineType>,<RetpolineIgnore>
+    .retpolineignore
+    elseifnb <RetpolineType>
+    .err @catstr(<Invalid retpoline type >, <RetpolineType>)
+    endif
+endif ; _RETPOLINE
+
+    ENDM
 
 ;
 ; IceCAP macros
@@ -101,7 +127,7 @@ endif ; _CAPKERN
 
 ;
 ; CAPICALL - Perform an IceCAP instrumented indirect function call.
-;           
+;
 ;            Do NOT use this macro directly. Use CAPCALL instead.
 ;
 ;            Instrumenation is disabled on non-IceCAP builds.
@@ -117,7 +143,7 @@ endif ; _CAPKERN
 ;   Returns the value of the function specified by Callee.
 ;
 
-CAPICALL macro Callee, NoRet
+CAPICALL macro Callee, NoRet, RetpolineType
 
 ifdef _CAPKERN
 
@@ -133,7 +159,10 @@ endif
 
 endif ; _CAPKERN
 
+        RETPOLINEDIRECTIVE RetpolineType
+
         call    Callee
+
 
 ifdef _CAPKERN
 
@@ -167,20 +196,19 @@ endif ; _CAPKERN
 
 CAPXCALL macro Callee, NoRet
 
-ifdef XBOX_SYSTEMOS
-
 ifdifi  <Callee>, <rax>
 
         mov     rax, Callee
 
 endif
-        
+
+ifdef CAPXCALL_VIA_CFG
+
         CAPDCALL _guard_dispatch_icall, <NoRet>
 
 else
 
-        CAPICALL Callee, <NoRet>
-
+        CAPICALL     rax, <NoRet>, RetpolineRax
 endif
 
         endm
@@ -201,7 +229,7 @@ endif
 ;   Returns the value of the function specified by Callee.
 ;
 
-CAPCALL macro Callee, NoRet
+CAPCALL macro Callee, NoRet, RetpolineType
 
 ;
 ; The documentation surrounding the .type operator is very poor.
@@ -223,7 +251,7 @@ if (.type(Callee)) eq 000h ; direct via local label
 
 elseif (.type(Callee)) eq 022h ; register-direct call
 
-        CAPICALL Callee, NoRet
+        CAPICALL Callee, NoRet, RetpolineType
 
 elseif (.type(Callee)) eq 025h ; direct via extern proc
 
@@ -231,11 +259,11 @@ elseif (.type(Callee)) eq 025h ; direct via extern proc
 
 elseif (.type(Callee)) eq 030h ; register-indirect call
 
-        CAPICALL Callee, NoRet
+        CAPICALL Callee, NoRet, RetpolineType
 
 elseif (.type(Callee)) eq 062h ; indirect via offset from register
 
-        CAPICALL Callee, NoRet
+        CAPICALL Callee, NoRet, RetpolineType
 
 elseif (.type(Callee)) eq 0A5h ; direct via extern proc
 
@@ -243,7 +271,7 @@ elseif (.type(Callee)) eq 0A5h ; direct via extern proc
 
 elseif (.type(Callee)) eq 0AAh ; indirect via extern qword
 
-        CAPICALL Callee, NoRet
+        CAPICALL Callee, NoRet, RetpolineType
 
 else
 
@@ -267,7 +295,7 @@ endif
 ;   Never returns.
 ;
 
-CAPJMP macro Callee
+CAPJMP macro Callee, RetpolineType
 
 ;
 ; Begin jump instrumentation
@@ -320,7 +348,86 @@ endif ; _CAPKERN
 ; End jump instrumentation. Begin common code.
 ;
 
+        RETPOLINEDIRECTIVE <RetpolineType>
+
         jmp     Callee
+
+        endm
+
+;
+; CAPRETPOLJMP - Perform an IceCAP instrumented tail jump using retpoline.
+;
+;          Instrumentation is disabled on non-IceCAP builds.
+;
+; Arguments:
+;
+;   Callee - A function label, a memory address or a register.
+;
+; Return value:
+;
+;   Never returns.
+;
+
+CAPRETPOLJMP macro Callee
+
+        LOCAL Jump
+
+;
+; Begin jump instrumentation
+;
+
+ifdef _CAPKERN
+
+;
+; The documentation surrounding the .type operator is very poor.
+; See above for syntax explanation.
+;
+
+if (.type(Callee)) eq 000h ; direct via local label
+
+        call    __CAP_Start_DirectJmp_Profiling_ASM ; record profiling information
+
+elseif (.type(Callee)) eq 022h ; register-direct jump
+
+        call    __CAP_Start_IndirectJmp_Profiling_ASM  ; record profiling information
+
+elseif (.type(Callee)) eq 025h ; direct via extern proc
+
+        call    __CAP_Start_DirectJmp_Profiling_ASM ; record profiling information
+
+elseif (.type(Callee)) eq 030h ; register-indirect
+
+        call    __CAP_Start_IndirectJmp_Profiling_ASM  ; record profiling information
+
+elseif (.type(Callee)) eq 062h ; indirect via offset from register
+
+        call    __CAP_Start_IndirectJmp_Profiling_ASM  ; record profiling information
+
+elseif (.type(Callee)) eq 0A5h ; direct via extern proc
+
+        call    __CAP_Start_DirectJmp_Profiling_ASM ; record profiling information
+
+elseif (.type(Callee)) eq 0AAh ; indirect via extern qword
+
+        call    __CAP_Start_IndirectJmp_Profiling_ASM  ; record profiling information
+
+else
+
+        .err @catstr(<unknown expression type >, %(.type(Callee)))
+
+endif
+
+endif ; _CAPKERN
+
+;
+; End jump instrumentation. Begin common code.
+;
+
+        call Jump
+        int  3
+Jump:
+        mov [rsp], Callee
+        ret
 
         endm
 
@@ -357,11 +464,11 @@ endif ; _CAPKERN
         endm
 
 ;
-; CAPREX_JMP_REG  - Perform an IceCAP instrumented indirect tail jump. 
+; CAPREX_JMP_REG  - Perform an IceCAP instrumented indirect tail jump.
 ;                   Use this when a function does not return to the caller
 ;                   and when a rex_jmp_reg would normally be specified.
 ;
-;                   Instrumenation is disabled on non-IceCAP builds.
+;                   Instrumentation is disabled on non-IceCAP builds.
 ;
 ; Arguments:
 ;
@@ -372,7 +479,7 @@ endif ; _CAPKERN
 ;   None
 ;
 
-CAPREX_JMP_REG macro Callee
+CAPREX_JMP_REG macro Callee, RetpolineType
 
 ifdef _CAPKERN
 
@@ -380,6 +487,7 @@ ifdef _CAPKERN
 
 endif ; _CAPKERN
 
+        RETPOLINEDIRECTIVE <RetpolineType>
         rex_jmp_reg Callee                    ; make the jump
         endm
 
@@ -417,6 +525,9 @@ ifnb <Register>
         jnz     short skip              ; max count not hit, yield
         test    HvlEnlightenments, HV_KE_USE_HYPERCALL_FOR_LONG_SPIN_WAIT
         jz      short skip              ; long spin not enlightened, yield
+        CAPCALL KiCheckVpBackingLongSpinWaitHypercall   ; check VP backing
+        test    al, al                  ; test if the hypercall was vetoed
+        jz      short skip              ; if z, hypercall was vetoed
         mov     ecx, Register           ; prepare argument
         CAPCALL HvlNotifyLongSpinWait   ; issue the hypercall
 
@@ -729,6 +840,9 @@ SwapIrql macro
         endm
 
 ;
+;
+
+;
 ; Define end system interrupt macro.
 ;
 ; Arguments:
@@ -1013,13 +1127,16 @@ ifidn <State>, <Service>
         movaps  TrXmm5[rbp], xmm0       ;
 
 endif
-        
-        CAPCALL KiRestoreSetContextState
+
+        CAPCALL KiRestoreSetContextState ; restore set context state
 exit:
 
 endif
 
         endm
+
+;
+;
 
 ;
 ; Define restore trap state macro.
@@ -1059,7 +1176,20 @@ endif
 
 RESTORE_TRAP_STATE macro State, NoDisable, NmiFlag, LBranch, SkipUmsExit, SkipSetCtxState
 
-        local   first, second, third, fourth, fifth, noalternate
+        local   first, repeatfirst, second, third, fourth, fifth, noalternate, nonshadowmce, altreturn, finishsspcheck
+
+ifdef NT_SPEC_CTRL
+
+if DBG
+
+        extern   KiStibpPairingCheck:proc
+
+endif
+
+        extern   KiUpdateStibpPairing:proc
+
+endif ; NT_SPEC_CTRL
+
 
 ifdef XBOX_SYSTEMOS
 
@@ -1091,11 +1221,10 @@ ifb <SkipSetCtxState>
 
 ifb <NmiFlag>
 
+repeatfirst:
         mov     rcx, gs:[PcCurrentThread] ; get current thread address
-        cmp     byte ptr ThApcState + AsUserApcPending[rcx], 0 ; APC pending?
-        je      short first             ; if e, no user APC pending
-
-endif
+        test    byte ptr ThApcState + AsUserApcPendingAll[rcx], KAPC_STATE_ANY_USER_APC_PENDING_MASK ; APC pending?
+        jz      short first             ; if z, no user APC pending
 
 ifidn <State>, <Service>
 
@@ -1115,9 +1244,7 @@ ifidn <State>, <Service>
         movaps  TrXmm4[rbp], xmm0       ;
         movaps  TrXmm5[rbp], xmm0       ;
 
-endif
-
-ifb <NmiFlag>
+endif ; ifidn <State>, <Service>
 
         mov     ecx, APC_LEVEL          ; get APC level
 
@@ -1130,17 +1257,60 @@ ifb <NmiFlag>
 
         SetIrql                         ; set IRQL to PASSIVE level
 
-endif
+ifidn <State>, <Service>
+
+        mov     rax, TrRax[rbp]         ; restore service status
+
+endif ; ifidn <State>, <Service>
+
+        jmp     short repeatfirst
+
+first:
+
+ifdef NT_SPEC_CTRL
+
+        test    byte ptr gs:[PcPairRegister], KPRCB_PAIR_BTB_STALE ; is STIBP pairing stale?
+        jz      short @f                ; if z, no STIBP re-evaluation needed
+
+ifidn <State>, <Service>
+
+        mov     TrRax[rbp], rax         ; save service status
+
+endif ; ifidn <State>, <Service>
+
+        xor     ecx, ecx                ; set current process to NULL
+        CAPCALL KiUpdateStibpPairing    ; re-evaluate STIBP pairing state
 
 ifidn <State>, <Service>
 
         mov     rax, TrRax[rbp]         ; restore service status
 
+endif ; ifidn <State>, <Service>
+
+@@:
+
+if DBG
+
+        mov     rcx, rax                ; set register value to preserve
+        CAPCALL KiStibpPairingCheck     ; check STIBP pairing state
+
 endif
 
-first:
+
+endif ; NT_SPEC_CTRL
 
         RESTORE_SET_CONTEXT_STATE <State>
+
+endif ; ifb <NmiFlag>
+
+;
+; Note that there is no need to evaluate STIBP pairing or set context on an NMI
+; type of interrupt return.  In these cases, any pending APC interrupt or DPC
+; interrupt that would initiate a set of context or a redispatch of the
+; processor must (by definition) still be pending if the NMI directly
+; interrupted user mode code.  Furthermore, it is not legal to enable
+; interrupts on the NMI stack.
+;
 
 endif ; ifb <SkipSetCtxState>
 
@@ -1235,6 +1405,54 @@ third:                                  ;
 ; At this point it is known that the return will be to user mode.
 ;
 
+if DBG
+
+;
+; Check for cases where user-mode shadow stacks are enabled for the thread, but
+; the current SSP is NULL. This indicates that user-mode shadow stacks were
+; inadvertently disabled somewhere in the kernel. Also check for the reverse
+; case where user-mode shadow stacks are disabled but the current SSP is not
+; NULL.
+;
+
+ifidn <State>, <Service>
+
+        mov     TrRax[rbp], rax         ; save service status
+
+endif
+
+        test    byte ptr gs:[PcFeatureBits+5], KF_CET_SS SHR 40
+        jz      short finishsspcheck    ; if z, CET shadow stacks not enabled/supported
+        mov     ecx, MSR_IA32_PL3_SSP   ; read the user mode SSP
+        rdmsr                           ;
+        shl     rdx, 32                 ; shift high bits
+        or      rax, rdx                ; merge value to form full SSP value
+        mov     rcx, gs:[PcCurrentThread] ; get current thread address
+        bt      dword ptr ThMiscFlags[rcx], KTHREAD_CET_SHADOW_STACK_BIT ; check current thread shadow stack bit
+        jnc     short @f                ; if nc, shadow stacks are not enabled for thread
+        test    rax, rax                ; shadow stacks are enabled for thread, check SSP
+        jne     short finishsspcheck    ; if ne, SSP not zero, done
+        int     3                       ; shadow stacks are supposed to be enabled,
+                                        ; but the current SSP is zero, assert
+        jmp     short finishsspcheck    ;
+
+@@:
+
+        test    rax, rax                ; shadow stacks are not enabled for thread, check SSP
+        je      short finishsspcheck    ; if e, SSP is zero, done
+        int     3                       ; shadow stacks are supposed to be disabled,
+                                        ; but the current SSP is not zero, assert
+
+finishsspcheck:
+
+ifidn <State>, <Service>
+
+        mov     rax, TrRax[rbp]         ; restore service status
+
+endif
+
+endif
+
 ifidn <State>, <Volatile>
 
         movaps  xmm0, TrXmm0[rbp]       ; restore volatile XMM registers
@@ -1285,13 +1503,18 @@ ifidn <NmiFlag>, <NmiAlternateReturn>
 ; passive level alternate context handler upon trap return.
 ;
 
-        lea     rax, KxMcheckAlternateReturn    ; compute handler address
-        mov     TrRip[rbp], rax                 ; write handler address
+        mov     word ptr TrSegSs[rbp], KGDT64_R0_DATA ; set kernel SegSs
         mov     word ptr TrSegCs[rbp], KGDT64_R0_CODE ; set kernel SegCs
         and     dword ptr TrEFlags[rbp], NOT EFLAGS_IF_MASK
+        lea     rax, KxMcheckAlternateReturn    ; compute handler address
+
+;
+;
+
+        mov     TrRip[rbp], rax                 ; write handler address
         mov     TrRsp[rbp], rcx                 ; set stack pointer to fake
                                                 ; trap entry machine frame
-        mov     word ptr TrSegSs[rbp], KGDT64_R0_DATA ; set kernel SegSs
+        jmp     altreturn
 
 noalternate:
 
@@ -1299,19 +1522,45 @@ endif ; ifidn <NmiFlag>, <NmiAlternateReturn>
 
 endif ; ifndef XBOX_SYSTEMOS
 
+;
+;
+
+altreturn:
         mov     rdx, TrRdx[rbp]         ;
         mov     rcx, TrRcx[rbp]         ;
         mov     rax, TrRax[rbp]         ;
         mov     rsp, rbp                ; trim stack to frame offset
         mov     rbp, TrRbp[rbp]         ; restore RBP
         add     rsp, (KTRAP_FRAME_LENGTH - (5 * 8) - 128) ; deallocate stack
+
+;
+;
+
+ifidn <NmiFlag>, <NmiAlternateReturn>
+
+        extern  KiMcheckExit:proc
+
+        swapgs                          ; swap GS base to user mode TEB
+
+        BEGIN_EPILOGUE
+
+        jmp     KiMcheckExit            ; exit machine check trap to user
+
+else ; ifidn <NmiFlag>, <NmiAlternateReturn>
+
         swapgs                          ; swap GS base to user mode TEB
 
         BEGIN_EPILOGUE
 
         iretq                           ;
 
+endif ; ifidn <NmiFlag>, <NmiAlternateReturn>
+
+
 else  ; ifidn <State>, <Volatile>
+
+;
+;
 
         mov     r8, TrRsp[rbp]          ; get previous RSP value
         mov     r9, TrRbp[rbp]          ; get previous RBP value
@@ -1324,10 +1573,15 @@ else  ; ifidn <State>, <Volatile>
         pxor    xmm5, xmm5              ;
         mov     rcx, TrRip[rbp]         ; get return address
         mov     r11, TrEFlags[rbp]      ; get previous EFLAGS
+
+;
+;
+
         mov     rbp, r9                 ; restore RBP
         mov     rsp, r8                 ; restore RSP
         swapgs                          ; swap GS base to user mode TEB
         sysretq                         ; return from system call to user mode
+
 
 endif ; ifidn <State>, <Volatile>
 
@@ -1342,6 +1596,9 @@ fourth: ldmxcsr TrMxCsr[rbp]            ; restore XMM control/status
         movaps  xmm5, TrXmm5[rbp]       ;
 
 ifnb <NmiFlag>
+
+;
+;
 
         mov     eax, TrGsBase[rbp]      ; restore GS base MSR
         mov     edx, TrGsBase + 4[rbp]  ;
@@ -1373,11 +1630,33 @@ fifth:  mov     r11, TrR11[rbp]         ; restore volatile integer state
         mov     rbp, TrRbp[rbp]         ; restore RBP
         add     rsp, (KTRAP_FRAME_LENGTH - (5 * 8) - 128) ; deallocate stack
 
+;
+;
+
+        BEGIN_EPILOGUE
+
+;
+;
+
+ifidn <NmiFlag>, <NmiAlternateReturn>
+
+        extern  KiMcheckExit:proc
+
+        BEGIN_EPILOGUE
+
+        jmp     KiMcheckExit            ; exit machine check trap to user
+
+else ; ifidn <NmiFlag>, <NmiAlternateReturn>
+
         BEGIN_EPILOGUE
 
         iretq                           ;
 
+endif ; ifidn <NmiFlag>, <NmiAlternateReturn>
+
 endif ; ifidn <State>, <Volatile>
+
+
 
 ;
 ; State is pico.
@@ -1392,9 +1671,10 @@ else ; ifdif <State>, <Pico>
 ; modification of the user state.
 ;
 
+repeatfirst:
         mov     rcx, gs:[PcCurrentThread] ; get current thread address
-        cmp     byte ptr ThApcState + AsUserApcPending[rcx], 0 ; APC pending?
-        je      short @f                ; if e, no user APC pending
+        test    byte ptr ThApcState + AsUserApcPendingAll[rcx], KAPC_STATE_ANY_USER_APC_PENDING_MASK ; APC pending?
+        jz      short first               ; if z, no user APC pending
 
         mov     ecx, APC_LEVEL          ; get APC level
 
@@ -1408,7 +1688,29 @@ else ; ifdif <State>, <Pico>
 
         cli                             ; disable interrupts
 
-@@:     RESTORE_SET_CONTEXT_STATE <State>       ; restore set context state if needed and return
+        jmp     short repeatfirst
+first:
+
+
+ifdef NT_SPEC_CTRL
+
+        test    byte ptr gs:[PcPairRegister], KPRCB_PAIR_BTB_STALE ; is STIBP pairing stale?
+        jz      short @f                ; if z, no STIBP re-evaluation needed
+
+        xor     ecx, ecx                ; set current process to NULL
+        CAPCALL KiUpdateStibpPairing    ; re-evaluate STIBP pairing state
+
+@@:
+
+if DBG
+
+        CAPCALL KiStibpPairingCheck     ; check STIBP pairing state
+
+endif
+
+endif ; NT_SPEC_CTRL
+
+        RESTORE_SET_CONTEXT_STATE <State>       ; restore set context state if needed and return
 
         mov     rcx, gs:[PcCurrentThread] ; reload current thread address
         test    byte ptr ThThreadControlFlags[rcx], THREAD_FLAGS_CYCLE_PROFILING ; check for profiling
@@ -1424,7 +1726,12 @@ else ; ifdif <State>, <Pico>
 ; Restore all state from the trap frame.
 ;
 
-@@:     ldmxcsr TrMxCsr[rbp]            ; restore XMM control/status
+@@:
+
+;
+;
+
+        ldmxcsr TrMxCsr[rbp]            ; restore XMM control/status
         movaps  xmm0, TrXmm0[rbp]       ; restore volatile XMM registers
         movaps  xmm1, TrXmm1[rbp]       ;
         movaps  xmm2, TrXmm2[rbp]       ;
@@ -1444,6 +1751,10 @@ else ; ifdif <State>, <Pico>
         mov     rsp, rbp                ; trim stack to frame offset
         mov     rbp, TrRbp[rbp]         ; restore RBP
         add     rsp, (KTRAP_FRAME_LENGTH - (5 * 8) - 128) ; deallocate stack
+
+;
+;
+
         swapgs                          ; swap GS base to user mode TEB
 
         BEGIN_EPILOGUE
@@ -1454,6 +1765,8 @@ else ; ifdif <State>, <Pico>
 ;
 
         iretq                           ;
+
+
 
 endif ; ifdif <State>, <Pico>
 
@@ -1527,6 +1840,10 @@ endif
 
         shl     rdx, 32                 ; shift high bits
         or      rax, rdx                ; merge value to form full TEB value
+
+;
+;
+
         cmp     qword ptr ThTeb[Thread], rax ; check if TEB matches
 
 ifnb <SkipLabel>
@@ -1584,13 +1901,16 @@ SAVE_TRAP_STATE macro Service, SaveGSSwap, NmiFlag, LBranch, PrepareUms
         mov     TrR10[rbp], r10         ;
         mov     TrR11[rbp], r11         ;
 
-ifnb <NmiFlag>
-
         test    byte ptr TrSegCs[rbp], MODE_MASK ; test if previous mode user
         jnz     second                  ; if nz, previous mode user
 
+ifnb <NmiFlag>
+
 ;
 ; Preserve the current GS base in the trap frame.
+;
+;
+;
 ;
 
         mov     ecx, MSR_GS_BASE        ; save GS base MSR in trap frame
@@ -1686,19 +2006,33 @@ fifth:  mov     eax, edx                ; set current GS base MSR
 
         mov     rax, cr2                ; save CR2 in trap frame
         mov     TrFaultAddress[rbp], rax ;
+
+;
+;
+
+else ; ifnb <NmiFlag>
+
+;
+;
+
+endif ; ifnb <NmiFlag>
+
         jmp     first                   ;
 
 second:
 
-else ; ifnb <NmiFlag>
-
-        test    byte ptr TrSegCs[rbp], MODE_MASK ; test if previous mode user
-        jz      first                   ; if z, previous mode kernel
-
-endif ; ifnb <NmiFlag>
+;
+;
 
         swapgs                          ; swap GS base to kernel mode PCR
+
+;
+;
+
         mov     r10, gs:[PcCurrentThread] ; get current thread address
+
+;
+;
 
 if DBG
 
@@ -1887,7 +2221,7 @@ ENTER_INTERRUPT macro NoEOI, CycleCount, NmiFlag
 ;      handler and would trigger a false assert.
 ;
 
-        SwapIrql                        ; raise IRQL to interrupt level
+        SwapIrql2                       ; raise IRQL to interrupt level and process irql flags if neeeded
         mov     TrPreviousIrql[rbp], al ; save previous IRQL
 
 ifdif <CycleCount>, <NoCount>
@@ -2071,7 +2405,7 @@ ifb <NoCycleCount>
 
         rdtsc                           ; read time stamp counter
         shl     rdx, 32                 ; combine low and high parts
-        or      rax, rdx                ;        
+        or      rax, rdx                ;
         sub     rax, PbStartCycles[rcx] ; compute total cycles for period
         add     PbCycleTime[rcx], rax   ; accumulate cycles
         add     PbStartCycles[rcx], rax ; compute start of next period
@@ -2099,7 +2433,7 @@ ifb <NoCycleCount>
 
 request:                                ;
         mov     ecx, DISPATCH_LEVEL     ; request dispatch interrupt
-        CAPCALL __imp_HalRequestSoftwareInterrupt ;
+        CAPCALL __imp_HalRequestSoftwareInterrupt, <>, RetpolineImport ;
         mov     rcx, gs:[PcCurrentPrcb] ; reload rcx
 
 decrement:
@@ -2111,7 +2445,7 @@ endif
 
         movzx   ecx, byte ptr TrPreviousIrql[rbp] ; get previous IRQL
 
-        SetIrql                         ; set IRQL to previous level
+        SetIrql2                        ; set IRQL to previous level and process irql flags if needed
 
         mov     rsi, TrRsi[rbp]         ; restore extra register saved by GENERATE_INTERRUPT_FRAME
 
@@ -2313,3 +2647,5 @@ dont_switch:
         mov     rsp, (MfRsp - 8)[rsp]   ; restore previous RSP from machine frame
 
         endm
+
+;

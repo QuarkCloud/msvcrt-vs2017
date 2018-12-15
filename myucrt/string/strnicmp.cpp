@@ -17,7 +17,7 @@
 *int _strnicmp(first, last, count) - compares count char of strings, ignore case
 *
 *Purpose:
-*       Compare the two strings for lexical order.  Stops the comparison
+*       Compare the two strings for ordinal order.  Stops the comparison
 *       when the following occurs: (1) strings differ, (2) the end of the
 *       strings is reached, or (3) count characters have been compared.
 *       For the purposes of the comparison, upper case characters are
@@ -58,7 +58,7 @@ extern "C" int __cdecl _strnicmp_l (
 
         if ( _loc_update.GetLocaleT()->locinfo->locale_name[LC_CTYPE] == nullptr )
         {
-            //return __ascii_strnicmp(dst, src, count);
+            return __ascii_strnicmp(dst, src, count);
         }
         else
         {
@@ -119,9 +119,10 @@ extern "C" int __cdecl _strnicmp (
         size_t count
         )
 {
-    /*
+
     if (!__acrt_locale_changed())
     {
+        /* validation section */
         _VALIDATE_RETURN(dst != nullptr, EINVAL, _NLSCMPERROR);
         _VALIDATE_RETURN(src != nullptr, EINVAL, _NLSCMPERROR);
         _VALIDATE_RETURN(count <= INT_MAX, EINVAL, _NLSCMPERROR);
@@ -129,7 +130,6 @@ extern "C" int __cdecl _strnicmp (
         return __ascii_strnicmp(dst, src, count);
     }
     else
-    */
     {
         return _strnicmp_l(dst, src, count, nullptr);
     }

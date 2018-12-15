@@ -12,7 +12,7 @@
 #include <corecrt_internal_stdio.h>
 #include <locale.h>
 #include <stdarg.h>
-#include <suppress.h>
+
 
 
 namespace __crt_stdio_output {
@@ -953,10 +953,10 @@ protected:
     {
         // We initialize several base class data members here, so that we can
         // value initialize the entire base class before we get to this point.
-        this->_options   = options;
-		this->_locale    = locale;
-		this->_format_it = format;
-		this->_valist_it = arglist;
+        _options   = options;
+        _locale    = locale;
+        _format_it = format;
+        _valist_it = arglist;
     }
 
     OutputAdapter _output_adapter;
@@ -976,6 +976,13 @@ class standard_base
     : protected output_adapter_data<Character, OutputAdapter>
 {
 protected:
+
+    template <typename... Ts>
+    standard_base(Ts&&... arguments) throw()
+        : output_adapter_data{arguments...     },
+          _current_pass      {pass::not_started}
+    {
+    }
 
     bool advance_to_next_pass() throw()
     {
@@ -997,20 +1004,20 @@ protected:
     template <typename RequestedParameterType, typename ActualParameterType>
     bool extract_argument_from_va_list(ActualParameterType& result) throw()
     {
-        result = static_cast<ActualParameterType>(read_va_arg<RequestedParameterType>(this->_valist_it));
+        result = static_cast<ActualParameterType>(read_va_arg<RequestedParameterType>(_valist_it));
 
         return true;
     }
 
     bool update_field_width() throw()
     {
-		this->_field_width = read_va_arg<int>(this->_valist_it);
+        _field_width = read_va_arg<int>(_valist_it);
         return true;
     }
 
     bool update_precision() throw()
     {
-		this->_precision = read_va_arg<int>(this->_valist_it);
+        _precision = read_va_arg<int>(_valist_it);
         return true;
     }
 
@@ -1073,13 +1080,20 @@ class format_validation_base
     : protected standard_base<Character, OutputAdapter>
 {
 protected:
+
+    template <typename... Ts>
+    format_validation_base(Ts&&... arguments) throw()
+        : standard_base{arguments...}
+    {
+    }
+
     bool validate_and_update_state_at_end_of_format_string() const throw()
     {
         // When we reach the end of the format string, we ensure that the format
         // string is not incomplete.  I.e., when we are finished, the lsat thing
         // that we should have encountered is a regular character to be written
         // or a type specifier.  Otherwise, the format string was incomplete.
-        _VALIDATE_RETURN(this->_state == state::normal || this->_state == state::type, EINVAL, false);
+        _VALIDATE_RETURN(_state == state::normal || _state == state::type, EINVAL, false);
 
         return true;
     }
@@ -1113,8 +1127,22 @@ class positional_parameter_base
 protected:
 
     typedef positional_parameter_base    self_type;
-    typedef format_validation_base<Character, OutputAdapter>       base_type;
+    typedef format_validation_base       base_type;
     typedef __crt_char_traits<Character> char_traits;
+
+    template <typename... Ts>
+    positional_parameter_base(Ts&&... arguments) throw()
+        : format_validation_base{arguments...     },
+          _current_pass         {pass::not_started},
+          _format_mode          {mode::unknown    },
+          _format               {_format_it       },
+          _type_index           {-1               },
+          _maximum_index        {-1               }
+    {
+        // Note that we do not zero-initialize the parameter data table until
+        // the first positional parameter is encountered in the format string.
+    }
+
     bool advance_to_next_pass() throw()
     {
         _current_pass = static_cast<pass>(static_cast<unsigned>(_current_pass) + 1);
@@ -1134,9 +1162,9 @@ protected:
         _maximum_index = -1;
         _type_index    = -1;
 
-        this->_field_width = 0;
-		this->_precision   = 0;
-		this->_format_it   = _format;
+        _field_width = 0;
+        _precision   = 0;
+        _format_it   = _format;
 
         return true;
     }
@@ -1157,14 +1185,14 @@ protected:
         parameter_data* const last {_parameters + _maximum_index + 1};
         for (parameter_data* it{first}; it != last; ++it)
         {
-            it->_valist_it = this->_valist_it;
+            it->_valist_it = _valist_it;
 
             switch (it->_actual_type)
             {
-            case parameter_type::int32:   read_va_arg<int        >(this->_valist_it); break;
-            case parameter_type::int64:   read_va_arg<__int64    >(this->_valist_it); break;
-            case parameter_type::pointer: read_va_arg<void*      >(this->_valist_it); break;
-            case parameter_type::real64:  read_va_arg<_CRT_DOUBLE>(this->_valist_it); break;
+            case parameter_type::int32:   read_va_arg<int        >(_valist_it); break;
+            case parameter_type::int64:   read_va_arg<__int64    >(_valist_it); break;
+            case parameter_type::pointer: read_va_arg<void*      >(_valist_it); break;
+            case parameter_type::real64:  read_va_arg<_CRT_DOUBLE>(_valist_it); break;
 
             default:
                 // We should never reach this point:
@@ -1211,8 +1239,8 @@ protected:
             return base_type::update_field_width();
 
         Character* end_pointer{nullptr};
-        int const width_index{char_traits::tcstol(this->_format_it, &end_pointer, 10) - 1};
-		this->_format_it = end_pointer + 1;
+        int const width_index{char_traits::tcstol(_format_it, &end_pointer, 10) - 1};
+        _format_it = end_pointer + 1;
 
         if (_current_pass == pass::position_scan)
         {
@@ -1225,13 +1253,13 @@ protected:
             return validate_and_store_parameter_data(
                 _parameters[width_index],
                 parameter_type::int32,
-				this->_format_char,
-				this->_length
+                _format_char,
+                _length
             );
         }
         else
         {
-			this->_field_width = peek_va_arg<int>(_parameters[width_index]._valist_it);
+            _field_width = peek_va_arg<int>(_parameters[width_index]._valist_it);
         }
 
         return true;
@@ -1243,8 +1271,8 @@ protected:
             return base_type::update_precision();
 
         Character* end_pointer{nullptr};
-        int const precision_index{char_traits::tcstol(this->_format_it, &end_pointer, 10) - 1};
-		this->_format_it = end_pointer + 1;
+        int const precision_index{char_traits::tcstol(_format_it, &end_pointer, 10) - 1};
+        _format_it = end_pointer + 1;
 
         if (_current_pass == pass::position_scan)
         {
@@ -1257,13 +1285,13 @@ protected:
             return validate_and_store_parameter_data(
                 _parameters[precision_index],
                 parameter_type::int32,
-				this->_format_char,
-				this->_length
+                _format_char,
+                _length
             );
         }
         else
         {
-			this->_precision = peek_va_arg<int>(_parameters[precision_index]._valist_it);
+            _precision = peek_va_arg<int>(_parameters[precision_index]._valist_it);
         }
 
         return true;
@@ -1277,8 +1305,8 @@ protected:
             return validate_and_store_parameter_data(
                 _parameters[_type_index],
                 parameter_type::real64,
-				this->_format_char,
-				this->_length
+                _format_char,
+                _length
             );
         }
 
@@ -1305,7 +1333,7 @@ protected:
     {
         // We're looking for a format specifier, so we'll have just seen a '%'
         // and the next character is not a '%':
-        if (this->_state != state::percent || *(this->_format_it) == '%')
+        if (_state != state::percent || *_format_it == '%')
             return true;
 
         // When we encounter the first format specifier, we determine whether
@@ -1318,11 +1346,11 @@ protected:
             // The tcstol conversion will eat leading spaces and sign character
             // if they are present.  Only digits are permitted between the % and
             // the $ in the positional format specifier.
-            if (*(this->_format_it) < '0' || *(this->_format_it) > '9')
+            if (*_format_it < '0' || *_format_it > '9')
             {
                 _format_mode = mode::nonpositional;
             }
-            else if (char_traits::tcstol(this->_format_it, &end_pointer, 10) > 0 && *end_pointer == '$')
+            else if (char_traits::tcstol(_format_it, &end_pointer, 10) > 0 && *end_pointer == '$')
             {
                 if (_current_pass == pass::position_scan)
                 {
@@ -1341,8 +1369,8 @@ protected:
             return true;
 
         Character* end_pointer{nullptr};
-        _type_index = char_traits::tcstol((this->_format_it), &end_pointer, 10) - 1;
-		this->_format_it = end_pointer + 1;
+        _type_index = char_traits::tcstol(_format_it, &end_pointer, 10) - 1;
+        _format_it = end_pointer + 1;
 
         if (_current_pass != pass::position_scan)
             return true;
@@ -1470,8 +1498,8 @@ private:
             if (old_is_string != new_is_string || old_is_character != new_is_character)
                 return false;
 
-            bool const old_is_wide{is_wide_character_specifier(this->_options, parameter._format_type, parameter._length)};
-            bool const new_is_wide{is_wide_character_specifier(this->_options, format_type, length)};
+            bool const old_is_wide{is_wide_character_specifier(_options, parameter._format_type, parameter._length)};
+            bool const new_is_wide{is_wide_character_specifier(_options, format_type, length)};
             if (old_is_wide != new_is_wide)
                 return false;
 
@@ -1601,8 +1629,58 @@ public:
     // after constructing the object.
     int process() throw()
     {
+        if (!_output_adapter.validate())
+            return -1;
 
-        return 0 ;
+        _VALIDATE_RETURN(_format_it != nullptr, EINVAL, -1);
+
+        while (advance_to_next_pass())
+        {
+            // At the start of each pass, we have no buffered string and we are
+            // in the normal state:
+            _string_length = 0;
+            _state         = state::normal;
+
+            // Iterate over the format string until we reach the end, encounter
+            // an I/O error, or fail due to some other error:
+            while ((_format_char = *_format_it++) != '\0' && _characters_written >= 0)
+            {
+                _state = find_next_state(_format_char, _state);
+
+                if (!validate_and_update_state_at_beginning_of_format_character())
+                    return -1;
+
+                if (_state == state::invalid)
+                {
+                    _VALIDATE_RETURN(("Incorrect format specifier", 0), EINVAL, -1);
+                }
+
+                bool result = false;
+                switch (_state)
+                {
+                case state::normal:    result = state_case_normal   (); break;
+                case state::percent:   result = state_case_percent  (); break;
+                case state::flag:      result = state_case_flag     (); break;
+                case state::width:     result = state_case_width    (); break;
+                case state::dot:       result = state_case_dot      (); break;
+                case state::precision: result = state_case_precision(); break;
+                case state::size:      result = state_case_size     (); break;
+                case state::type:      result = state_case_type     (); break;
+                }
+
+                // If the state-specific operation failed, return immediately.
+                // The individual state cases are responsible for invoking the
+                // invalid parameter handler if the failure is due to an invalid
+                // parameter.
+                if (!result)
+                    return -1;
+            }
+
+            if (!validate_and_update_state_at_end_of_format_string())
+                return -1;
+        }
+
+        return _characters_written;
     }
 
 private:
@@ -1616,7 +1694,7 @@ private:
     // class.
     bool state_case_normal() throw()
     {
-        if (this->should_skip_normal_state_processing())
+        if (should_skip_normal_state_processing())
             return true;
 
         _VALIDATE_RETURN(state_case_normal_common(), EINVAL, false);
@@ -1629,21 +1707,21 @@ private:
         if (!state_case_normal_tchar(Character()))
             return false;
 
-		this->_output_adapter.write_character(this->_format_char, &(this->_characters_written));
+        _output_adapter.write_character(_format_char, &_characters_written);
         return true;
     }
 
     bool state_case_normal_tchar(char) throw()
     {
-		this->_string_is_wide = false;
+        _string_is_wide = false;
 
-        if (__acrt_isleadbyte_l_noupdate(this->_format_char, this->_locale))
+        if (__acrt_isleadbyte_l_noupdate(_format_char, _locale))
         {
-			this->_output_adapter.write_character(this->_format_char, &(this->_characters_written));
-			this->_format_char = *(this->_format_it)++;
+            _output_adapter.write_character(_format_char, &_characters_written);
+            _format_char = *_format_it++;
 
             // Ensure that we do not fall off the end of the format string:
-            _VALIDATE_RETURN(this->_format_char != '\0', EINVAL, false);
+            _VALIDATE_RETURN(_format_char != '\0', EINVAL, false);
         }
 
         return true;
@@ -1651,7 +1729,7 @@ private:
 
     bool state_case_normal_tchar(wchar_t) throw()
     {
-		this->_string_is_wide = true;
+        _string_is_wide = true;
         return true;
     }
 
@@ -1660,12 +1738,12 @@ private:
     // the new format specifier.
     bool state_case_percent() throw()
     {
-		this->_field_width     =  0;
-		this->_suppress_output =  false;
-		this->_flags           =  0;
-		this->_precision       = -1;
-		this->_length          =  length_modifier::none;
-		this->_string_is_wide  =  false;
+        _field_width     =  0;
+        _suppress_output =  false;
+        _flags           =  0;
+        _precision       = -1;
+        _length          =  length_modifier::none;
+        _string_is_wide  =  false;
 
         return true;
     }
@@ -1676,7 +1754,7 @@ private:
     bool state_case_flag() throw()
     {
         // Set the flag based on which flag character:
-        switch (this->_format_char)
+        switch (_format_char)
         {
         case '-': set_flag(FL_LEFT     ); break; // '-' => left justify
         case '+': set_flag(FL_SIGN     ); break; // '+' => force sign indicator
@@ -1695,18 +1773,18 @@ private:
     // the _format_char data member).
     bool parse_int_from_format_string(int* const result) throw()
     {
-        __crt_errno_guard const reset_errno{&(this->_cached_errno).get()};
+        __crt_errno_guard const reset_errno{&_cached_errno.get()};
 
         Character* end{};
-        *result = static_cast<int>(char_traits::tcstol(this->_format_it - 1, &end, 10));
+        *result = static_cast<int>(char_traits::tcstol(_format_it - 1, &end, 10));
 
-        if ((this->_cached_errno).get() == ERANGE)
+        if (_cached_errno.get() == ERANGE)
             return false;
 
-        if (end < this->_format_it)
+        if (end < _format_it)
             return false;
 
-		this->_format_it = end;
+        _format_it = end;
         return true;
     }
 
@@ -1716,24 +1794,24 @@ private:
     // the width from the format string.
     bool state_case_width() throw()
     {
-        if (this->_format_char != '*')
+        if (_format_char != '*')
         {
-            return parse_int_from_format_string(&(this->_field_width));
+            return parse_int_from_format_string(&_field_width);
         }
 
         // If the format character is an asterisk, we read the width from the
         // varargs.  If we read a negative value, we treat it as the '-' flag
         // followed by a positive width (per the C Standard Library spec).
-        if (!this->update_field_width())
+        if (!update_field_width())
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
-        if (this->_field_width < 0)
+        if (_field_width < 0)
         {
             set_flag(FL_LEFT);
-			this->_field_width = -this->_field_width;
+            _field_width = -_field_width;
         }
 
         return true;
@@ -1747,7 +1825,7 @@ private:
         // it means a precision of zero, not the default precision (per the C
         // Standard Library specification).  (Note:  We represent the default
         // precision with -1.)
-		this->_precision = 0;
+        _precision = 0;
 
         return true;
     }
@@ -1757,22 +1835,22 @@ private:
     // the width.
     bool state_case_precision() throw()
     {
-        if (this->_format_char != '*')
+        if (_format_char != '*')
         {
-            return parse_int_from_format_string(&(this->_precision));
+            return parse_int_from_format_string(&_precision);
         }
 
         // If the format character is an asterisk, we read the width from the
         // varargs.  If we read a negative value, we treat it as indicating the
         // default precision.
-        if (!this->update_precision())
+        if (!update_precision())
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
-        if (this->_precision < 0)
-			this->_precision = -1;
+        if (_precision < 0)
+            _precision = -1;
 
         return true;
     }
@@ -1781,7 +1859,7 @@ private:
     // the format string.
     bool state_case_size() throw()
     {
-        if (this->_format_char == 'F')
+        if (_format_char == 'F')
         {
             // We hand the 'F' character as a length modifier because the length
             // modifier occurs before the type specifier.  If we find an 'F' and
@@ -1789,24 +1867,24 @@ private:
             // modifier, we just ignore it (it has no meaning).  Otherwise we are
             // not in compatibility mode so we switch out to the type case to handle
             // the 'F' as a %F format specifier:
-            if ((this->_options & _CRT_INTERNAL_PRINTF_LEGACY_MSVCRT_COMPATIBILITY) == 0)
+            if ((_options & _CRT_INTERNAL_PRINTF_LEGACY_MSVCRT_COMPATIBILITY) == 0)
             {
-				this->_state = state::type;
+                _state = state::type;
                 return state_case_type();
             }
 
             return true;
         }
 
-        if (this->_format_char == 'N')
+        if (_format_char == 'N')
         {
             // If we find an 'N' and we are in the legacy compatibility mode that
             // supports the 'N' length modifier, we just ignore it (it has no
             // meaning).  Otherwise, we are not in compatibility mode, so we
             // invoke the invalid parameter handler and return failure.
-            if ((this->_options & _CRT_INTERNAL_PRINTF_LEGACY_MSVCRT_COMPATIBILITY) == 0)
+            if ((_options & _CRT_INTERNAL_PRINTF_LEGACY_MSVCRT_COMPATIBILITY) == 0)
             {
-				this->_state = state::invalid;
+                _state = state::invalid;
 #pragma warning(suppress:__WARNING_IGNOREDBYCOMMA) // 6319 comma operator
                 _VALIDATE_RETURN(("N length modifier not specifier", false), EINVAL, false);
                 return false;
@@ -1815,21 +1893,21 @@ private:
             return true;
         }
 
-        _VALIDATE_RETURN(this->_length == length_modifier::none, EINVAL, false);
+        _VALIDATE_RETURN(_length == length_modifier::none, EINVAL, false);
 
         // We just read a size specifier; set the flags based on it:
-        switch (this->_format_char)
+        switch (_format_char)
         {
         case 'h':
         {
-            if (*(this->_format_it) == 'h')
+            if (*_format_it == 'h')
             {
-                ++(this->_format_it);
-				this->_length = length_modifier::hh;
+                ++_format_it;
+                _length = length_modifier::hh;
             }
             else
             {
-				this->_length = length_modifier::h;
+                _length = length_modifier::h;
             }
 
             return true;
@@ -1839,26 +1917,26 @@ private:
         {
             // The I32, I64, and I length modifiers are Microsoft extensions.
 
-            if (*(this->_format_it) == '3' && *(this->_format_it + 1) == '2')
+            if (*_format_it == '3' && *(_format_it + 1) == '2')
             {
-				this->_format_it += 2;
-				this->_length = length_modifier::I32;
+                _format_it += 2;
+                _length = length_modifier::I32;
             }
-            else if (*(this->_format_it) == '6' && *(this->_format_it + 1) == '4')
+            else if (*_format_it == '6' && *(_format_it + 1) == '4')
             {
-				this->_format_it += 2;
-				this->_length = length_modifier::I64;
+                _format_it += 2;
+                _length = length_modifier::I64;
             }
-            else if (*(this->_format_it) == 'd' ||
-                     *(this->_format_it) == 'i' ||
-                     *(this->_format_it) == 'o' ||
-                     *(this->_format_it) == 'u' ||
-                     *(this->_format_it) == 'x' ||
-                     *(this->_format_it) == 'X')
+            else if (*_format_it == 'd' ||
+                     *_format_it == 'i' ||
+                     *_format_it == 'o' ||
+                     *_format_it == 'u' ||
+                     *_format_it == 'x' ||
+                     *_format_it == 'X')
             {
                 // If we support positional parameters, then %I without a following
                 // 32 or 64 is platform-dependent:
-				this->_length = length_modifier::I;
+                _length = length_modifier::I;
             }
 
             return true;
@@ -1866,14 +1944,14 @@ private:
 
         case 'l':
         {
-            if (*(this->_format_it) == 'l')
+            if (*_format_it == 'l')
             {
-                ++this->_format_it;
-				this->_length = length_modifier::ll;
+                ++_format_it;
+                _length = length_modifier::ll;
             }
             else
             {
-				this->_length = length_modifier::l;
+                _length = length_modifier::l;
             }
 
             return true;
@@ -1881,37 +1959,37 @@ private:
 
         case 'L':
         {
-			this->_length = length_modifier::L;
+            _length = length_modifier::L;
             return true;
         }
 
         case 'j':
         {
-			this->_length = length_modifier::j;
+            _length = length_modifier::j;
             return true;
         }
 
         case 't':
         {
-			this->_length = length_modifier::t;
+            _length = length_modifier::t;
             return true;
         }
 
         case 'z':
         {
-			this->_length = length_modifier::z;
+            _length = length_modifier::z;
             return true;
         }
 
         case 'w':
         {
-			this->_length = length_modifier::w;
+            _length = length_modifier::w;
             return true;
         }
 
         case 'T':
         {
-			this->_length = length_modifier::T;
+            _length = length_modifier::T;
             return true;
         }
         }
@@ -1933,7 +2011,7 @@ private:
         // correctly, and _string_is_wide must be true if the wide string
         // should be used.
         bool result{false};
-        switch (this->_format_char)
+        switch (_format_char)
         {
         // Individual character output:
         case 'C':
@@ -1976,14 +2054,14 @@ private:
         // Check to see whether the output operation should be skipped (we skip
         // the output part e.g. during the positional scan pass when positional
         // formatting is used).
-        if (this->should_skip_type_state_output())
+        if (should_skip_type_state_output())
             return true;
 
         // At this point, we've completed the bulk of the formatting operation
         // and the string is ready to be printed.  We now justify the string,
         // pre-pend any required prefix and leading zeroes, then print it.  Well,
         // unless output is suppressed, that is... :-)
-        if (this->_suppress_output)
+        if (_suppress_output)
             return true;
 
         // Compute the prefix, if one is required...
@@ -2006,43 +2084,42 @@ private:
             }
         }
 
-        bool const print_integer_0x{(this->_format_char == 'x' || this->_format_char == 'X') && has_flag(FL_ALTERNATE)};
-        bool const print_floating_point_0x{ this->_format_char == 'a' || this->_format_char == 'A'};
+        bool const print_integer_0x{(_format_char == 'x' || _format_char == 'X') && has_flag(FL_ALTERNATE)};
+        bool const print_floating_point_0x{_format_char == 'a' || _format_char == 'A'};
 
         if (print_integer_0x || print_floating_point_0x)
         {
             prefix[prefix_length++] = '0';
-            prefix[prefix_length++] = adjust_hexit('x' - 'a' + '9' + 1, this->_format_char == 'X' || this->_format_char == 'A');
+            prefix[prefix_length++] = adjust_hexit('x' - 'a' + '9' + 1, _format_char == 'X' || _format_char == 'A');
         }
 
         // Compute the amount of padding required to get to the desired field
         // width, then output the left padding, prefix, leading zeroes, the
         // string, and right padding, in that order.
-        int const padding = static_cast<int>(this->_field_width - this->_string_length - prefix_length);
+        int const padding = static_cast<int>(_field_width - _string_length - prefix_length);
 
         if (!has_flag(FL_LEFT | FL_LEADZERO))
         {
             // Left-pad with spaces
-            write_multiple_characters(this->_output_adapter, ' ', padding, &this->_characters_written);
+            write_multiple_characters(_output_adapter, ' ', padding, &_characters_written);
         }
 
         // Write the prefix
-		this->_output_adapter.write_string(prefix, static_cast<int>(prefix_length), 
-			&(this->_characters_written), this->_cached_errno);
+        _output_adapter.write_string(prefix, static_cast<int>(prefix_length), &_characters_written, _cached_errno);
 
         if (has_flag(FL_LEADZERO) && !has_flag(FL_LEFT))
         {
             // Write leading zeroes
-            write_multiple_characters(this->_output_adapter, '0', padding, &(this->_characters_written));
+            write_multiple_characters(_output_adapter, '0', padding, &_characters_written);
         }
 
         // Write the string
         write_stored_string_tchar(Character());
 
-        if (this->_characters_written >= 0 && has_flag(FL_LEFT))
+        if (_characters_written >= 0 && has_flag(FL_LEFT))
         {
             // Right-pad with spaces
-            write_multiple_characters(this->_output_adapter, ' ', padding, &(this->_characters_written));
+            write_multiple_characters(_output_adapter, ' ', padding, &_characters_written);
         }
 
         return true;
@@ -2061,36 +2138,35 @@ private:
     {
         // If the character is a wide character, we translate it to multibyte
         // to be output, storing the multibyte string in the internal buffer:
-        if (is_wide_character_specifier(this->_options, this->_format_char, this->_length))
+        if (is_wide_character_specifier(_options, _format_char, _length))
         {
             wchar_t wide_character{};
-            if (!this->extract_argument_from_va_list<wchar_t>(wide_character))
+            if (!extract_argument_from_va_list<wchar_t>(wide_character))
                 return false;
 
-            if (!this->should_format())
+            if (!should_format())
                 return true;
 
             // Convert to multibyte.  If the conversion fails, we suppres the
             // output operation but we do not fail the entire operation:
-            errno_t const status{wctomb_s(&(this->_string_length), this->_buffer.data<char>(), 
-				this->_buffer.count<char>(), wide_character)};
+            errno_t const status{wctomb_s(&_string_length, _buffer.data<char>(), _buffer.count<char>(), wide_character)};
             if (status != 0)
-				this->_suppress_output = true;
+                _suppress_output = true;
         }
         // If the character is a narrow character, we can just write it directly
         // to the output, as-is.
         else
         {
-            if (!this->extract_argument_from_va_list<unsigned short>(this->_buffer.data<char>()[0]))
+            if (!extract_argument_from_va_list<unsigned short>(_buffer.data<char>()[0]))
                 return false;
 
-            if (!this->should_format())
+            if (!should_format())
                 return true;
 
-			this->_string_length = 1;
+            _string_length = 1;
         }
 
-		this->_narrow_string = this->_buffer.data<char>();
+        _narrow_string = _buffer.data<char>();
         return true;
     }
 
@@ -2098,33 +2174,32 @@ private:
     {
         // If the output adapter accepts wide characters, then we must transform
         // the character into a wide character to be output.
-		this->_string_is_wide = true;
+        _string_is_wide = true;
 
         wchar_t wide_character{};
-        if (!this->extract_argument_from_va_list<wchar_t>(wide_character))
+        if (!extract_argument_from_va_list<wchar_t>(wide_character))
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
-        if (!is_wide_character_specifier(this->_options, this->_format_char, this->_length))
+        if (!is_wide_character_specifier(_options, _format_char, _length))
         {
             // If the character is actually a multibyte character, then we must
             // transform it into the equivalent wide character.  If the translation
             // is unsuccessful, we ignore this character but do not fail the entire
             // output operation.
             char const local_buffer[2]{ static_cast<char>(wide_character & 0x00ff), '\0' };
-            if (_mbtowc_l(this->_buffer.data<wchar_t>(), local_buffer, this->_locale->locinfo->_public._locale_mb_cur_max, 
-				this->_locale) < 0)
-				this->_suppress_output = true;
+            if (_mbtowc_l(_buffer.data<wchar_t>(), local_buffer, _locale->locinfo->_public._locale_mb_cur_max, _locale) < 0)
+                _suppress_output = true;
         }
         else
         {
-			this->_buffer.data<wchar_t>()[0] = wide_character;
+            _buffer.data<wchar_t>()[0] = wide_character;
         }
 
-		this->_wide_string   = this->_buffer.data<wchar_t>();
-		this->_string_length = 1;
+        _wide_string   = _buffer.data<wchar_t>();
+        _string_length = 1;
         return true;
     }
 
@@ -2145,29 +2220,29 @@ private:
         };
 
         ansi_string* string{};
-        if (!this->extract_argument_from_va_list<ansi_string*>(string))
+        if (!extract_argument_from_va_list<ansi_string*>(string))
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
         if (!string || string->_buffer == nullptr)
         {
-			this->_narrow_string  = narrow_null_string();
-			this->_string_length  = static_cast<int>(strlen(this->_narrow_string));
-			this->_string_is_wide = false;
+            _narrow_string  = narrow_null_string();
+            _string_length  = static_cast<int>(strlen(_narrow_string));
+            _string_is_wide = false;
         }
-        else if (is_wide_character_specifier(this->_options, this->_format_char, this->_length))
+        else if (is_wide_character_specifier(_options, _format_char, _length))
         {
-			this->_wide_string    = reinterpret_cast<wchar_t*>(string->_buffer);
-			this->_string_length  = string->_length / static_cast<int>(sizeof(wchar_t));
-			this->_string_is_wide = true;
+            _wide_string    = reinterpret_cast<wchar_t*>(string->_buffer);
+            _string_length  = string->_length / static_cast<int>(sizeof(wchar_t));
+            _string_is_wide = true;
         }
         else
         {
-			this->_narrow_string  = string->_buffer;
-			this->_string_length  = string->_length;
-			this->_string_is_wide = false;
+            _narrow_string  = string->_buffer;
+            _string_length  = string->_length;
+            _string_is_wide = false;
         }
 
         return true;
@@ -2180,28 +2255,28 @@ private:
         // of the length of the C string and the given precision.  Note that the
         // string needs not be null-terminated if a precision is given, so we
         // cannot call strlen to compute the length of the string.
-        if (!this->extract_argument_from_va_list<char*>(this->_narrow_string))
+        if (!extract_argument_from_va_list<char*>(_narrow_string))
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
-        int const maximum_length{(this->_precision == -1) ? INT_MAX : this->_precision};
+        int const maximum_length{(_precision == -1) ? INT_MAX : _precision};
 
-        if (is_wide_character_specifier(this->_options, this->_format_char, this->_length))
+        if (is_wide_character_specifier(_options, _format_char, _length))
         {
-            if (!this->_wide_string)
-				this->_wide_string = wide_null_string();
+            if (!_wide_string)
+                _wide_string = wide_null_string();
 
-			this->_string_is_wide = true;
-			this->_string_length  = static_cast<int>(wcsnlen(this->_wide_string, maximum_length));
+            _string_is_wide = true;
+            _string_length  = static_cast<int>(wcsnlen(_wide_string, maximum_length));
         }
         else
         {
-            if (!this->_narrow_string)
-				this->_narrow_string = narrow_null_string();
+            if (!_narrow_string)
+                _narrow_string = narrow_null_string();
 
-			this->_string_length = type_case_s_compute_narrow_string_length(maximum_length, Character());
+            _string_length = type_case_s_compute_narrow_string_length(maximum_length, Character());
         }
 
         return true;
@@ -2214,16 +2289,16 @@ private:
     // for the string that has just been read from the varargs.
     int type_case_s_compute_narrow_string_length(int const maximum_length, char) const throw()
     {
-        return static_cast<int>(strnlen(this->_narrow_string, maximum_length));
+        return static_cast<int>(strnlen(_narrow_string, maximum_length));
     }
 
     int type_case_s_compute_narrow_string_length(int const maximum_length, wchar_t) const throw()
     {
         int string_length{0};
 
-        for (char const* p{ this->_narrow_string}; string_length < maximum_length && *p; ++string_length)
+        for (char const* p{_narrow_string}; string_length < maximum_length && *p; ++string_length)
         {
-            if (__acrt_isleadbyte_l_noupdate(static_cast<unsigned char>(*p), this->_locale))
+            if (__acrt_isleadbyte_l_noupdate(static_cast<unsigned char>(*p), _locale))
             {
                 ++p;
             }
@@ -2243,16 +2318,16 @@ private:
         // The double type is signed:
         set_flag(FL_SIGNED);
 
-        if (!this->validate_state_for_type_case_a())
+        if (!validate_state_for_type_case_a())
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
         // First, we need to compute the actual precision to use, limited by
         // both the maximum precision and the size of the buffer that we can
         // allocate.
-        if (this->_precision < 0)
+        if (_precision < 0)
         {
             // The default precision depends on the format specifier used.  For
             // %e, %f, and %g, C specifies that the default precision is 6.  For
@@ -2264,79 +2339,79 @@ private:
             // hexadecimal form, we print one bit of precision to the left of the
             // radix point and the remaining 52 bits of precision to the right.
             // Thus, the default precision is 13 (13 * 4 == 52).
-            if (this->_format_char == 'a' || this->_format_char == 'A')
+            if (_format_char == 'a' || _format_char == 'A')
             {
-				this->_precision = 13;
+                _precision = 13;
             }
             else
             {
-				this->_precision = 6;
+                _precision = 6;
             }
         }
-        else if (this->_precision == 0 && (this->_format_char == 'g' || this->_format_char == 'G'))
+        else if (_precision == 0 && (_format_char == 'g' || _format_char == 'G'))
         {
-			this->_precision = 1; // Per C Standard Library specification.
+            _precision = 1; // Per C Standard Library specification.
         }
 
-        if (!this->_buffer.ensure_buffer_is_big_enough<char>(_CVTBUFSIZE + this->_precision))
+        if (!_buffer.ensure_buffer_is_big_enough<char>(_CVTBUFSIZE + _precision))
         {
             // If we fail to enlarge the buffer, cap precision so that the
             // statically-sized buffer may be used for the formatting:
-			this->_precision = static_cast<int>(this->_buffer.count<char>() - _CVTBUFSIZE);
+            _precision = static_cast<int>(_buffer.count<char>() - _CVTBUFSIZE);
         }
 
-		this->_narrow_string = this->_buffer.data<char>();
+        _narrow_string = _buffer.data<char>();
 
         // Note that we separately handle the FORMAT_POSSCAN_PASS above.
         _CRT_DOUBLE tmp{};
-        if (!this->extract_argument_from_va_list<_CRT_DOUBLE>(tmp))
+        if (!extract_argument_from_va_list<_CRT_DOUBLE>(tmp))
             return false;
 
         // Format the number into the buffer:
         __acrt_fp_format(
             &tmp.x,
-			this->_buffer.data<char>(),
-			this->_buffer.count<char>(),
-			this->_buffer.scratch_data<char>(),
-			this->_buffer.scratch_count<char>(),
-            static_cast<char>(this->_format_char),
-			this->_precision,
-			this->_options,
-			this->_locale);
+            _buffer.data<char>(),
+            _buffer.count<char>(),
+            _buffer.scratch_data<char>(),
+            _buffer.scratch_count<char>(),
+            static_cast<char>(_format_char),
+            _precision,
+            _options,
+            _locale);
 
         // If the precision is zero but the '#' flag is part of the specifier,
         // we force a decimal point:
-        if (has_flag(FL_ALTERNATE) && this->_precision == 0)
+        if (has_flag(FL_ALTERNATE) && _precision == 0)
         {
-            force_decimal_point(this->_narrow_string, this->_locale);
+            force_decimal_point(_narrow_string, _locale);
         }
 
         // The 'g' format specifier indicates that zeroes should be cropped
         // unless the '#' flag is part of the specifier.
-        if ((this->_format_char == 'g' || this->_format_char == 'G') && !has_flag(FL_ALTERNATE))
+        if ((_format_char == 'g' || _format_char == 'G') && !has_flag(FL_ALTERNATE))
         {
-            crop_zeroes(this->_narrow_string, this->_locale);
+            crop_zeroes(_narrow_string, _locale);
         }
 
         // If the result was negative, we save the '-' for later and advance past
         // the negative sign (we handle the '-' separately, in code shared with
         // the integer formatting, to correctly handle flags).
-        if (*(this->_narrow_string) == '-')
+        if (*_narrow_string == '-')
         {
             set_flag(FL_NEGATIVE);
-            ++this->_narrow_string;
+            ++_narrow_string;
         }
 
         // If the result was a special infinity or a nan string, suppress output
         // of the "0x" prefix by treating the special string as just a string:
-        if (*(this->_narrow_string) == 'i' || *(this->_narrow_string) == 'I' ||
-            *(this->_narrow_string) == 'n' || *(this->_narrow_string) == 'N')
+        if (*_narrow_string == 'i' || *_narrow_string == 'I' ||
+            *_narrow_string == 'n' || *_narrow_string == 'N')
         {
             unset_flag(FL_LEADZERO); // padded with spaces, not zeros.
-			this->_format_char = 's';
+            _format_char = 's';
         }
 
-		this->_string_length = static_cast<int>(strlen(this->_narrow_string));
+        _string_length = static_cast<int>(strlen(_narrow_string));
 
         return true;
     }
@@ -2383,11 +2458,11 @@ private:
         // We force the precision to be 2 * sizeof(void*), which is the number
         // of hexits required to represent the pointer, so that it is zero-
         // padded.
-		this->_precision = 2 * sizeof(void*);
+        _precision = 2 * sizeof(void*);
 
         // Ensure that we read a 32-bit integer on 32-bit architectures, and
         // a 64-bit integer on 64-bit platforms:
-		this->_length = sizeof(void*) == 4
+        _length = sizeof(void*) == 4
             ? length_modifier::I32
             : length_modifier::I64;
 
@@ -2399,7 +2474,7 @@ private:
     // pre-processing common to all integer processing.
     bool type_case_integer(unsigned const radix, bool const capital_hexits = false) throw()
     {
-        size_t const integer_size = to_integer_size(this->_length);
+        size_t const integer_size = to_integer_size(_length);
 
         // First, extract the argument of the required type from the varargs:
         __int64 original_number  {};
@@ -2408,23 +2483,23 @@ private:
         {
         case sizeof(int8_t):
             extraction_result = has_flag(FL_SIGNED)
-                ? this->extract_argument_from_va_list<int8_t >(original_number)
-                : this->extract_argument_from_va_list<uint8_t>(original_number);
+                ? extract_argument_from_va_list<int8_t >(original_number)
+                : extract_argument_from_va_list<uint8_t>(original_number);
             break;
         case sizeof(int16_t):
             extraction_result = has_flag(FL_SIGNED)
-                ? this->extract_argument_from_va_list<int16_t >(original_number)
-                : this->extract_argument_from_va_list<uint16_t>(original_number);
+                ? extract_argument_from_va_list<int16_t >(original_number)
+                : extract_argument_from_va_list<uint16_t>(original_number);
             break;
         case sizeof(int32_t):
             extraction_result = has_flag(FL_SIGNED)
-                ? this->extract_argument_from_va_list<int32_t >(original_number)
-                : this->extract_argument_from_va_list<uint32_t>(original_number);
+                ? extract_argument_from_va_list<int32_t >(original_number)
+                : extract_argument_from_va_list<uint32_t>(original_number);
             break;
         case sizeof(int64_t):
             extraction_result = has_flag(FL_SIGNED)
-                ? this->extract_argument_from_va_list<int64_t >(original_number)
-                : this->extract_argument_from_va_list<uint64_t>(original_number);
+                ? extract_argument_from_va_list<int64_t >(original_number)
+                : extract_argument_from_va_list<uint64_t>(original_number);
             break;
         default:
             _VALIDATE_RETURN(("Invalid integer length modifier", 0), EINVAL, false);
@@ -2436,7 +2511,7 @@ private:
 
         // If we're not formatting, then we're done; we just needed to read the
         // argument from the varargs.
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
         // Check the sign of the number.  If it is negative, convert it to
@@ -2457,14 +2532,14 @@ private:
         // Check the precision to see if the default precision was specified.  If
         // a non-default precision was specified, we turn off the zero flag, per
         // the C Standard Library specification.
-        if (this->_precision < 0)
+        if (_precision < 0)
         {
-			this->_precision = 1; // Default precision
+            _precision = 1; // Default precision
         }
         else
         {
             unset_flag(FL_LEADZERO);
-			this->_buffer.ensure_buffer_is_big_enough<Character>(this->_precision);
+            _buffer.ensure_buffer_is_big_enough<Character>(_precision);
         }
 
         // If the number is zero, we do not want to print the hex prefix ("0x"),
@@ -2474,7 +2549,7 @@ private:
             unset_flag(FL_ALTERNATE);
         }
 
-		this->_string_is_wide = sizeof(Character) == sizeof(wchar_t);
+        _string_is_wide = sizeof(Character) == sizeof(wchar_t);
 
         if (integer_size == sizeof(int64_t))
         {
@@ -2487,10 +2562,10 @@ private:
 
         // If the FORCEOCTAL flag is set, then we output a leading zero, unless
         // the formatted string already has a leading zero:
-        if (has_flag(FL_FORCEOCTAL) && (this->_string_length == 0 || this->tchar_string()[0] != '0'))
+        if (has_flag(FL_FORCEOCTAL) && (_string_length == 0 || tchar_string()[0] != '0'))
         {
-            *--(this->tchar_string()) = '0';
-            ++(this->_string_length);
+            *--tchar_string() = '0';
+            ++_string_length;
         }
 
         return true;
@@ -2511,14 +2586,14 @@ private:
         // buffer at the end of the formatting buffer, which allows us to perform
         // the formatting from least to greatest magnitude, which maps well to
         // the math.
-        Character* const last_digit{ this->_buffer.data<Character>() + this->_buffer.count<Character>() - 1};
+        Character* const last_digit{_buffer.data<Character>() + _buffer.count<Character>() - 1};
 
-        Character*& string_pointer = this->tchar_string();
+        Character*& string_pointer = tchar_string();
 
         string_pointer = last_digit;
-        while (this->_precision > 0 || number != 0)
+        while (_precision > 0 || number != 0)
         {
-            --this->_precision;
+            --_precision;
 
             Character digit{static_cast<Character>(number % radix + '0')};
             number /= radix;
@@ -2533,7 +2608,7 @@ private:
             *string_pointer-- = static_cast<char>(digit);
         }
 
-		this->_string_length = static_cast<int>(last_digit - string_pointer);
+        _string_length = static_cast<int>(last_digit - string_pointer);
         ++string_pointer;
     }
 
@@ -2543,10 +2618,10 @@ private:
     bool type_case_n() throw()
     {
         void* p{nullptr};
-        if (!this->extract_argument_from_va_list<void*>(p))
+        if (!extract_argument_from_va_list<void*>(p))
             return false;
 
-        if (!this->should_format())
+        if (!should_format())
             return true;
 
         if (!_get_printf_count_output())
@@ -2555,17 +2630,17 @@ private:
             return false; // Unreachable
         }
 
-        switch (to_integer_size(this->_length))
+        switch (to_integer_size(_length))
         {
-        case sizeof(int8_t):  *static_cast<int8_t *>(p) = static_cast<int8_t >(this->_characters_written);   break;
-        case sizeof(int16_t): *static_cast<int16_t*>(p) = static_cast<int16_t>(this->_characters_written);   break;
-        case sizeof(int32_t): *static_cast<int32_t*>(p) = static_cast<int32_t>(this->_characters_written);   break;
-        case sizeof(int64_t): *static_cast<int64_t*>(p) = static_cast<int64_t>(this->_characters_written);   break;
+        case sizeof(int8_t):  *static_cast<int8_t *>(p) = static_cast<int8_t >(_characters_written);   break;
+        case sizeof(int16_t): *static_cast<int16_t*>(p) = static_cast<int16_t>(_characters_written);   break;
+        case sizeof(int32_t): *static_cast<int32_t*>(p) = static_cast<int32_t>(_characters_written);   break;
+        case sizeof(int64_t): *static_cast<int64_t*>(p) = static_cast<int64_t>(_characters_written);   break;
         default:              _VALIDATE_RETURN(("Invalid integer length modifier", 0), EINVAL, false); break;
         }
 
         // This format specifier never corresponds to an output operation:
-		this->_suppress_output = true;
+        _suppress_output = true;
         return true;
     }
 
@@ -2573,10 +2648,10 @@ private:
     // perform the output operation, which is handled by these two functions.
     bool write_stored_string_tchar(char) throw()
     {
-        if (this->_string_is_wide && this->_string_length > 0)
+        if (_string_is_wide && _string_length > 0)
         {
-            wchar_t* p{ this->_wide_string};
-            for (int i{0}; i != this->_string_length; ++i)
+            wchar_t* p{_wide_string};
+            for (int i{0}; i != _string_length; ++i)
             {
                 char local_buffer[MB_LEN_MAX + 1];
 
@@ -2584,17 +2659,16 @@ private:
                 errno_t const status{wctomb_s(&mbc_length, local_buffer, _countof(local_buffer), *p++)};
                 if (status != 0 || mbc_length == 0)
                 {
-					this->_characters_written = -1;
+                    _characters_written = -1;
                     return true;
                 }
 
-				this->_output_adapter.write_string(local_buffer, mbc_length, &this->_characters_written, this->_cached_errno);
+                _output_adapter.write_string(local_buffer, mbc_length, &_characters_written, _cached_errno);
             }
         }
         else
         {
-			this->_output_adapter.write_string(this->_narrow_string, this->_string_length,
-				&this->_characters_written, this->_cached_errno);
+            _output_adapter.write_string(_narrow_string, _string_length, &_characters_written, _cached_errno);
         }
 
         return true;
@@ -2602,29 +2676,27 @@ private:
 
     bool write_stored_string_tchar(wchar_t) throw()
     {
-        if (!this->_string_is_wide && this->_string_length > 0)
+        if (!_string_is_wide && _string_length > 0)
         {
-            char* p{ this->_narrow_string};
-            for (int i{0}; i != this->_string_length; ++i)
+            char* p{_narrow_string};
+            for (int i{0}; i != _string_length; ++i)
             {
                 wchar_t wide_character{};
-                int const mbc_length{_mbtowc_l(&wide_character, p, this->_locale->locinfo->_public._locale_mb_cur_max, 
-					this->_locale)};
+                int const mbc_length{_mbtowc_l(&wide_character, p, _locale->locinfo->_public._locale_mb_cur_max, _locale)};
 
                 if (mbc_length <= 0)
                 {
-					this->_characters_written = -1;
+                    _characters_written = -1;
                     return true;
                 }
 
-				this->_output_adapter.write_character(wide_character, &this->_characters_written);
+                _output_adapter.write_character(wide_character, &_characters_written);
                 p += mbc_length;
             }
         }
         else
         {
-			this->_output_adapter.write_string(this->_wide_string, this->_string_length, 
-				&this->_characters_written, this->_cached_errno);
+            _output_adapter.write_string(_wide_string, _string_length, &_characters_written, _cached_errno);
         }
 
         return true;
@@ -2632,19 +2704,19 @@ private:
 
     // These functions are utilities for working with the flags, and performing
     // state transitions.
-    bool has_flag  (unsigned const f) const throw() { return (this->_flags & f) != 0; }
-    void set_flag  (unsigned const f)       throw() { this->_flags |= f;              }
-    void unset_flag(unsigned const f)       throw() { this->_flags &= ~f;             }
+    bool has_flag  (unsigned const f) const throw() { return (_flags & f) != 0; }
+    void set_flag  (unsigned const f)       throw() { _flags |= f;              }
+    void unset_flag(unsigned const f)       throw() { _flags &= ~f;             }
 
     state find_next_state(Character const c, state const previous_state) const throw()
     {
-        auto const& lookup_table = this->state_transition_table();
+        auto const& lookup_table = state_transition_table();
 
         unsigned const current_class = static_cast<unsigned>((c < ' ' || c > 'z')
             ? character_type::other
             : static_cast<character_type>(lookup_table[c - ' '] & 0x0f));
 
-        auto const index = current_class * this->state_count() + static_cast<unsigned>(previous_state);
+        auto const index = current_class * state_count() + static_cast<unsigned>(previous_state);
         return static_cast<state>(lookup_table[index] >> 4);
     }
 

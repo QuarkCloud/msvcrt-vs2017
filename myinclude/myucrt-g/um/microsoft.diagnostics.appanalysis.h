@@ -1,6 +1,6 @@
 /* Header file automatically generated from microsoft.diagnostics.appanalysis.idl */
 /*
- * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0206 
+ * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0223 
  */
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
@@ -34,18 +34,23 @@
 
 #pragma once
 
+// Ensure that the setting of the /ns_prefix command line switch is consistent for all headers.
+// If you get an error from the compiler indicating "warning C4005: 'CHECK_NS_PREFIX_STATE': macro redefinition", this
+// indicates that you have included two different headers with different settings for the /ns_prefix MIDL command line switch
+#if !defined(DISABLE_NS_PREFIX_CHECKS)
+#define CHECK_NS_PREFIX_STATE "always"
+#endif // !defined(DISABLE_NS_PREFIX_CHECKS)
+
+
 #pragma push_macro("MIDL_CONST_ID")
-#if !defined(_MSC_VER) || (_MSC_VER >= 1910)
-#define MIDL_CONST_ID constexpr const
-#else
+#undef MIDL_CONST_ID
 #define MIDL_CONST_ID const __declspec(selectany)
-#endif
 
 
 //  API Contract Inclusion Definitions
 #if !defined(SPECIFIC_API_CONTRACT_DEFINITIONS)
 #if !defined(WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION)
-#define WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION 0x30000
+#define WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION 0x40000
 #endif // defined(WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION)
 
 #if !defined(WINDOWS_FOUNDATION_FOUNDATIONCONTRACT_VERSION)
@@ -53,8 +58,12 @@
 #endif // defined(WINDOWS_FOUNDATION_FOUNDATIONCONTRACT_VERSION)
 
 #if !defined(WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION)
-#define WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION 0x50000
+#define WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION 0x70000
 #endif // defined(WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION)
+
+#if !defined(WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION)
+#define WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION 0x30000
+#endif // defined(WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION)
 
 #if !defined(WINDOWS_PHONE_PHONECONTRACT_VERSION)
 #define WINDOWS_PHONE_PHONECONTRACT_VERSION 0x10000
@@ -1038,8 +1047,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("07A0C227-BBEB-43FA-AF86-108114187CDC"), version] */
                 MIDL_INTERFACE("07A0C227-BBEB-43FA-AF86-108114187CDC")
-                IEtwEvent : IInspectable
+                IEtwEvent : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_EventId(
                         /* [retval, out] */__RPC__out UINT16 * eventId
                         ) = 0;
@@ -1079,8 +1089,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("80FDEE60-5888-47DB-92D3-E5BC3C9F57CF"), version] */
                 MIDL_INTERFACE("80FDEE60-5888-47DB-92D3-E5BC3C9F57CF")
-                IEtwEventFactory : IInspectable
+                IEtwEventFactory : public IInspectable
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE CreateInstance(
                         /* [in] */UINT16 eventId,
                         /* [in] */BYTE eventVersion,
@@ -1117,8 +1128,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("11624719-7C26-4BDE-A80F-441DF7670BB8"), version] */
                 MIDL_INTERFACE("11624719-7C26-4BDE-A80F-441DF7670BB8")
-                IEtwProvider : IInspectable
+                IEtwProvider : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_ID(
                         /* [retval, out] */__RPC__out GUID * ID
                         ) = 0;
@@ -1161,8 +1173,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("598024F7-A743-4555-A1FD-5EB465308194"), version] */
                 MIDL_INTERFACE("598024F7-A743-4555-A1FD-5EB465308194")
-                IEtwProviderStatics : IInspectable
+                IEtwProviderStatics : public IInspectable
                 {
+                public:
                     /* [default_overload, overload] */virtual HRESULT STDMETHODCALLTYPE Create(
                         /* [in] */GUID providerId,
                         /* [in] */__RPC__in HSTRING manifest,
@@ -1199,8 +1212,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, uuid("8929948F-2A94-4ED4-ABB6-92EF45E61B21"), version] */
                 MIDL_INTERFACE("8929948F-2A94-4ED4-ABB6-92EF45E61B21")
-                IEtwEventRecordCallback : IUnknown
+                IEtwEventRecordCallback : public IUnknown
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE Invoke(
                         /* [in] */__RPC__in_opt ABI::Microsoft::Diagnostics::AppAnalysis::IEtwEventRecord * eventrecord
                         ) = 0;
@@ -1234,8 +1248,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("012A38E6-6B29-473E-A219-CAAE719E9996"), version] */
                 MIDL_INTERFACE("012A38E6-6B29-473E-A219-CAAE719E9996")
-                IEtwEventWatcher : IInspectable
+                IEtwEventWatcher : public IInspectable
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE RegisterEvent(
                         /* [in] */__RPC__in_opt ABI::Microsoft::Diagnostics::AppAnalysis::IEtwEvent * etwEvent,
                         /* [in] */__RPC__in_opt ABI::Microsoft::Diagnostics::AppAnalysis::IEtwEventRecordCallback  * eventCallback
@@ -1270,8 +1285,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("C2205647-2FD8-43E0-92CB-0ED1A0DB9E55"), version] */
                 MIDL_INTERFACE("C2205647-2FD8-43E0-92CB-0ED1A0DB9E55")
-                IEtwRule : IInspectable
+                IEtwRule : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_BackingRule(
                         /* [retval, out] */__RPC__deref_out_opt ABI::Microsoft::Diagnostics::AppAnalysis::IRule * * backingRule
                         ) = 0;
@@ -1310,8 +1326,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("363FA5D1-2E25-4CC0-8BCF-62ECD32ABF9A"), version] */
                 MIDL_INTERFACE("363FA5D1-2E25-4CC0-8BCF-62ECD32ABF9A")
-                IEtwRuleFactory : IInspectable
+                IEtwRuleFactory : public IInspectable
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE CreateInstance(
                         /* [in] */__RPC__in_opt ABI::Microsoft::Diagnostics::AppAnalysis::IRule * backingRule,
                         /* [in] */__RPC__in_opt ABI::Microsoft::Diagnostics::AppAnalysis::IEtwEventWatcher * watcher,
@@ -1347,8 +1364,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("111BA2AD-ECE9-4FEE-8168-E94F290CC451"), version] */
                 MIDL_INTERFACE("111BA2AD-ECE9-4FEE-8168-E94F290CC451")
-                IResourceStringFactory : IInspectable
+                IResourceStringFactory : public IInspectable
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE CreateInstance(
                         /* [in] */UINT32 identifier,
                         /* [retval, out] */__RPC__deref_out_opt ABI::Microsoft::Diagnostics::AppAnalysis::IResourceString * * instance
@@ -1388,8 +1406,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("CD75217D-5BF1-4056-9253-71D9C57D2B06"), version] */
                 MIDL_INTERFACE("CD75217D-5BF1-4056-9253-71D9C57D2B06")
-                IResourceString : IInspectable
+                IResourceString : public IInspectable
                 {
+                public:
                     /* [propput] */virtual HRESULT STDMETHODCALLTYPE put_Identifier(
                         /* [in] */UINT32 identifer
                         ) = 0;
@@ -1431,8 +1450,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, uuid("E433A2D7-AAB7-4749-A66C-1530941AC47B"), version] */
                 MIDL_INTERFACE("E433A2D7-AAB7-4749-A66C-1530941AC47B")
-                IResourceStringView : IInspectable
+                IResourceStringView : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_Identifier(
                         /* [retval, out] */__RPC__out UINT32 * identifer
                         ) = 0;
@@ -1463,8 +1483,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, uuid("155EB649-1F41-465F-8C13-D49DFD8EB7D4"), version] */
                 MIDL_INTERFACE("155EB649-1F41-465F-8C13-D49DFD8EB7D4")
-                IRule : IInspectable
+                IRule : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_Id(
                         /* [retval, out] */__RPC__deref_out_opt HSTRING * id
                         ) = 0;
@@ -1524,8 +1545,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("79380594-6095-49C8-82E6-65DDC099DC59"), version] */
                 MIDL_INTERFACE("79380594-6095-49C8-82E6-65DDC099DC59")
-                IEtwEventRecord : IInspectable
+                IEtwEventRecord : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_Timestamp(
                         /* [retval, out] */__RPC__out INT64 * timestamp
                         ) = 0;
@@ -1603,8 +1625,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("E60D2D49-19D8-4614-A526-5BC97EFA72CB"), version] */
                 MIDL_INTERFACE("E60D2D49-19D8-4614-A526-5BC97EFA72CB")
-                IRuleTriggeredEventArgs : IInspectable
+                IRuleTriggeredEventArgs : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_TimelineStart(
                         /* [retval, out] */__RPC__out INT64 * timelineStart
                         ) = 0;
@@ -1668,8 +1691,9 @@ namespace ABI {
             namespace AppAnalysis {
                 /* [object, exclusiveto, uuid("B6090E2B-D71F-42EE-80DA-3393DA4038FD"), version] */
                 MIDL_INTERFACE("B6090E2B-D71F-42EE-80DA-3393DA4038FD")
-                IRuleTriggeredEventArgsFactory : IInspectable
+                IRuleTriggeredEventArgsFactory : public IInspectable
                 {
+                public:
                     virtual HRESULT STDMETHODCALLTYPE CreateInstance(
                         /* [in] */UINT64 elementId,
                         /* [in] */ABI::Microsoft::Diagnostics::AppAnalysis::TimelineInfo timelineInfo,

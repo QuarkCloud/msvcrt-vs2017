@@ -210,7 +210,7 @@ namespace msclr
 
         // Try to take the lock within the specified timespan. In the case
         // of timeout, return false.
-        bool try_acquire( int _timeout ) // throw()
+        bool try_acquire( int _timeout ) // noexcept, but error C2353 prohibits on managed classes
         {
             if( ! m_locked )
             {
@@ -225,7 +225,7 @@ namespace msclr
 
         // Try to take the lock within the specified timespan. In the case
         // of timeout, return false.
-        bool try_acquire( System::TimeSpan _timeout ) // throw()
+        bool try_acquire( System::TimeSpan _timeout ) // noexcept, but error C2353 prohibits on managed classes
         {
             if( ! m_locked )
             {

@@ -3,6 +3,8 @@
 */
 
 #pragma once
+#ifndef RESOURCEINDEXER_H
+#define RESOURCEINDEXER_H
 
 #pragma region Desktop Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
@@ -36,10 +38,11 @@ void DestroyIndexedResults(
     _In_ ULONG qualifierCount,
     _In_reads_opt_(qualifierCount) IndexedResourceQualifier* qualifiers);
 
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
+
+#endif /* !RESOURCEINDEXER_H */

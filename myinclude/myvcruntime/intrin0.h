@@ -115,6 +115,12 @@ extern "C" {
 
 __MACHINEARM_ARM64(void __dmb(unsigned int _Type))
 
+__MACHINE(unsigned char _BitScanForward(unsigned long * _Index, unsigned long _Mask))
+__MACHINEX64(unsigned char _BitScanForward64(unsigned long * _Index, unsigned __int64 _Mask))
+__MACHINEARM64(unsigned char _BitScanForward64(unsigned long * _Index, unsigned __int64 _Mask))
+__MACHINE(unsigned char _BitScanReverse(unsigned long * _Index, unsigned long _Mask))
+__MACHINEX64(unsigned char _BitScanReverse64(unsigned long * _Index, unsigned __int64 _Mask))
+__MACHINEARM64(unsigned char _BitScanReverse64(unsigned long * _Index, unsigned __int64 _Mask))
 __MACHINE(unsigned char _bittest(long const *, long))
 __MACHINE(long _InterlockedAnd(long volatile * _Value, long _Mask))
 __MACHINE(short _InterlockedAnd16(short volatile * _Value, short _Mask))
@@ -233,6 +239,8 @@ __MACHINE(unsigned char _interlockedbittestandset(long volatile *, long))
 __MACHINEARM_ARM64(unsigned char _interlockedbittestandset_acq(long volatile *, long))
 __MACHINEARM_ARM64(unsigned char _interlockedbittestandset_nf(long volatile *, long))
 __MACHINEARM_ARM64(unsigned char _interlockedbittestandset_rel(long volatile *, long))
+__MACHINEX64(unsigned __int64 __shiftright128(unsigned __int64 _LowPart, unsigned __int64 _HighPart, unsigned char _Shift))
+__MACHINEX64(unsigned __int64 _umul128(unsigned __int64 _Multiplier, unsigned __int64 _Multiplicand, unsigned __int64 * _HighProduct))
 
 /*******************************************************************
 * Note: New intrinsics should be added here IF AND ONLY IF they're *

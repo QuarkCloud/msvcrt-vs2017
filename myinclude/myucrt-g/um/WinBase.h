@@ -1,3 +1,5 @@
+//@[contract("winbase"), comment("MVI_tracked - https://osgwiki.com/wiki/Microsoft_Virus_Initiative")];
+
 #include <winapifamily.h>
 
 /************************************************************************
@@ -36,6 +38,7 @@
 // APISET contracts
 //
 
+#include <apiquery2.h>
 #include <processenv.h>
 #include <fileapi.h>
 #include <debugapi.h>
@@ -594,6 +597,7 @@ typedef struct _MEMORYSTATUS {
 
 #define PROCESS_MODE_BACKGROUND_BEGIN     0x00100000
 #define PROCESS_MODE_BACKGROUND_END       0x00200000
+#define CREATE_SECURE_PROCESS             0x00400000
 
 #define CREATE_BREAKAWAY_FROM_JOB         0x01000000
 #define CREATE_PRESERVE_CODE_AUTHZ_LEVEL  0x02000000
@@ -2178,6 +2182,19 @@ OpenCommPort(
 
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_RS3)
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS3) // NTDDI_WIN10_RS4NTDDI_WIN10_RS4
+
+WINBASEAPI
+ULONG
+WINAPI
+GetCommPorts(
+    _Out_writes_(uPortNumbersCount) PULONG lpPortNumbers,
+    _In_                            ULONG uPortNumbersCount,
+    _Out_                           PULONG puPortNumbersFound
+    );
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS3) // NTDDI_WIN10_RS4NTDDI_WIN10_RS4
+
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
@@ -3366,6 +3383,9 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
     ProcThreadAttributeDesktopAppPolicy = 18,
 #endif
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+    ProcThreadAttributePseudoConsole                = 22,
+#endif
 } PROC_THREAD_ATTRIBUTE_NUM;
 #endif
 
@@ -3404,6 +3424,11 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
     ProcThreadAttributeValue (ProcThreadAttributeProtectionLevel, FALSE, TRUE, FALSE)
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE)
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+#define PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE \
+    ProcThreadAttributeValue (ProcThreadAttributePseudoConsole, FALSE, TRUE, FALSE)
 #endif
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
@@ -3619,6 +3644,36 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
 #define PROCESS_CREATION_MITIGATION_POLICY2_MODULE_TAMPERING_PROTECTION_ALWAYS_OFF        (0x00000002ui64 << 12)
 #define PROCESS_CREATION_MITIGATION_POLICY2_MODULE_TAMPERING_PROTECTION_NOINHERIT         (0x00000003ui64 << 12)
 
+//
+// Define the restricted indirect branch prediction mitigation policy options.
+//
+
+#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_MASK        (0x00000003ui64 << 16)
+#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_DEFER       (0x00000000ui64 << 16)
+#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_ALWAYS_ON   (0x00000001ui64 << 16)
+#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_ALWAYS_OFF  (0x00000002ui64 << 16)
+#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_RESERVED    (0x00000003ui64 << 16)
+
+//
+// Define the policy option that allows a broker to downgrade the dynamic code policy for a process.
+//
+
+#define PROCESS_CREATION_MITIGATION_POLICY2_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY_MASK       (0x00000003ui64 << 20)
+#define PROCESS_CREATION_MITIGATION_POLICY2_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY_DEFER      (0x00000000ui64 << 20)
+#define PROCESS_CREATION_MITIGATION_POLICY2_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY_ALWAYS_ON  (0x00000001ui64 << 20)
+#define PROCESS_CREATION_MITIGATION_POLICY2_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY_ALWAYS_OFF (0x00000002ui64 << 20)
+#define PROCESS_CREATION_MITIGATION_POLICY2_ALLOW_DOWNGRADE_DYNAMIC_CODE_POLICY_RESERVED   (0x00000003ui64 << 20)
+
+//
+// Define the Memory Disambiguation Disable mitigation policy options.
+//
+
+#define PROCESS_CREATION_MITIGATION_POLICY2_SPECULATIVE_STORE_BYPASS_DISABLE_MASK          (0x00000003ui64 << 24)
+#define PROCESS_CREATION_MITIGATION_POLICY2_SPECULATIVE_STORE_BYPASS_DISABLE_DEFER         (0x00000000ui64 << 24)
+#define PROCESS_CREATION_MITIGATION_POLICY2_SPECULATIVE_STORE_BYPASS_DISABLE_ALWAYS_ON     (0x00000001ui64 << 24)
+#define PROCESS_CREATION_MITIGATION_POLICY2_SPECULATIVE_STORE_BYPASS_DISABLE_ALWAYS_OFF    (0x00000002ui64 << 24)
+#define PROCESS_CREATION_MITIGATION_POLICY2_SPECULATIVE_STORE_BYPASS_DISABLE_RESERVED      (0x00000003ui64 << 24)
+
 #endif // _WIN32_WINNT_WINTHRESHOLD
 #endif // _WIN32_WINNT_WINBLUE
 #endif // _WIN32_WINNT_WIN8
@@ -3673,6 +3728,11 @@ typedef enum _PROC_THREAD_ATTRIBUTE_NUM {
 
 
 #endif // NTDDI_WIN10_RS2
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+
+
+#endif // NTDDI_WIN10_RS5
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
@@ -3748,8 +3808,8 @@ SetEnvironmentVariable(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+#pragma region OneCore Family or App Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 
 WINBASEAPI
 DWORD
@@ -3859,7 +3919,7 @@ SetFirmwareEnvironmentVariableExW(
 
 #endif
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
 #pragma region Desktop Family
@@ -7209,6 +7269,7 @@ LogonUserExW (
 #define LOGON_NETCREDENTIALS_ONLY       0x00000002
 #define LOGON_ZERO_PASSWORD_BUFFER      0x80000000
 
+//@[comment("MVI_tracked")]
 WINADVAPI
 _Must_inspect_result_ BOOL
 WINAPI
@@ -8564,6 +8625,9 @@ typedef struct _FILE_DISPOSITION_INFO {
 #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
 #define FILE_DISPOSITION_FLAG_FORCE_IMAGE_SECTION_CHECK  0x00000004
 #define FILE_DISPOSITION_FLAG_ON_CLOSE                   0x00000008
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5)
+#define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
+#endif
 
 typedef struct _FILE_DISPOSITION_INFO_EX {
     DWORD Flags;
@@ -8986,6 +9050,23 @@ InitializeContext(
     _Out_ PCONTEXT* Context,
     _Inout_ PDWORD ContextLength
     );
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+
+_Success_(return != FALSE)
+WINBASEAPI
+BOOL
+WINAPI
+InitializeContext2(
+    _Out_writes_bytes_opt_(*ContextLength) PVOID Buffer,
+    _In_ DWORD ContextFlags,
+    _Out_ PCONTEXT* Context,
+    _Inout_ PDWORD ContextLength,
+    _In_ ULONG64 XStateCompactionMask
+    );
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
@@ -9085,6 +9166,23 @@ ReadThreadProfilingData(
 #pragma endregion
 
 #endif /* (_WIN32_WINNT >= 0x0601) */
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+#pragma region Desktop Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+
+WINBASEAPI
+DWORD
+WINAPI
+RaiseCustomSystemEventTrigger(
+    _In_ PCUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG CustomSystemEventTriggerConfig
+    );
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#endif /* (NTDDI_VERSION >= NTDDI_WIN10_RS4) */
 
 
 

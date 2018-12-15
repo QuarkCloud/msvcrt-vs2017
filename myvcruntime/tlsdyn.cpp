@@ -1,5 +1,5 @@
 /***
-*tlsdyn.c - Thread Local Storage dynamic initialization run-time support module
+*tlsdyn.cpp - Thread Local Storage dynamic initialization run-time support module
 *
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *
@@ -44,7 +44,7 @@ static _CRTALLOC(".CRT$XDZ") _PVFV __xd_z = nullptr;
  * dyntls_init_exception_filter: Execute handlers for C++ exceptions,
  * ignoring all others.
  */
-static int __cdecl dyntls_init_exception_filter(unsigned long const _exception_code) throw()
+static int __cdecl dyntls_init_exception_filter(unsigned long const _exception_code)
 {
     if (_exception_code == ('msc' | 0xE0000000))
     {

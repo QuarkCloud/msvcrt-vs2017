@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * srpapi.h -- ApiSet Contract for ext-ms-win-security-srp-l1                    *
@@ -6,6 +5,7 @@
 * Copyright (c) Microsoft Corporation. All rights reserved.                     *
 *                                                                               *
 ********************************************************************************/
+
 #ifndef _APISETSRPEXT_
 #define _APISETSRPEXT_
 
@@ -28,24 +28,6 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: ext-ms-win-security-srp-l1 */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_MS_WIN_SECURITY_SRP_L1_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS1
-#define _APISET_MS_WIN_SECURITY_SRP_L1_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_MS_WIN_SECURITY_SRP_L1_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
-
 #if _MSC_VER > 1000
 #pragma once
 #endif
@@ -57,9 +39,7 @@ extern "C" {
 #endif
 
 #pragma region Desktop Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
 
@@ -72,13 +52,13 @@ typedef struct HTHREAD_NETWORK_CONTEXT
 STDAPI
 SrpCreateThreadNetworkContext(
     _In_ PCWSTR enterpriseId,
-    _Out_ HTHREAD_NETWORK_CONTEXT * threadNetworkContext
+    _Out_ HTHREAD_NETWORK_CONTEXT* threadNetworkContext
     );
 
 
 STDAPI
 SrpCloseThreadNetworkContext(
-    _Inout_ HTHREAD_NETWORK_CONTEXT * threadNetworkContext
+    _Inout_ HTHREAD_NETWORK_CONTEXT* threadNetworkContext
     );
 
 
@@ -93,7 +73,7 @@ STDAPI
 SrpGetEnterpriseIds(
     _In_ HANDLE tokenHandle,
     _Inout_opt_ PULONG numberOfBytes,
-    _Out_writes_bytes_opt_(*numberOfBytes) PCWSTR * enterpriseIds,
+    _Out_writes_bytes_opt_(*numberOfBytes) PCWSTR* enterpriseIds,
     _Out_ PULONG enterpriseIdCount
     );
 
@@ -112,9 +92,6 @@ SrpDisablePermissiveModeFileEncryption(
 
 #endif /* _WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD */
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MS_WIN_SECURITY_SRP_L1_VER >= 0x0101)
-
 typedef enum
 {
     ENTERPRISE_POLICY_NONE        = 0x0,
@@ -128,26 +105,22 @@ DEFINE_ENUM_FLAG_OPERATORS(ENTERPRISE_DATA_POLICIES);
 STDAPI
 SrpGetEnterprisePolicy(
     _In_ HANDLE tokenHandle,
-    _Out_ ENTERPRISE_DATA_POLICIES * policyFlags
+    _Out_ ENTERPRISE_DATA_POLICIES* policyFlags
     );
 
 
 NTSTATUS
 SrpIsTokenService(
     _In_ HANDLE TokenHandle,
-    _Out_ BOOLEAN * IsTokenService
+    _Out_ BOOLEAN* IsTokenService
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MS_WIN_SECURITY_SRP_L1_VER >= 0x0101)
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
 
@@ -155,8 +128,8 @@ SrpIsTokenService(
 
 STDAPI
 SrpDoesPolicyAllowAppExecution(
-    _In_ const PACKAGE_ID * packageId,
-    _Out_ BOOL * isAllowed
+    _In_ const PACKAGE_ID* packageId,
+    _Out_ BOOL* isAllowed
     );
 
 
@@ -226,9 +199,6 @@ IsSrpDisablePermissiveModeFileEncryptionPresent(
 
 #endif
 
-#if !defined(_CONTRACT_GEN) || (_APISET_MS_WIN_SECURITY_SRP_L1_VER >= 0x0101)
-
-
 BOOLEAN
 __stdcall
 IsSrpGetEnterprisePolicyPresent(
@@ -240,8 +210,6 @@ __stdcall
 IsSrpIsTokenServicePresent(
     VOID
     );
-
-#endif
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
 

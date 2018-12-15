@@ -52,8 +52,9 @@
 #define REGSTR_KEY_DOSOPTMOUSE  TEXT("MOUSE")
 
 #define REGSTR_KEY_KNOWNDOCKINGSTATES TEXT("Hardware Profiles")
-#define REGSTR_KEY_DEVICEPARAMETERS   TEXT("Device Parameters")
 
+#define REGSTR_KEY_DEVICEPARAMETERS   TEXT("Device Parameters")
+#define REGSTR_KEY_DRIVERPARAMETERS   TEXT("Driver Parameters")
 
 /*** Public registry paths
  */
@@ -103,6 +104,7 @@
 #define REGSTR_PATH_FONTS           TEXT("Display\\Fonts")
 #define REGSTR_PATH_ENUM        TEXT("Enum")
 #define REGSTR_PATH_ROOT        TEXT("Enum\\Root")
+
 
 #define REGSTR_PATH_CURRENTCONTROLSET TEXT("System\\CurrentControlSet")
 #define REGSTR_PATH_SYSTEMENUM  TEXT("System\\CurrentControlSet\\Enum")
@@ -186,6 +188,7 @@
 #define REGSTR_VAL_LINKED                          TEXT("Linked")
 #define REGSTR_VAL_PHYSICALDEVICEOBJECT            TEXT("PhysicalDeviceObject")
 #define REGSTR_VAL_REMOVAL_POLICY                  TEXT("RemovalPolicy")
+#define REGSTR_KEY_FILTERS                         TEXT("Filters")
 
 //
 // Values under REGSTR_PATH_NT_CURRENTVERSION

@@ -19,6 +19,10 @@
 #include <vcruntime.h>
 #include <setjmp.h>
 
+#if defined (_M_ARM64) || defined(_M_HYBRID_X86_ARM64)
+#include <stdint.h> // uint8_t
+#endif
+
 #ifndef _M_CEE_PURE
 
     #if (defined (_M_IX86) || defined (_M_X64)) && !defined(_CHPE_ONLY_)
@@ -47,12 +51,6 @@ extern "C" {
 
 __MACHINEARM(int _AddSatInt(int, int))
 __MACHINE(void * _AddressOfReturnAddress(void))
-__MACHINE(unsigned char _BitScanForward(unsigned long * _Index, unsigned long _Mask))
-__MACHINEX64(unsigned char _BitScanForward64(unsigned long * _Index, unsigned __int64 _Mask))
-__MACHINEARM64(unsigned char _BitScanForward64(unsigned long * _Index, unsigned __int64 _Mask))
-__MACHINE(unsigned char _BitScanReverse(unsigned long * _Index, unsigned long _Mask))
-__MACHINEX64(unsigned char _BitScanReverse64(unsigned long * _Index, unsigned __int64 _Mask))
-__MACHINEARM64(unsigned char _BitScanReverse64(unsigned long * _Index, unsigned __int64 _Mask))
 __MACHINEARM_ARM64(double _CopyDoubleFromInt64(__int64))
 __MACHINEARM_ARM64(float _CopyFloatFromInt32(__int32))
 __MACHINEARM_ARM64(__int32 _CopyInt32FromFloat(float))
@@ -256,7 +254,6 @@ __MACHINEARM64(unsigned short __readx18word(unsigned long))
 __MACHINEX86_X64(unsigned long __segmentlimit(unsigned long))
 __MACHINEARM_ARM64(void __sev(void))
 __MACHINEX64(unsigned __int64 __shiftleft128(unsigned __int64 _LowPart, unsigned __int64 _HighPart, unsigned char _Shift))
-__MACHINEX64(unsigned __int64 __shiftright128(unsigned __int64 _LowPart, unsigned __int64 _HighPart, unsigned char _Shift))
 __MACHINEX86_X64(void __sidt(void *))
 __MACHINEARM_ARM64(void __static_assert(int, const char *))
 __MACHINEX86_X64(void __stosb(unsigned char *, unsigned char, size_t))
@@ -922,7 +919,6 @@ __MACHINE(unsigned __int64 __cdecl _rotr64(_In_ unsigned __int64 _Value, _In_ in
 __MACHINE(unsigned char __cdecl _rotr8(unsigned char _Value, unsigned char _Shift))
 __MACHINE(int __cdecl _setjmp(jmp_buf))
 __MACHINEARM_ARM64_X64(int __cdecl _setjmpex(jmp_buf))
-__MACHINEX64(unsigned __int64 _umul128(unsigned __int64 _Multiplier, unsigned __int64 _Multiplicand, unsigned __int64 * _HighProduct))
 __MACHINEX86_X64(void _rsm(void))
 __MACHINEX86_X64(void _lgdt(void *))
 __MACHINEX86_X64(void _sgdt(void *))

@@ -249,6 +249,7 @@ DEFINE_GUID(StructureChanged_Event_GUID,                                0x599779
 DEFINE_GUID(MenuOpened_Event_GUID,                                      0xebe2e945, 0x66ca, 0x4ed1, 0x9f, 0xf8, 0x2a, 0xd7, 0xdf, 0x0a, 0x1b, 0x08);
 DEFINE_GUID(AutomationPropertyChanged_Event_GUID,                       0x2527fba1, 0x8d7a, 0x4630, 0xa4, 0xcc, 0xe6, 0x63, 0x15, 0x94, 0x2f, 0x52);
 DEFINE_GUID(AutomationFocusChanged_Event_GUID,                          0xb68a1f17, 0xf60d, 0x41a7, 0xa3, 0xcc, 0xb0, 0x52, 0x92, 0x15, 0x5f, 0xe0);
+DEFINE_GUID(ActiveTextPositionChanged_Event_GUID,                       0xa5c09e9c, 0xc77d, 0x4f25, 0xb4, 0x91, 0xe5, 0xbb, 0x70, 0x17, 0xcb, 0xd4);
 DEFINE_GUID(AsyncContentLoaded_Event_GUID,                              0x5fdee11c, 0xd2fa, 0x4fb9, 0x90, 0x4e, 0x5c, 0xbe, 0xe8, 0x94, 0xd5, 0xef);
 DEFINE_GUID(MenuClosed_Event_GUID,                                      0x3cf1266e, 0x1582, 0x4041, 0xac, 0xd7, 0x88, 0xa3, 0x5a, 0x96, 0x52, 0x97);
 DEFINE_GUID(LayoutInvalidated_Event_GUID,                               0xed7d6544, 0xa6bd, 0x4595, 0x9b, 0xae, 0x3d, 0x28, 0x94, 0x6c, 0xc7, 0x15);
@@ -454,7 +455,9 @@ DEFINE_GUID(Selection2_LastSelectedItem_Property_GUID,                  0xcf7bda
 DEFINE_GUID(Selection2_CurrentSelectedItem_Property_GUID,               0x34257c26, 0x83b5, 0x41a6, 0x93, 0x9c, 0xae, 0x84, 0x1c, 0x13, 0x62, 0x36);
 DEFINE_GUID(Selection2_ItemCount_Property_GUID,                         0xbb49eb9f, 0x456d, 0x4048, 0xb5, 0x91, 0x9c, 0x20, 0x26, 0xb8, 0x46, 0x36);
 DEFINE_GUID(Selection_Pattern2_GUID,                                    0xfba25cab, 0xab98, 0x49f7, 0xa7, 0xdc, 0xfe, 0x53, 0x9d, 0xc1, 0x5b, 0xe7);
+DEFINE_GUID(HeadingLevel_Property_GUID,                                 0x29084272, 0xaaaf, 0x4a30, 0x87, 0x96, 0x3c, 0x12, 0xf6, 0x2b, 0x6b, 0xbb);
 
+DEFINE_GUID(IsDialog_Property_GUID,                                     0x9d0dfb9b, 0x8436, 0x4501, 0xbb, 0xbb, 0xe5, 0x34, 0xa4, 0xfb, 0x3b, 0x3f);
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
 #pragma endregion
 
@@ -495,6 +498,7 @@ enum PropertyConditionFlags
 {
     PropertyConditionFlags_None = 0x00,
     PropertyConditionFlags_IgnoreCase = 0x01,
+    PropertyConditionFlags_MatchSubstring = 0x02,
 };
 #endif
 
@@ -695,6 +699,7 @@ enum EventArgsType
     EventArgsType_TextEditTextChanged,
     EventArgsType_Changes,
     EventArgsType_Notification,
+    EventArgsType_ActiveTextPositionChanged,
 };
 
 enum AsyncContentLoadedState
@@ -775,6 +780,9 @@ HRESULT WINAPI UiaRaiseNotificationEvent(
     NotificationProcessing notificationProcessing,
     _In_opt_ BSTR displayString,
     _In_ BSTR activityId);
+HRESULT WINAPI UiaRaiseActiveTextPositionChangedEvent(
+    _In_ IRawElementProviderSimple* provider,
+    _In_opt_ ITextRangeProvider* textRange);
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
 #pragma endregion

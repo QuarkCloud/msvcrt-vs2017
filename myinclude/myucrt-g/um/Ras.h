@@ -15,6 +15,12 @@ Abstract:
         WINVER = 0x400 = Windows 95, Windows98, Windows NT4 (default)
         WINVER > 0x400 = Windows NT4 enhancements
         WINVER = 0x500 = Windows 2000
+        WINVER = 0x501 = Windows XP
+        WINVER = 0x600 = Windows Vista
+        WINVER = 0x601 = Windows 7
+        WINVER = 0x602 = Windows 8
+        WINVER = 0x603 = Windows Blue
+        WINVER = 0xA00 = Windows 10
 
 --*/
 
@@ -41,7 +47,7 @@ extern "C" {
 #include <lmcons.h>
 #endif
 
-// To use Quarantine APIs, applications should explicitly 
+// To use Quarantine APIs, applications should explicitly
 // define USES_RAS_QUARANTINE_APIS.
 #ifdef USES_RAS_QUARANTINE_APIS
 #include <naptypes.h>
@@ -152,6 +158,8 @@ DECLARE_HANDLE( HRASCONN );
 #define RASCF_IsNotOwner(rascFlags) (((rascFlags) & (RASCF_OwnerKnown | RASCF_OwnerMatch)) == (RASCF_OwnerKnown))
 #endif
 
+#define RAS_MaxIDSize      256
+
 /* Identifies an active RAS connection.  (See RasEnumConnections)
 */
 #define RASCONNW struct tagRASCONNW
@@ -256,7 +264,7 @@ RASCONNSTATE
 #if (WINVER >= 0x601)
     RASCS_ApplySettings,
 #endif
-    
+
     RASCS_Interactive = RASCS_PAUSED,
     RASCS_RetryAuthentication,
     RASCS_CallbackSetByCaller,
@@ -429,7 +437,7 @@ RASDIALEXTENSIONS
 #if (WINVER >= 0x601)
     BOOL                fSkipPppAuth;
     RASDEVSPECIFICINFO  RasDevSpecificInfo;
-#endif 
+#endif
 };
 
 #define LPRASDIALEXTENSIONS RASDIALEXTENSIONS*
@@ -721,7 +729,7 @@ RASPPPIPV6
 
 #define LPRASPPPIPV6  RASPPPIPV6*
 #endif
-  
+
 
 /* Describes the results of a PPP LCP/multi-link negotiation.
 */
@@ -889,9 +897,9 @@ RASPPPCCP
 
 #endif
 
-/* 
+/*
 ** New Projection Information structure for PPP and IKEv2
-** 
+**
 */
 #if (WINVER >= 0x601)
 
@@ -976,12 +984,30 @@ typedef enum _RASPROJECTION_INFO_TYPE {
 }
 RASPROJECTION_INFO_TYPE;
 
-typedef struct _RAS_PROJECTION_INFO { 
+
+typedef enum _IKEV2_ID_PAYLOAD_TYPE
+{
+    IKEV2_ID_PAYLOAD_TYPE_INVALID      = 0,
+    IKEV2_ID_PAYLOAD_TYPE_IPV4_ADDR    = 1, // A single four (4) octet IPv4 address
+    IKEV2_ID_PAYLOAD_TYPE_FQDN         = 2, // A fully-qualified domain name string, e.g., "example.com"
+    IKEV2_ID_PAYLOAD_TYPE_RFC822_ADDR  = 3, // A fully-qualified RFC 822 email address string, e.g., "jsmith@example.com".
+    IKEV2_ID_PAYLOAD_TYPE_RESERVED1    = 4, // Reserved-Not used
+    IKEV2_ID_PAYLOAD_TYPE_ID_IPV6_ADDR = 5, // A single sixteen (16) octet IPv6 address.
+    IKEV2_ID_PAYLOAD_TYPE_RESERVED2    = 6, // Reserved-Not used
+    IKEV2_ID_PAYLOAD_TYPE_RESERVED3    = 7, // Reserved-Not used
+    IKEV2_ID_PAYLOAD_TYPE_RESERVED4    = 8, // Reserved-Not used
+    IKEV2_ID_PAYLOAD_TYPE_DER_ASN1_DN  = 9, // The binary Distinguished Encoding Rules (DER) encoding of an ASN.1 X.500 Distinguished Name [PKIX].
+    IKEV2_ID_PAYLOAD_TYPE_DER_ASN1_GN  = 10,// The binary DER encoding of an ASN.1 X.509 GeneralName [PKIX
+    IKEV2_ID_PAYLOAD_TYPE_KEY_ID       = 11,// Reserved-Not used
+    IKEV2_ID_PAYLOAD_TYPE_MAX
+} IKEV2_ID_PAYLOAD_TYPE;
+
+typedef struct _RAS_PROJECTION_INFO {
 
     RASAPIVERSION             version;
     RASPROJECTION_INFO_TYPE   type;
-    
-    // Based on the connectionFlags, it should use appropriate projection info 
+
+    // Based on the connectionFlags, it should use appropriate projection info
     union {
         RASPPP_PROJECTION_INFO     ppp;
         RASIKEV2_PROJECTION_INFO   ikev2;
@@ -1239,14 +1265,23 @@ RASENTRYA
 #endif
 
 #if (WINVER >= 0x601)
-    // Fields required for supporting static IPv6 address 
-    // configuration for a vpn interface by the user 
+    // Fields required for supporting static IPv6 address
+    // configuration for a vpn interface by the user
     RASIPV6ADDR   ipv6addr;
     DWORD         dwIPv6PrefixLength;
 
     //
     // IKEv2 related
-    DWORD         dwNetworkOutageTime;
+    DWORD            dwNetworkOutageTime;
+#endif
+
+#if (WINVER >= 0xA00)
+    CHAR             szIDi[RAS_MaxIDSize + 1];
+    CHAR             szIDr[RAS_MaxIDSize + 1];
+    BOOL             fIsImsConfig;
+    IKEV2_ID_PAYLOAD_TYPE IdiType;
+    IKEV2_ID_PAYLOAD_TYPE IdrType;
+    BOOL             fDisableIKEv2Fragmentation;
 #endif
 };
 
@@ -1387,15 +1422,24 @@ RASENTRYW
 #endif
 
 #if (WINVER >= 0x601)
-    //Fields required for supporting static IPv6 address 
+    //Fields required for supporting static IPv6 address
     // configuration for a vpn interface by the user
     RASIPV6ADDR   ipv6addr;
     DWORD         dwIPv6PrefixLength;
 
     //
     // IKEv2 related
-    DWORD         dwNetworkOutageTime;
+    DWORD            dwNetworkOutageTime;
 #endif
+
+#if (WINVER >= 0xA00)
+    WCHAR            szIDi[RAS_MaxIDSize + 1];
+    WCHAR            szIDr[RAS_MaxIDSize + 1];
+    BOOL             fIsImsConfig;
+    IKEV2_ID_PAYLOAD_TYPE IdiType;
+    IKEV2_ID_PAYLOAD_TYPE IdrType;
+    BOOL             fDisableIKEv2Fragmentation;
+#endif    
 };
 
 #ifdef UNICODE
@@ -1572,6 +1616,7 @@ typedef BOOL (WINAPI *ORASADFUNC)( HWND, LPSTR, DWORD, LPDWORD );
 #define RASCN_BandwidthRemoved  0x00000008
 #define RASCN_Dormant           0x00000010
 #define RASCN_ReConnection      0x00000020
+#define RASCN_EPDGPacketArrival 0x00000040
 #endif
 
 #if (WINVER >= 0x401)
@@ -1957,7 +2002,7 @@ DWORD APIENTRY RasGetSubEntryPropertiesA( _In_opt_ LPCSTR, _In_ LPCSTR, _In_ DWO
 DWORD APIENTRY RasGetSubEntryPropertiesW( _In_opt_ LPCWSTR, _In_ LPCWSTR, _In_ DWORD,
                     _Inout_opt_ LPRASSUBENTRYW, _Inout_opt_ LPDWORD, _Out_opt_ LPBYTE, _Inout_opt_ LPDWORD );
 
-DWORD APIENTRY RasSetSubEntryPropertiesA( _In_opt_ LPCSTR, _In_ LPCSTR, _In_ DWORD, 
+DWORD APIENTRY RasSetSubEntryPropertiesA( _In_opt_ LPCSTR, _In_ LPCSTR, _In_ DWORD,
                     _In_ LPRASSUBENTRYA, _In_ DWORD, _In_opt_  LPBYTE, _In_ DWORD );
 
 DWORD APIENTRY RasSetSubEntryPropertiesW( _In_opt_ LPCWSTR, _In_ LPCWSTR, _In_ DWORD,
@@ -2000,6 +2045,8 @@ DWORD APIENTRY RasGetAutodialParamW( _In_ DWORD, _Out_ LPVOID, _Inout_ LPDWORD )
 DWORD APIENTRY RasSetAutodialParamA( _In_ DWORD, _In_ LPVOID, _In_ DWORD );
 
 DWORD APIENTRY RasSetAutodialParamW( _In_ DWORD, _In_ LPVOID, _In_ DWORD );
+
+DWORD APIENTRY RasGetPCscf(_Out_ LPWSTR lpszPCscf);
 
 #endif
 
@@ -2157,7 +2204,7 @@ DWORD APIENTRY  RasDeleteSubEntryW(
                 _In_ DWORD   dwSubEntryId );
 
 
-// To use Quarantine APIs, applications should explicitly 
+// To use Quarantine APIs, applications should explicitly
 // define USES_RAS_QUARANTINE_APIS.
 
 #ifdef USES_RAS_QUARANTINE_APIS
@@ -2173,7 +2220,7 @@ RasGetNapStatus(
 
 #if (WINVER >= 0x601)
 
-/* Update an active RAS connection.Localendpoint if specified is used for performing 
+/* Update an active RAS connection.Localendpoint if specified is used for performing
 /  mobike update.If not specified then dwIfIndex value is used for performing mobike.
 /  (See RasUpdateConnection)
 */
@@ -2197,9 +2244,9 @@ RasUpdateConnection(
 
 /* Ras Projection information for PPP or IKEv2
 */
-DWORD APIENTRY 
-RasGetProjectionInfoEx( 
-        _In_ HRASCONN              hrasconn, 
+DWORD APIENTRY
+RasGetProjectionInfoEx(
+        _In_ HRASCONN              hrasconn,
         _Inout_opt_ PRAS_PROJECTION_INFO  pRasProjection,
         _Inout_ LPDWORD               lpdwSize);
 

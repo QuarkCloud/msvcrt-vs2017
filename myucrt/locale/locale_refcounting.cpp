@@ -314,9 +314,9 @@ extern "C" long __cdecl __acrt_locale_add_lc_time_reference(
     __crt_lc_time_data const* const lc_time
     )
 {
-    //if (lc_time == nullptr || lc_time == &__lc_time_c)
+    if (lc_time == nullptr || lc_time == &__lc_time_c)
     {
-    //    return LONG_MAX;
+        return LONG_MAX;
     }
 
     return _InterlockedIncrement(&const_cast<__crt_lc_time_data*>(lc_time)->refcount);
@@ -326,9 +326,9 @@ extern "C" long __cdecl __acrt_locale_release_lc_time_reference(
     __crt_lc_time_data const* const lc_time
     )
 {
-    //if (lc_time == nullptr || lc_time == &__lc_time_c)
+    if (lc_time == nullptr || lc_time == &__lc_time_c)
     {
-    //    return LONG_MAX;
+        return LONG_MAX;
     }
 
     return _InterlockedDecrement(&const_cast<__crt_lc_time_data*>(lc_time)->refcount);
@@ -338,9 +338,9 @@ extern "C" void __cdecl __acrt_locale_free_lc_time_if_unreferenced(
     __crt_lc_time_data const* const lc_time
     )
 {
-    //if (lc_time == nullptr || lc_time == &__lc_time_c)
+    if (lc_time == nullptr || lc_time == &__lc_time_c)
     {
-    //    return;
+        return;
     }
 
     if (__crt_interlocked_read(&lc_time->refcount) != 0)

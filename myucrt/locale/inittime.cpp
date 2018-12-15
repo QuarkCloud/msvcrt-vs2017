@@ -23,7 +23,7 @@ static bool __cdecl initialize_lc_time(
 
     __crt_locale_pointers locinfo = { locale_data, nullptr };
 
-    //lc_time->_W_ww_locale_name = __acrt_copy_locale_name(locale_name);
+    lc_time->_W_ww_locale_name = __acrt_copy_locale_name(locale_name);
 
     int ret = 0;
 
@@ -33,28 +33,23 @@ static bool __cdecl initialize_lc_time(
     for (unsigned int i = 0; i != 7; ++i)
     {
         unsigned int const result_index = (i + 1) % 7;
-		/**
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, locale_name, LOCALE_SABBREVDAYNAME1 + i, &lc_time->wday_abbr[result_index]);
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, locale_name, LOCALE_SDAYNAME1       + i, &lc_time->wday     [result_index]);
 
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SABBREVDAYNAME1 + i, &lc_time->_W_wday_abbr[result_index]);
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SDAYNAME1       + i, &lc_time->_W_wday     [result_index]);
-		*/
     }
 
     // The months of the year
     for (unsigned int i = 0; i != 12; ++i)
     {
-		/**
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE,  locale_name, LOCALE_SABBREVMONTHNAME1 + i, &lc_time->month_abbr[i]);
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE,  locale_name, LOCALE_SMONTHNAME1       + i, &lc_time->month     [i]);
 
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SABBREVMONTHNAME1 + i, &lc_time->_W_month_abbr[i]);
         ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SMONTHNAME1       + i, &lc_time->_W_month     [i]);
-		*/
     }
 
-	/**
     ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, locale_name, LOCALE_S1159, &lc_time->ampm[0]);
     ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, locale_name, LOCALE_S2359, &lc_time->ampm[1]);
 
@@ -69,7 +64,6 @@ static bool __cdecl initialize_lc_time(
     ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SSHORTDATE,  &lc_time->_W_ww_sdatefmt);
     ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_SLONGDATE,   &lc_time->_W_ww_ldatefmt);
     ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, locale_name, LOCALE_STIMEFORMAT, &lc_time->_W_ww_timefmt);
-	*/
 
     return ret == 0;
 }

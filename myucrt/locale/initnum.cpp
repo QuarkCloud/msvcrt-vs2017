@@ -129,8 +129,7 @@ int __cdecl __acrt_locale_initialize_numeric (
              * Numeric data is country--not language--dependent.
              */
             ctrylocalename = ploci->locale_name[LC_NUMERIC];
-			
-			/**
+
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, ctrylocalename, LOCALE_SDECIMAL,
                     (void *)&lc->decimal_point);
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, ctrylocalename, LOCALE_STHOUSAND,
@@ -142,11 +141,12 @@ int __cdecl __acrt_locale_initialize_numeric (
                     (void *)&lc->_W_decimal_point);
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, ctrylocalename, LOCALE_STHOUSAND,
                     (void *)&lc->_W_thousands_sep);
-			*/
+
             if (ret) {
                     /* Clean up before returning failure */
                     __acrt_locale_free_numeric(lc);
                     _free_crt(lc);
+                    _free_crt(lconv_num_refcount);
                     _free_crt(lc_refcount);
                     return -1;
             }

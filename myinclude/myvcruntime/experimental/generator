@@ -6,7 +6,7 @@
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *
 *       Purpose: Library support of coroutines. generator class
-*       http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/p0057r0.pdf
+*       https://wg21.link/p0057
 *
 *       [Public]
 *
@@ -25,6 +25,7 @@
 #pragma pack(push,_CRT_PACKING)
 #pragma warning(push,_STL_WARNING_LEVEL)
 #pragma warning(disable: _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
@@ -62,7 +63,7 @@ namespace experimental {
 			template <typename _Uty>
 			_Uty && await_transform(_Uty &&_Whatever)
 			{
-				static_assert(_Always_false<_Uty>::value,
+				static_assert(_Always_false<_Uty>,
 					"co_await is not supported in coroutines of type std::experiemental::generator");
 				return _STD forward<_Uty>(_Whatever);
 			}
@@ -79,7 +80,7 @@ namespace experimental {
 				return allocator_traits<_Alloc_char>::allocate(_Al, _Size);
 			}
 
-			static void operator delete(void *_Ptr, size_t _Size) _NOEXCEPT
+			static void operator delete(void *_Ptr, size_t _Size) noexcept
 			{
 				_Alloc_char _Al;
 				return allocator_traits<_Alloc_char>::deallocate(_Al, static_cast<char *>(_Ptr), _Size);
@@ -120,28 +121,28 @@ namespace experimental {
 				++*this;
 			}
 
-			bool operator==(iterator const &_Right) const
+			_NODISCARD bool operator==(iterator const &_Right) const
 			{
 				return _Coro == _Right._Coro;
 			}
 
-			bool operator!=(iterator const &_Right) const
+			_NODISCARD bool operator!=(iterator const &_Right) const
 			{
 				return !(*this == _Right);
 			}
 
-			reference operator*() const
+			_NODISCARD reference operator*() const
 			{
 				return *_Coro.promise()._CurrentValue;
 			}
 
-			pointer operator->() const
+			_NODISCARD pointer operator->() const
 			{
 				return _Coro.promise()._CurrentValue;
 			}
 		};
 
-		iterator begin()
+		_NODISCARD iterator begin()
 		{
 			if (_Coro) {
 				_Coro.resume();
@@ -152,7 +153,7 @@ namespace experimental {
 			return {_Coro};
 		}
 
-		iterator end()
+		_NODISCARD iterator end()
 		{
 			return {nullptr};
 		}
@@ -198,6 +199,7 @@ namespace experimental {
 _STD_END
 
 #pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 

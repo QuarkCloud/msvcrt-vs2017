@@ -201,7 +201,7 @@ public:
 		}
 
 	// mutators
-	void swap(pair% _Right)
+	void swap(light_pair% _Right)
 		{	// exchange contents with _Right
 		if ((Object^)this != %_Right)
 			{	// worth swapping, do it

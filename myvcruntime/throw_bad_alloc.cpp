@@ -14,13 +14,15 @@
 
 
 
-#if defined MRTDLL && defined _M_CEE && !defined _M_CEE_PURE
+#if defined MRTDLL && defined _M_CEE
 
+    _CRT_SECURITYCRITICAL_ATTRIBUTE
     void __CRTDECL __scrt_throw_std_bad_alloc()
     {
         TerminateProcess(GetCurrentProcess(), 3);
     }
 
+    _CRT_SECURITYCRITICAL_ATTRIBUTE
     void __CRTDECL __scrt_throw_std_bad_array_new_length()
     {
         TerminateProcess(GetCurrentProcess(), 3);

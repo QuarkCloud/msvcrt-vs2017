@@ -1651,8 +1651,7 @@ typedef struct D3D10_BUFFER_DESC
 #if !defined( D3D10_NO_HELPERS ) && defined( __cplusplus )
 struct CD3D10_BUFFER_DESC : public D3D10_BUFFER_DESC
 {
-    CD3D10_BUFFER_DESC()
-    {}
+    CD3D10_BUFFER_DESC() = default;
     explicit CD3D10_BUFFER_DESC( const D3D10_BUFFER_DESC& o ) :
         D3D10_BUFFER_DESC( o )
     {}
@@ -1872,8 +1871,7 @@ typedef struct D3D10_TEXTURE1D_DESC
 #if !defined( D3D10_NO_HELPERS ) && defined( __cplusplus )
 struct CD3D10_TEXTURE1D_DESC : public D3D10_TEXTURE1D_DESC
 {
-    CD3D10_TEXTURE1D_DESC()
-    {}
+    CD3D10_TEXTURE1D_DESC() = default;
     explicit CD3D10_TEXTURE1D_DESC( const D3D10_TEXTURE1D_DESC& o ) :
         D3D10_TEXTURE1D_DESC( o )
     {}
@@ -2109,8 +2107,7 @@ typedef struct D3D10_TEXTURE2D_DESC
 #if !defined( D3D10_NO_HELPERS ) && defined( __cplusplus )
 struct CD3D10_TEXTURE2D_DESC : public D3D10_TEXTURE2D_DESC
 {
-    CD3D10_TEXTURE2D_DESC()
-    {}
+    CD3D10_TEXTURE2D_DESC() = default;
     explicit CD3D10_TEXTURE2D_DESC( const D3D10_TEXTURE2D_DESC& o ) :
         D3D10_TEXTURE2D_DESC( o )
     {}
@@ -2357,8 +2354,7 @@ typedef struct D3D10_TEXTURE3D_DESC
 #if !defined( D3D10_NO_HELPERS ) && defined( __cplusplus )
 struct CD3D10_TEXTURE3D_DESC : public D3D10_TEXTURE3D_DESC
 {
-    CD3D10_TEXTURE3D_DESC()
-    {}
+    CD3D10_TEXTURE3D_DESC() = default;
     explicit CD3D10_TEXTURE3D_DESC( const D3D10_TEXTURE3D_DESC& o ) :
         D3D10_TEXTURE3D_DESC( o )
     {}

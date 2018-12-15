@@ -1,5 +1,5 @@
 /***
-*rtti.cxx - C++ runtime type information
+*rtti.cpp - C++ runtime type information
 *
 *       Copyright (c) Microsoft Corporation.  All rights reserved.
 *
@@ -12,13 +12,44 @@
     #undef MRTDLL
 #endif // _M_CEE_PURE
 
-#include <rtti.h>
+#define _RTTI 1 // assume EH structures have RTTI turned on even though this TU may not
+#include <ehdata.h>
+#include <rttidata.h>
 #include <vcruntime_typeinfo.h>
+#include <stdint.h>
 
 #include <Windows.h>
 
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-static unsigned __int64 GetImageBase(PVOID);
+typedef TypeDescriptor _RTTITypeDescriptor;
+
+static bool TypeidsEqual(const _RTTITypeDescriptor* const lhs, const _RTTITypeDescriptor* const rhs) noexcept
+{
+    return lhs == rhs || !strcmp(lhs->name, rhs->name);
+}
+
+#if _RTTI_RELATIVE_TYPEINFO
+static inline uintptr_t GetImageBase(const void * pCallerPC)
+{
+    void * _ImageBase;
+    _ImageBase = RtlPcToFileHeader(
+        const_cast<void *>(pCallerPC),
+        &_ImageBase);
+    return reinterpret_cast<uintptr_t>(_ImageBase);
+}
+
+static inline uintptr_t GetImageBaseFromCompleteObjectLocator(
+    const _RTTICompleteObjectLocator * const pCompleteLocator
+    )
+{
+    if (pCompleteLocator->signature == COL_SIG_REV0)
+    {
+        return GetImageBase(pCompleteLocator);
+    }
+
+    return reinterpret_cast<uintptr_t>(pCompleteLocator)
+        - ((uintptr_t)pCompleteLocator->pSelf);
+}
+
 #undef BCD_PTD
 #undef BCD_PCHD
 #undef CHD_PBCA
@@ -33,36 +64,43 @@ static unsigned __int64 GetImageBase(PVOID);
 #define COL_PCHD(col)   COL_PCHD_IB((col),_ImageBase)
 #endif
 
-static PVOID __CLRCALL_OR_CDECL FindCompleteObject(PVOID *);
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL
-    FindSITargetTypeInstance(_RTTICompleteObjectLocator *,
+#if _RTTI_RELATIVE_TYPEINFO
+#define IMAGEBASE_PROTOTYPE , uintptr_t
+#define IMAGEBASE_PARAMETER , const uintptr_t _ImageBase
+#define IMAGEBASE_ARGUMENT , _ImageBase
+#else
+#define IMAGEBASE_PROTOTYPE
+#define IMAGEBASE_PARAMETER
+#define IMAGEBASE_ARGUMENT
+#endif
+
+static void * FindCompleteObject(void *);
+static _RTTIBaseClassDescriptor * FindSITargetTypeInstance(_RTTICompleteObjectLocator *,
                              _RTTITypeDescriptor *,
                              _RTTITypeDescriptor *
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                             , unsigned __int64
-#endif
+                             IMAGEBASE_PROTOTYPE
                              );
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL
-    FindMITargetTypeInstance(PVOID,
+static _RTTIBaseClassDescriptor * FindMITargetTypeInstance(void *,
                              _RTTICompleteObjectLocator *,
                              _RTTITypeDescriptor *,
                              ptrdiff_t,
                              _RTTITypeDescriptor *
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                             , unsigned __int64
-#endif
+                             IMAGEBASE_PROTOTYPE
                              );
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL
-    FindVITargetTypeInstance(PVOID,
+static _RTTIBaseClassDescriptor * FindVITargetTypeInstance(void *,
                              _RTTICompleteObjectLocator *,
                              _RTTITypeDescriptor *,
                              ptrdiff_t,
                              _RTTITypeDescriptor *
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                             , unsigned __int64
-#endif
+                             IMAGEBASE_PROTOTYPE
                              );
-static ptrdiff_t __CLRCALL_OR_CDECL PMDtoOffset(PVOID, const PMD&);
+static ptrdiff_t PMDtoOffset(void *, const PMD&);
+
+static inline _RTTICompleteObjectLocator * GetCompleteObjectLocatorFromObject(void * pointerToObject)
+{
+    // Ptr to CompleteObjectLocator should be stored at vfptr[-1]
+    return static_cast<_RTTICompleteObjectLocator***>(pointerToObject)[0][-1];
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -73,15 +111,15 @@ static ptrdiff_t __CLRCALL_OR_CDECL PMDtoOffset(PVOID, const PMD&);
 // Side-effects: NONE.
 //
 
-extern "C" PVOID __CLRCALL_OR_CDECL __RTCastToVoid (
-    PVOID inptr)            // Pointer to polymorphic object
+extern "C" void * __CLRCALL_OR_CDECL __RTCastToVoid (
+    void * inptr)            // Pointer to polymorphic object
     noexcept(false)
 {
     if (inptr == nullptr)
         return nullptr;
 
     __try {
-        return FindCompleteObject((PVOID *)inptr);
+        return FindCompleteObject(inptr);
     }
     __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION
               ? EXCEPTION_EXECUTE_HANDLER: EXCEPTION_CONTINUE_SEARCH)
@@ -100,8 +138,8 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTCastToVoid (
 // Side-effects: NONE.
 //
 
-extern "C" PVOID __CLRCALL_OR_CDECL __RTtypeid (
-    PVOID inptr)            // Pointer to polymorphic object
+extern "C" void * __CLRCALL_OR_CDECL __RTtypeid (
+    void * inptr)            // Pointer to polymorphic object
     noexcept(false)
 {
     if (!inptr) {
@@ -109,22 +147,14 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTtypeid (
     }
 
     __try {
-        // Ptr to CompleteObjectLocator should be stored at vfptr[-1]
-        _RTTICompleteObjectLocator *pCompleteLocator =
-            (_RTTICompleteObjectLocator *) ((*((void***)inptr))[-1]);
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-        unsigned __int64 _ImageBase;
-        if (COL_SIGNATURE(*pCompleteLocator) == COL_SIG_REV0) {
-            _ImageBase = GetImageBase((PVOID)pCompleteLocator);
-        }
-        else {
-            _ImageBase = ((unsigned __int64)pCompleteLocator - (unsigned __int64)COL_SELF(*pCompleteLocator));
-        }
+        const auto pCompleteLocator = GetCompleteObjectLocatorFromObject(inptr);
+#if _RTTI_RELATIVE_TYPEINFO
+        const auto _ImageBase = GetImageBaseFromCompleteObjectLocator(pCompleteLocator);
 #endif
 
         if (((const void *)COL_PTD(*pCompleteLocator)) != nullptr)
         {
-            return (PVOID) COL_PTD(*pCompleteLocator);
+            return (void *) COL_PTD(*pCompleteLocator);
         }
         else {
             throw std::__non_rtti_object::__construct_from_string_literal("Bad read pointer - no RTTI data!");
@@ -172,99 +202,94 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTtypeid (
 // B->D->C->A succeeds with a runtime check.
 //
 
-extern "C" PVOID __CLRCALL_OR_CDECL __RTDynamicCast (
-    PVOID inptr,            // Pointer to polymorphic object
-    LONG VfDelta,           // Offset of vfptr in object
-    PVOID SrcType,          // Static type of object pointed to by inptr
-    PVOID TargetType,       // Desired result of cast
-    BOOL isReference)       // TRUE if input is reference, FALSE if input is ptr
+extern "C" void * __CLRCALL_OR_CDECL __RTDynamicCast (
+    void * inptr,            // Pointer to polymorphic object
+    LONG VfDelta,            // Offset of vfptr in object
+    void * srcVoid,          // Static type of object pointed to by inptr
+    void * targetVoid,       // Desired result of cast
+    BOOL isReference)        // TRUE if input is reference, FALSE if input is ptr
     noexcept(false)
 {
-    PVOID pResult=nullptr;
-    _RTTIBaseClassDescriptor *pBaseClass;
+    const auto srcType = static_cast<_RTTITypeDescriptor *>(srcVoid);
+    const auto targetType = static_cast<_RTTITypeDescriptor *>(targetVoid);
 
     if (inptr == nullptr)
-            return nullptr;
+    {
+        return nullptr;
+    }
 
-    __try {
-
-        PVOID pCompleteObject = FindCompleteObject((PVOID *)inptr);
-        _RTTICompleteObjectLocator *pCompleteLocator =
-            (_RTTICompleteObjectLocator *) ((*((void***)inptr))[-1]);
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-        unsigned __int64 _ImageBase;
-        if (COL_SIGNATURE(*pCompleteLocator) == COL_SIG_REV0) {
-            _ImageBase = GetImageBase((PVOID)pCompleteLocator);
-        }
-        else {
-            _ImageBase = ((unsigned __int64)pCompleteLocator - (unsigned __int64)COL_SELF(*pCompleteLocator));
-        }
+    __try
+    {
+        void * pCompleteObject = FindCompleteObject(inptr);
+        const auto pCompleteLocator =  GetCompleteObjectLocatorFromObject(inptr);
+#if _RTTI_RELATIVE_TYPEINFO
+        const auto _ImageBase = GetImageBaseFromCompleteObjectLocator(pCompleteLocator);
 #endif
 
-        // Adjust by vfptr displacement, if any
-        inptr = (PVOID *) ((char *)inptr - VfDelta);
-
-        // Calculate offset of source object in complete object
-        ptrdiff_t inptr_delta = (char *)inptr - (char *)pCompleteObject;
-
-        if (!(CHD_ATTRIBUTES(*COL_PCHD(*pCompleteLocator)) & CHD_MULTINH)) {
+        _RTTIBaseClassDescriptor* pBaseClass;
+        if (!(COL_PCHD(*pCompleteLocator)->attributes & CHD_MULTINH))
+        {
             // if not multiple inheritance
             pBaseClass = FindSITargetTypeInstance(
                             pCompleteLocator,
-                            (_RTTITypeDescriptor *) SrcType,
-                            (_RTTITypeDescriptor *) TargetType
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                            , _ImageBase
-#endif
+                            srcType,
+                            targetType
+                            IMAGEBASE_ARGUMENT
                             );
         }
-        else if (!(CHD_ATTRIBUTES(*COL_PCHD(*pCompleteLocator)) & CHD_VIRTINH)) {
-            // if multiple, but not virtual, inheritance
-            pBaseClass = FindMITargetTypeInstance(
-                            pCompleteObject,
-                            pCompleteLocator,
-                            (_RTTITypeDescriptor *) SrcType,
-                            inptr_delta,
-                            (_RTTITypeDescriptor *) TargetType
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                            , _ImageBase
-#endif
-                            );
-        }
-        else {
-            // if virtual inheritance
-            pBaseClass = FindVITargetTypeInstance(
-                            pCompleteObject,
-                            pCompleteLocator,
-                            (_RTTITypeDescriptor *) SrcType,
-                            inptr_delta,
-                            (_RTTITypeDescriptor *) TargetType
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-                            , _ImageBase
-#endif
-                            );
+        else
+        {
+            // Adjust by vfptr displacement, if any
+            inptr = ((char *)inptr - VfDelta);
+
+            // Calculate offset of source object in complete object
+            ptrdiff_t inptr_delta = (char *)inptr - (char *)pCompleteObject;
+
+            if (!(COL_PCHD(*pCompleteLocator)->attributes & CHD_VIRTINH))
+            {
+                // if multiple, but not virtual, inheritance
+                pBaseClass = FindMITargetTypeInstance(
+                                pCompleteObject,
+                                pCompleteLocator,
+                                srcType,
+                                inptr_delta,
+                                targetType
+                                IMAGEBASE_ARGUMENT
+                                );
+            }
+            else
+            {
+                // if virtual inheritance
+                pBaseClass = FindVITargetTypeInstance(
+                                pCompleteObject,
+                                pCompleteLocator,
+                                srcType,
+                                inptr_delta,
+                                targetType
+                                IMAGEBASE_ARGUMENT
+                                );
+            }
         }
 
-        if (pBaseClass != nullptr) {
-            // Calculate ptr to result base class from pBaseClass->where
-            pResult = ((char *) pCompleteObject) +
-                      PMDtoOffset(pCompleteObject, BCD_WHERE(*pBaseClass));
-        }
-        else {
-            pResult = nullptr;
+        if (pBaseClass == nullptr)
+        {
             if (isReference)
+            {
                 throw std::bad_cast::__construct_from_string_literal("Bad dynamic_cast!");
+            }
+
+            return nullptr;
         }
 
+        // Calculate ptr to result base class from pBaseClass->where
+        return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(pCompleteObject) +
+            PMDtoOffset(pCompleteObject, pBaseClass->where));
     }
     __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION
               ? EXCEPTION_EXECUTE_HANDLER: EXCEPTION_CONTINUE_SEARCH)
     {
-        pResult = nullptr;
         throw std::__non_rtti_object::__construct_from_string_literal("Access violation - no RTTI data!");
     }
-
-    return pResult;
 }
 
 
@@ -277,18 +302,26 @@ extern "C" PVOID __CLRCALL_OR_CDECL __RTDynamicCast (
 // Side-effects: NONE.
 //
 
-static PVOID __CLRCALL_OR_CDECL FindCompleteObject (
-    PVOID *inptr)           // Pointer to polymorphic object
+static void * FindCompleteObject(void* inptr)           // Pointer to polymorphic object
 {
     // Ptr to CompleteObjectLocator should be stored at vfptr[-1]
-    _RTTICompleteObjectLocator *pCompleteLocator =
-        (_RTTICompleteObjectLocator *) ((*((void***)inptr))[-1]);
-    char *pCompleteObject = (char *)inptr - COL_OFFSET(*pCompleteLocator);
+    const auto pCompleteLocator = GetCompleteObjectLocatorFromObject(inptr);
+    const auto inAddr = reinterpret_cast<uintptr_t>(inptr);
+    auto pCompleteObject = inAddr - pCompleteLocator->offset;
 
     // Adjust by construction displacement, if any
-    if (COL_CDOFFSET(*pCompleteLocator))
-        pCompleteObject -= *(int *)((char *)inptr - COL_CDOFFSET(*pCompleteLocator));
-    return (PVOID) pCompleteObject;
+
+    // We know we can read an int from inptr, because it points at pointer to vtbl.
+    // Therefore we optimistically read the int here even if cdOffset is 0, in
+    // order to make it legal to generate a cmov instruction.
+    const auto cdOffset = pCompleteLocator->cdOffset;
+    auto offsetValue = *reinterpret_cast<int *>(inAddr - cdOffset);
+    if (cdOffset == 0)
+    {
+        offsetValue = 0;
+    }
+
+    return reinterpret_cast<void *>(pCompleteObject - offsetValue);
 }
 
 
@@ -329,29 +362,27 @@ static PVOID __CLRCALL_OR_CDECL FindCompleteObject (
 // * Otherwise, the run-time check fails.
 //
 
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindSITargetTypeInstance (
-    _RTTICompleteObjectLocator *pCOLocator, // pointer to Locator of complete object
-    _RTTITypeDescriptor *pSrcTypeID,        // pointer to TypeDescriptor of source object
-    _RTTITypeDescriptor *pTargetTypeID      // pointer to TypeDescriptor of result of cast
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-    , unsigned __int64 _ImageBase
-#endif
+static _RTTIBaseClassDescriptor * FindSITargetTypeInstance (
+    _RTTICompleteObjectLocator * const pCOLocator, // pointer to Locator of complete object
+    _RTTITypeDescriptor * const pSrcTypeID,        // pointer to TypeDescriptor of source object
+    _RTTITypeDescriptor * const pTargetTypeID      // pointer to TypeDescriptor of result of cast
+    IMAGEBASE_PARAMETER
     )
 {
-    _RTTIBaseClassDescriptor *pBCD, *pSourceBCD;
-    _RTTIBaseClassArray *pBaseClassArray = CHD_PBCA(*COL_PCHD(*pCOLocator));
-    DWORD nCompleteObjectBases = CHD_NUMBASES(*COL_PCHD(*pCOLocator));
-    DWORD i, j;
+    auto classDescriptor = COL_PCHD(*pCOLocator);
+    _RTTIBaseClassArray *pBaseClassArray = CHD_PBCA(*classDescriptor);
+    DWORD nCompleteObjectBases = classDescriptor->numBaseClasses;
 
     // Walk the BaseClassArray, which for single inheritance lists the complete
     // object and its base classes in order from most to least derived,
     // searching for the desired target type.
 
-    for (i = 0; i < nCompleteObjectBases; i++)
+    // In the vast majority of cases, we expect to find a match by pointer
+    // identity comparison; so we walk the tree with that predicate first:
+    for (DWORD i = 0; i < nCompleteObjectBases; ++i)
     {
-        pBCD = CHD_PBCD(BCA_BCDA(*pBaseClassArray)[i]);
-
-        if (TYPEIDS_EQ(BCD_PTD(*pBCD), pTargetTypeID))
+        _RTTIBaseClassDescriptor * pBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[i]);
+        if (BCD_PTD(*pBCD) == pTargetTypeID)
         {
             // Single inheritance implies no ambiguous bases, so we know we've
             // found the desired target.  Now search base classes of the target
@@ -359,19 +390,17 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindSITargetTypeInstance (
             // single inheritance, the target's base classes are simply the
             // remaining base classes in the complete object's hierarchy.
 
-            for (j = i + 1; j < nCompleteObjectBases; j++)
+            for (DWORD j = i + 1; j < nCompleteObjectBases; j++)
             {
-                pSourceBCD = CHD_PBCD(BCA_BCDA(*pBaseClassArray)[j]);
-
-                if (BCD_ATTRIBUTES(*pSourceBCD) & BCD_PRIVORPROTBASE)
+                _RTTIBaseClassDescriptor * pSourceBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[j]);
+                if (pSourceBCD->attributes & BCD_PRIVORPROTBASE)
                 {
                     // If we find any non-public derivation between the target
                     // and source types, the cast fails.
-
                     return nullptr;
                 }
 
-                if (TYPEIDS_EQ(BCD_PTD(*pSourceBCD), pSrcTypeID))
+                if (BCD_PTD(*pSourceBCD) == pSrcTypeID)
                 {
                     // We found the accessible source instance, the down-cast
                     // succeeds.
@@ -387,6 +416,32 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindSITargetTypeInstance (
             // a cast from a type not in the complete object's hierarachy (which
             // could happen if someone is playing games with reinterpret_cast).
             // In either case, the cast fails.
+
+            return nullptr;
+        }
+    }
+
+
+    // Same as loop above, but falling back to strcmp in case pCOLocator comes
+    // from a different image than pSrcTypeID / pTargetTypeID
+    for (DWORD i = 0; i < nCompleteObjectBases; i++)
+    {
+        _RTTIBaseClassDescriptor * pBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[i]);
+        if (!strcmp(BCD_PTD(*pBCD)->name, pTargetTypeID->name))
+        {
+            for (DWORD j = i + 1; j < nCompleteObjectBases; j++)
+            {
+                _RTTIBaseClassDescriptor * pSourceBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[j]);
+                if (pSourceBCD->attributes & BCD_PRIVORPROTBASE)
+                {
+                    return nullptr;
+                }
+
+                if (!strcmp(BCD_PTD(*pSourceBCD)->name, pSrcTypeID->name))
+                {
+                    return pBCD;
+                }
+            }
 
             return nullptr;
         }
@@ -442,15 +497,13 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindSITargetTypeInstance (
 // * Otherwise, the run-time check fails.
 //
 
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
-    PVOID pCompleteObject,                  // pointer to complete object
+static _RTTIBaseClassDescriptor * FindMITargetTypeInstance (
+    void * pCompleteObject,                 // pointer to complete object
     _RTTICompleteObjectLocator *pCOLocator, // pointer to Locator of complete object
     _RTTITypeDescriptor *pSrcTypeID,        // pointer to TypeDescriptor of source object
     ptrdiff_t SrcOffset,                    // offset of source object in complete object
     _RTTITypeDescriptor *pTargetTypeID      // pointer to TypeDescriptor of result of cast
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-    , unsigned __int64 _ImageBase
-#endif
+    IMAGEBASE_PARAMETER
     )
 {
     _RTTIBaseClassDescriptor *pBCD;
@@ -460,7 +513,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
     _RTTIBaseClassArray *pBaseClassArray = CHD_PBCA(*COL_PCHD(*pCOLocator));
     _RTTIBaseClassArray *pTargetBaseClassArray;
     DWORD i;
-    DWORD nCompleteObjectBases = CHD_NUMBASES(*COL_PCHD(*pCOLocator));
+    DWORD nCompleteObjectBases = COL_PCHD(*pCOLocator)->numBaseClasses;
     DWORD nTargetBases = 0;
     DWORD iTarget = (DWORD)-1;
 
@@ -483,14 +536,14 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
 
     for (i = 0; i < nCompleteObjectBases; i++)
     {
-        pBCD = CHD_PBCD(BCA_BCDA(*pBaseClassArray)[i]);
+        pBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[i]);
 
         // Test if we've found an instance of the target class.  We can skip
         // the type-id check while walking through any base classes of the
         // target class.
 
         if (i - iTarget > nTargetBases &&
-            TYPEIDS_EQ(BCD_PTD(*pBCD), pTargetTypeID))
+            TypeidsEqual(BCD_PTD(*pBCD), pTargetTypeID))
         {
             // If we've already found the source class instance, then we must
             // have either a cross-cast or an up-cast.  The target must be
@@ -501,8 +554,8 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
 
             if (pSourceBCD != nullptr)
             {
-                if ((BCD_ATTRIBUTES(*pBCD) & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)) ||
-                    (BCD_ATTRIBUTES(*pSourceBCD) & BCD_NOTVISIBLE))
+                if ((pBCD->attributes & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)) ||
+                    (pSourceBCD->attributes & BCD_NOTVISIBLE))
                 {
                     return nullptr;
                 }
@@ -518,13 +571,13 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
 
             pTargetBCD = pBCD;
             iTarget = i;
-            nTargetBases = BCD_NUMCONTBASES(*pBCD);
+            nTargetBases = pBCD->numContainedBases;
         }
 
         // Test if we've found the proper instance of the source class.
 
-        if (TYPEIDS_EQ(BCD_PTD(*pBCD), pSrcTypeID) &&
-            PMDtoOffset(pCompleteObject, BCD_WHERE(*pBCD)) == SrcOffset)
+        if (TypeidsEqual(BCD_PTD(*pBCD), pSrcTypeID) &&
+            PMDtoOffset(pCompleteObject, pBCD->where) == SrcOffset)
         {
             // If we've already found an instance of the target class, check
             // if we're within the base classes of that target instance.  If
@@ -538,7 +591,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
                     // It's a down-cast.  The source class must be a public
                     // base of the target class, or the cast fails.
 
-                    if (!(BCD_ATTRIBUTES(*pTargetBCD) & BCD_HASPCHD))
+                    if (!(pTargetBCD->attributes & BCD_HASPCHD))
                     {
                         // We've got an older form of the RTTI data without the
                         // link to the class hierarchy descriptor.  We can only
@@ -548,7 +601,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
                         // succeed.
 
                         if (iTarget == 0 &&
-                            BCD_ATTRIBUTES(*pBCD) & BCD_NOTVISIBLE)
+                            pBCD->attributes & BCD_NOTVISIBLE)
                         {
                             return nullptr;
                         }
@@ -567,9 +620,9 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
                     // pBaseClassArray[iTarget .. iTarget+nTargetBases].
 
                     pTargetBaseClassArray = CHD_PBCA(*BCD_PCHD(*pTargetBCD));
-                    pSourceInTargetBCD = CHD_PBCD(BCA_BCDA(*pTargetBaseClassArray)[i-iTarget]);
+                    pSourceInTargetBCD = CHD_PBCD(pTargetBaseClassArray->arrayOfBaseClassDescriptors[i-iTarget]);
 
-                    if (BCD_ATTRIBUTES(*pSourceInTargetBCD) & BCD_NOTVISIBLE)
+                    if (pSourceInTargetBCD->attributes & BCD_NOTVISIBLE)
                     {
                         return nullptr;
                     }
@@ -584,8 +637,8 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
                     // be public and unambiguous in the complete object, and the
                     // source must be public in the complete object.
 
-                    if ((BCD_ATTRIBUTES(*pTargetBCD) & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)) ||
-                        (BCD_ATTRIBUTES(*pBCD) & BCD_NOTVISIBLE))
+                    if ((pTargetBCD->attributes & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)) ||
+                        (pBCD->attributes & BCD_NOTVISIBLE))
                     {
                         return nullptr;
                     }
@@ -639,15 +692,13 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindMITargetTypeInstance (
 // followed without simplification.
 //
 
-static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
-    PVOID pCompleteObject,                  // pointer to complete object
+static _RTTIBaseClassDescriptor * FindVITargetTypeInstance (
+    void * pCompleteObject,                 // pointer to complete object
     _RTTICompleteObjectLocator *pCOLocator, // pointer to Locator of complete object
     _RTTITypeDescriptor *pSrcTypeID,        // pointer to TypeDescriptor of source object
     ptrdiff_t SrcOffset,                    // offset of source object in complete object
     _RTTITypeDescriptor *pTargetTypeID      // pointer to TypeDescriptor of result of cast
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-    , unsigned __int64 _ImageBase
-#endif
+    IMAGEBASE_PARAMETER
     )
 {
     _RTTIBaseClassDescriptor *pBCD;
@@ -659,7 +710,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
     _RTTIBaseClassArray *pBaseClassArray = CHD_PBCA(*COL_PCHD(*pCOLocator));
     _RTTIBaseClassArray *pTargetBaseClassArray;
     DWORD i;
-    DWORD nCompleteObjectBases = CHD_NUMBASES(*COL_PCHD(*pCOLocator));
+    DWORD nCompleteObjectBases = COL_PCHD(*pCOLocator)->numBaseClasses;
     DWORD nTargetBases = 0;
     DWORD iTarget = (DWORD)-1;
     bool fDownCastAllowed = true;
@@ -690,20 +741,20 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
 
     for (i = 0; i < nCompleteObjectBases; i++)
     {
-        pBCD = CHD_PBCD(BCA_BCDA(*pBaseClassArray)[i]);
+        pBCD = CHD_PBCD(pBaseClassArray->arrayOfBaseClassDescriptors[i]);
 
         // Test if we've found an instance of the target class.  We can skip
         // the type-id check while walking through any base classes of the
         // target class.
 
         if (i - iTarget > nTargetBases &&
-            TYPEIDS_EQ(BCD_PTD(*pBCD), pTargetTypeID))
+            TypeidsEqual(BCD_PTD(*pBCD), pTargetTypeID))
         {
             // If this target instance is public and unambiguous within the
             // complete object, remember it as a potential target of a
             // cross-cast.
 
-            if (!(BCD_ATTRIBUTES(*pBCD) & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)))
+            if (!(pBCD->attributes & (BCD_NOTVISIBLE | BCD_AMBIGUOUS)))
             {
                 pCrossCastTargetBCD = pBCD;
             }
@@ -714,13 +765,13 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
 
             pTargetBCD = pBCD;
             iTarget = i;
-            nTargetBases = BCD_NUMCONTBASES(*pBCD);
+            nTargetBases = pBCD->numContainedBases;
         }
 
         // Test if we've found the proper instance of the source class.
 
-        if (TYPEIDS_EQ(BCD_PTD(*pBCD), pSrcTypeID) &&
-            PMDtoOffset(pCompleteObject, BCD_WHERE(*pBCD)) == SrcOffset)
+        if (TypeidsEqual(BCD_PTD(*pBCD), pSrcTypeID) &&
+            PMDtoOffset(pCompleteObject, pBCD->where) == SrcOffset)
         {
             // If we're within the base classes of a previously-seen instance
             // of the target class, then we've got a down-cast.
@@ -740,7 +791,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                     // of the target class derives from the source instance.
                     // First check for public visibility of the source.
 
-                    if (!(BCD_ATTRIBUTES(*pTargetBCD) & BCD_HASPCHD))
+                    if (!(pTargetBCD->attributes & BCD_HASPCHD))
                     {
                         // We've got an older form of the RTTI data without the
                         // link to the class hierarchy descriptor.  We can only
@@ -750,7 +801,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                         // succeed.
 
                         if (iTarget == 0 &&
-                            (BCD_ATTRIBUTES(*pBCD) & BCD_NOTVISIBLE))
+                            (pBCD->attributes & BCD_NOTVISIBLE))
                         {
                             fDownCastAllowed = false;
                         }
@@ -772,9 +823,9 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                         // .. iTarget+nTargetBases].
 
                         pTargetBaseClassArray = CHD_PBCA(*BCD_PCHD(*pTargetBCD));
-                        pSourceInTargetBCD = CHD_PBCD(BCA_BCDA(*pTargetBaseClassArray)[i-iTarget]);
+                        pSourceInTargetBCD = CHD_PBCD(pTargetBaseClassArray->arrayOfBaseClassDescriptors[i-iTarget]);
 
-                        if (BCD_ATTRIBUTES(*pSourceInTargetBCD) & BCD_NOTVISIBLE)
+                        if (pSourceInTargetBCD->attributes & BCD_NOTVISIBLE)
                         {
                             fDownCastAllowed = false;
                         }
@@ -805,7 +856,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                         // the cast to succeed when C -> B and D -> B are both
                         // virtual private (and everything else public).
 
-                        fDirectlyPublic = !(BCD_ATTRIBUTES(*pSourceInTargetBCD) & BCD_PRIVORPROTBASE);
+                        fDirectlyPublic = !(pSourceInTargetBCD->attributes & BCD_PRIVORPROTBASE);
                     }
 
                     if (fDownCastAllowed && fDirectlyPublic)
@@ -814,7 +865,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                         // now check if a different target instance has already
                         // been seen in a previous down-cast.
 
-                        offsetTarget = PMDtoOffset(pCompleteObject, BCD_WHERE(*pTargetBCD));
+                        offsetTarget = PMDtoOffset(pCompleteObject, pTargetBCD->where);
                         if (pDownCastResultBCD != nullptr &&
                             offsetDownCastResult != offsetTarget)
                         {
@@ -868,7 +919,7 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
                 // fDirectlyPublic above), we can check BCD_PRIVORPROTBASE to
                 // work around the bad RTTI data in some, but not all, cases.
 
-                if (!(BCD_ATTRIBUTES(*pBCD) & (BCD_NOTVISIBLE | BCD_PRIVORPROTBASE)))
+                if (!(pBCD->attributes & (BCD_NOTVISIBLE | BCD_PRIVORPROTBASE)))
                 {
                     // If this source instance is public within the complete object,
                     // remember it as a potential source of a cross-cast.
@@ -911,8 +962,8 @@ static _RTTIBaseClassDescriptor * __CLRCALL_OR_CDECL FindVITargetTypeInstance (
 // Side-effects: NONE.
 //
 
-static ptrdiff_t __CLRCALL_OR_CDECL PMDtoOffset(
-    PVOID pThis,            // ptr to complete object
+static ptrdiff_t PMDtoOffset(
+    void * pThis,           // ptr to complete object
     const PMD& pmd)         // pointer-to-member-data structure
 {
     ptrdiff_t RetOff = 0;
@@ -928,14 +979,3 @@ static ptrdiff_t __CLRCALL_OR_CDECL PMDtoOffset(
 
     return RetOff;
 }
-
-#if defined(_WIN64) && !defined(_M_CEE_PURE)
-static unsigned __int64 GetImageBase(PVOID pCallerPC)
-{
-    unsigned __int64 _ImageBase;
-    _ImageBase = (unsigned __int64)RtlPcToFileHeader(
-        pCallerPC,
-        (PVOID*)&_ImageBase);
-    return _ImageBase;
-}
-#endif

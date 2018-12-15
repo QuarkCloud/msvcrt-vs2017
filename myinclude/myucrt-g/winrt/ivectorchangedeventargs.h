@@ -1,6 +1,6 @@
 /* Header file automatically generated from ivectorchangedeventargs.idl */
 /*
- * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0206 
+ * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0223 
  */
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
@@ -45,6 +45,7 @@
 #if defined(__cplusplus)
 #if __cplusplus >= 201402
 #define DEPRECATED(x) [[deprecated(x)]]
+#define DEPRECATEDENUMERATOR(x) [[deprecated(x)]]
 #elif defined(_MSC_VER)
 #if _MSC_VER >= 1900
 #define DEPRECATED(x) [[deprecated(x)]]
@@ -75,18 +76,23 @@
 #pragma warning(disable: 4996)
 #endif
 
+// Ensure that the setting of the /ns_prefix command line switch is consistent for all headers.
+// If you get an error from the compiler indicating "warning C4005: 'CHECK_NS_PREFIX_STATE': macro redefinition", this
+// indicates that you have included two different headers with different settings for the /ns_prefix MIDL command line switch
+#if !defined(DISABLE_NS_PREFIX_CHECKS)
+#define CHECK_NS_PREFIX_STATE "always"
+#endif // !defined(DISABLE_NS_PREFIX_CHECKS)
+
+
 #pragma push_macro("MIDL_CONST_ID")
-#if !defined(_MSC_VER) || (_MSC_VER >= 1910)
-#define MIDL_CONST_ID constexpr const
-#else
+#undef MIDL_CONST_ID
 #define MIDL_CONST_ID const __declspec(selectany)
-#endif
 
 
 //  API Contract Inclusion Definitions
 #if !defined(SPECIFIC_API_CONTRACT_DEFINITIONS)
 #if !defined(WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION)
-#define WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION 0x30000
+#define WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION 0x40000
 #endif // defined(WINDOWS_APPLICATIONMODEL_CALLS_CALLSPHONECONTRACT_VERSION)
 
 #if !defined(WINDOWS_FOUNDATION_FOUNDATIONCONTRACT_VERSION)
@@ -94,8 +100,12 @@
 #endif // defined(WINDOWS_FOUNDATION_FOUNDATIONCONTRACT_VERSION)
 
 #if !defined(WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION)
-#define WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION 0x50000
+#define WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION 0x70000
 #endif // defined(WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION)
+
+#if !defined(WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION)
+#define WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION 0x30000
+#endif // defined(WINDOWS_NETWORKING_SOCKETS_CONTROLCHANNELTRIGGERCONTRACT_VERSION)
 
 #if !defined(WINDOWS_PHONE_PHONECONTRACT_VERSION)
 #define WINDOWS_PHONE_PHONECONTRACT_VERSION 0x10000
@@ -190,8 +200,9 @@ namespace ABI {
             namespace Collections {
                 /* [contract, version, pointer_default(unique), uuid("575933df-34fe-4480-af15-07691f3d5d9b"), object] */
                 MIDL_INTERFACE("575933df-34fe-4480-af15-07691f3d5d9b")
-                IVectorChangedEventArgs : IInspectable
+                IVectorChangedEventArgs : public IInspectable
                 {
+                public:
                     /* [propget] */virtual HRESULT STDMETHODCALLTYPE get_CollectionChange(
                         /* [retval, out] */__RPC__out ABI::Windows::Foundation::Collections::CollectionChange * value
                         ) = 0;

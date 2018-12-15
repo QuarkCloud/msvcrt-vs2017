@@ -24,6 +24,24 @@
     #endif
 #endif
 
+// functions defined in msvcp140_1 are annotated with _CRTIMP3
+#ifndef _CRTIMP3
+    #if defined MSVC_SUPPLEMENTAL_1 && defined _CRTBLD
+        #define _CRTIMP3 __declspec(dllexport)
+    #else
+        #define _CRTIMP3
+    #endif
+#endif
+
+// functions defined in msvcp140_2 are annotated with _CRTIMP4
+#ifndef _CRTIMP4
+    #if defined MSVC_SUPPLEMENTAL_2 && defined _CRTBLD
+        #define _CRTIMP4 __declspec(dllexport)
+    #else
+        #define _CRTIMP4
+    #endif
+#endif
+
 #ifndef _CONCRTIMP
     #if defined CONCRTDLL && defined _CRTBLD
         #define _CONCRTIMP __declspec(dllexport)

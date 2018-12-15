@@ -11,6 +11,7 @@
 #include <corecrt_startup.h>
 #include <corecrt_terminate.h>
 #include <crtdbg.h>
+#include <ctype.h>
 #include <errno.h>
 #include <excpt.h>
 #include <internal_shared.h>
@@ -83,24 +84,10 @@ _CRT_BEGIN_C_HEADER
 #ifdef __cplusplus
 extern "C++"
 {
-    class __crt_scoped_get_last_error_reset;
     namespace __crt_state_management
     {
         template <typename T>
-        class dual_state_global {
-        public:
-            inline const T& value() const { return value_;}
-            inline T& value() { return value_;}
-            inline void initialize(const T& p) { value_ = p ;}
-            inline void initialize_from_array(const T * arrs) { value_ = arrs[0]; }
-            inline T* dangerous_get_state_array() { return &value_; }
-            inline void uninitialize(T * arrs) {}
-        private:
-            T value_;
-        };
-
-        static size_t state_index_count = 16;
-        inline int get_current_state_index(const __crt_scoped_get_last_error_reset& error) { return 0; }
+        class dual_state_global;
     }
 }
 #endif
@@ -245,11 +232,47 @@ void __cdecl __acrt_call_reportfault(
 
 extern _CRT_ALLOC_HOOK _pfnAllocHook;
 
+BOOL __cdecl __acrt_CreateProcessA(
+    _In_opt_    LPCSTR                lpApplicationName,
+    _Inout_opt_ LPSTR                 lpCommandLine,
+    _In_opt_    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    _In_opt_    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    _In_        BOOL                  bInheritHandles,
+    _In_        DWORD                 dwCreationFlags,
+    _In_opt_    LPVOID                lpEnvironment,
+    _In_opt_    LPCSTR                lpCurrentDirectory,
+    _In_        LPSTARTUPINFOW        lpStartupInfo,
+    _Out_       LPPROCESS_INFORMATION lpProcessInformation
+    );
+
 _Success_(return > 0)
 DWORD __cdecl __acrt_GetTempPathA(
     DWORD nBufferLength,
     _Out_writes_to_(nBufferLength, return + 1) PSTR lpBuffer
     );
+
+DWORD __cdecl __acrt_GetModuleFileNameA(
+    _In_opt_                HMODULE hModule,
+    _When_(return < nSize, _Out_writes_to_(nSize, return + 1))
+    _When_(return == nSize, _Out_writes_all_(nSize) _Null_terminated_) char * lpFilename,
+    _In_range_(1, MAX_PATH) DWORD   nSize
+    );
+
+HMODULE __cdecl __acrt_LoadLibraryExA(
+    _In_       LPCSTR lpFileName,
+    _Reserved_ HANDLE  hFile,
+    _In_       DWORD   dwFlags
+    );
+
+BOOL __cdecl __acrt_SetEnvironmentVariableA(
+    _In_     LPCSTR lpName,
+    _In_opt_ LPCSTR lpValue
+    );
+
+BOOL __cdecl __acrt_SetCurrentDirectoryA(
+    _In_ LPCSTR lpPathName
+    );
+
 
 // Adding some defines which are used in dbgrpt.c
 #define DBGRPT_MAX_MSG 4096
@@ -272,28 +295,12 @@ extern "C++"
 }
 #endif
 
-
-
-// Helper function to convert an ANSI/MBCS string to wide char using the current
-// ANSI code set
-_Success_(return != 0)
-BOOL __cdecl __acrt_copy_path_to_wide_string(
-    _In_z_ char const* narrow_string,
-    _Outptr_result_z_ wchar_t** wide_string
-    );
-_Success_(return != 0)
-BOOL __cdecl __acrt_copy_to_char(
-    _In_z_ wchar_t const* wide_string,
-    _Outptr_result_z_ char** narrow_string
-    );
-
 _Success_(return != 0)
 unsigned char* __cdecl __acrt_allocate_buffer_for_argv(
     _In_ size_t argument_count,
     _In_ size_t character_count,
     _In_ size_t character_size
     );
-
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //
@@ -587,24 +594,24 @@ int __cdecl __acrt_LCMapStringW(
 
 _Success_(return != 0)
 int __cdecl __acrt_MultiByteToWideChar(
-    _In_                       UINT    _CodePage,
-    _In_                       DWORD   _DWFlags,
-    _In_                       LPCSTR  _LpMultiByteStr,
-    _In_                       int     _CbMultiByte,
+    _In_                           UINT    _CodePage,
+    _In_                           DWORD   _DWFlags,
+    _In_                           LPCSTR  _LpMultiByteStr,
+    _In_                           int     _CbMultiByte,
     _Out_writes_opt_(_CchWideChar) LPWSTR  _LpWideCharStr,
-    _In_                       int     _CchWideChar
+    _In_                           int     _CchWideChar
     );
 
 _Success_(return != 0)
 int __cdecl __acrt_WideCharToMultiByte(
-    _In_                       UINT    _CodePage,
-    _In_                       DWORD   _DWFlags,
-    _In_                       LPCWSTR _LpWideCharStr,
-    _In_                       int     _CchWideChar,
+    _In_                           UINT    _CodePage,
+    _In_                           DWORD   _DWFlags,
+    _In_                           LPCWSTR _LpWideCharStr,
+    _In_                           int     _CchWideChar,
     _Out_writes_opt_(_CbMultiByte) LPSTR   _LpMultiByteStr,
-    _In_                       int     _CbMultiByte,
-    _In_opt_                   LPCSTR  _LpDefaultChar,
-    _Out_opt_                  LPBOOL  _LpUsedDefaultChar
+    _In_                           int     _CbMultiByte,
+    _In_opt_                       LPCSTR  _LpDefaultChar,
+    _Out_opt_                      LPBOOL  _LpUsedDefaultChar
     );
 
 // Case-insensitive ASCII comparisons
@@ -712,7 +719,7 @@ BOOL __cdecl __acrt_get_qualified_locale_downlevel(
 
 // Global variable that is nonzero if the locale has been changed on any thread.
 // Do not touch this global variable; call __acrt_locale_changed instead.
-//extern long __acrt_locale_changed_data;
+extern long __acrt_locale_changed_data;
 
 #ifdef __cplusplus
 
@@ -722,8 +729,7 @@ BOOL __cdecl __acrt_get_qualified_locale_downlevel(
         // No need for __crt_interlocked_read, since __acrt_locale_changed_data
         // is a 4 byte natural aligned memory, guaranteed to be atomic
         // accessed on all platforms.
-        //return __acrt_locale_changed_data != FALSE;
-		return false ;
+        return __acrt_locale_changed_data != FALSE;
     }
 
 #endif
@@ -743,7 +749,7 @@ extern struct lconv             __acrt_lconv_c;
 extern __crt_lc_time_data const __lc_time_c;
 
 // The initial and current locale states:
-//extern __crt_multibyte_data  __acrt_initial_multibyte_data;
+extern __crt_multibyte_data  __acrt_initial_multibyte_data;
 extern __crt_locale_data     __acrt_initial_locale_data;
 extern __crt_locale_pointers __acrt_initial_locale_pointers;
 
@@ -787,7 +793,7 @@ __inline int __CRTDECL __acrt_isleadbyte_l_noupdate(
     _In_ _locale_t const locale
     )
 {
-    return locale->locinfo->_public._locale_pctype[(unsigned char)c] & _LEADBYTE;
+    return __acrt_locale_get_ctype_array_value(locale->locinfo->_public._locale_pctype, c, _LEADBYTE);
 }
 
 
@@ -965,69 +971,11 @@ extern "C++"
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 extern HANDLE __acrt_heap;
 
-void __cdecl _aligned_free_base(
-    _Pre_maybenull_ _Post_invalid_ void* block
-    );
-
-_Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* __cdecl _aligned_malloc_base(
-    _In_ size_t size,
-    _In_ size_t alignment
-    );
-
-_Check_return_
-size_t __cdecl _aligned_msize_base(
-    _Pre_notnull_ void*  block,
-    _In_          size_t alignment,
-    _In_          size_t offset
-    );
-
-_Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* __cdecl _aligned_offset_malloc_base(
-    _In_ size_t size,
-    _In_ size_t alignment,
-    _In_ size_t offset
-    );
-
-_Success_(return != 0) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* __cdecl _aligned_offset_realloc_base(
-    _Pre_maybenull_ _Post_invalid_ void*  block,
-    _In_                           size_t size,
-    _In_                           size_t alignment,
-    _In_                           size_t offset
-    );
-
-_Success_(return != 0) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size * count)
-void* __cdecl _aligned_offset_recalloc_base(
-    _Pre_maybenull_ _Post_invalid_ void*  block,
-    _In_                           size_t count,
-    _In_                           size_t size,
-    _In_                           size_t alignment,
-    _In_                           size_t offset
-    );
-
-_Success_(return != 0) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* __cdecl _aligned_realloc_base(
-    _Pre_maybenull_ _Post_invalid_ void*  block,
-    _In_                           size_t size,
-    _In_                           size_t alignment
-    );
-
-_Success_(return != 0) _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size * count)
-void* __cdecl _aligned_recalloc_base(
-    _Pre_maybenull_ _Post_invalid_ void*  block,
-    _In_                           size_t count,
-    _In_                           size_t size,
-    _In_                           size_t alignment
-    );
-
 _Check_return_ _Ret_maybenull_ _Post_writable_byte_size_(size)
 void* __cdecl _expand_base(
     _Pre_notnull_ void*  block,
     _In_          size_t size
     );
-
-
 
 // For detection of heap mismatch between MSVCRT and UCRT
 #define _UCRT_HEAP_MISMATCH_DETECTION   0
@@ -1366,10 +1314,6 @@ int WINAPI __acrt_MessageBoxW(
 
 void WINAPI __acrt_OutputDebugStringA(
     _In_opt_ LPCSTR text
-    );
-
-void WINAPI __acrt_OutputDebugStringW(
-    _In_opt_ LPCWSTR text
     );
 
 #ifdef __cplusplus
@@ -1728,12 +1672,12 @@ extern "C++"
         _In_     __acrt_ptd*        const ptd,
         _Inout_ __crt_locale_data** const data
         );
-/*
+
     extern "C" void __acrt_update_multibyte_info(
         _In_ __acrt_ptd*               const ptd,
         _Inout_ __crt_multibyte_data** const data
         );
-*/
+
     class _LocaleUpdate
     {
     public:
@@ -1756,7 +1700,7 @@ extern "C++"
                 _locale_pointers.mbcinfo = _ptd->_multibyte_info;
 
                 __acrt_update_locale_info   (_ptd, &_locale_pointers.locinfo);
-                //__acrt_update_multibyte_info(_ptd, &_locale_pointers.mbcinfo);
+                __acrt_update_multibyte_info(_ptd, &_locale_pointers.mbcinfo);
                 if ((_ptd->_own_locale & _PER_THREAD_LOCALE_BIT) == 0)
                 {
                     _ptd->_own_locale |= _PER_THREAD_LOCALE_BIT;
@@ -1932,4 +1876,4 @@ windowing_model_policy __cdecl __acrt_get_windowing_model_policy(void);
 
 _CRT_END_C_HEADER
 
-//#include <corecrt_internal_state_isolation.h>
+#include <corecrt_internal_state_isolation.h>

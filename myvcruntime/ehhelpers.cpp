@@ -8,8 +8,8 @@
 #include <eh.h>         // User-visible routines for eh
 #include <ehassert.h>   // This project's versions of standard assert macros
 #include <ehdata.h>     // Declarations of all types used for EH
+#include <ehdata4.h>
 #include <ehhooks.h>    // Declarations of hook variables and callbacks
-#include <ehstate.h>    // Declarations of state management stuff
 #include <trnsctrl.h>   // Routines to handle transfer of control (trnsctrl.asm)
 #include <vcruntime_exception.h>
 #include <vcruntime_typeinfo.h>
@@ -99,35 +99,6 @@ extern "C" _VCRTIMP void * __GetPlatformExceptionInfo(
 
     return nullptr;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// __uncaught_exceptions() - Returns the number of exceptions that have been
-//                           thrown but not yet caught.
-//
-// If a thread/fiber does not yet have thread/fiber locals, these functions
-// just return false/0, without trying to allocate/initialize thread/fiber locals.
-//
-
-extern "C" int __cdecl __uncaught_exceptions()
-{
-    __vcrt_ptd* const ptd = __vcrt_getptd_noinit();
-    return ptd ? ptd->_ProcessingThrow : 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// __uncaught_exception() - Returns true while a throw is in progress, between
-//                          the construction of the thrown object and the
-//                          initialization of the caught object in a catch
-//                          block.
-//
-
-extern "C" bool __cdecl __uncaught_exception()
-{
-    return __uncaught_exceptions() != 0;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //

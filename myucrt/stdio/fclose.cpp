@@ -15,7 +15,6 @@
 // valid fileo or the file is not open, etc.).
 extern "C" int __cdecl fclose(FILE* const public_stream)
 {
-	/*
     __crt_stdio_stream const stream(public_stream);
 
     _VALIDATE_RETURN(stream.valid(), EINVAL, EOF);
@@ -42,15 +41,12 @@ extern "C" int __cdecl fclose(FILE* const public_stream)
     }
 
     return return_value;
-	*/
-	return 0 ;
 }
 
 
 
 extern "C" int __cdecl _fclose_nolock(FILE* const public_stream)
 {
-	/*
     __crt_stdio_stream const stream(public_stream);
 
     _VALIDATE_RETURN(stream.valid(), EINVAL, EOF);
@@ -76,6 +72,4 @@ extern "C" int __cdecl _fclose_nolock(FILE* const public_stream)
     __acrt_stdio_free_stream(stream);
 
     return result;
-	*/
-	return 0 ;
 }

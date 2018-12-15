@@ -9,6 +9,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -25,7 +26,7 @@ template<class _Elem,
 	: public _STD codecvt<_Elem, char, _Statype>
 	{	// facet for converting between _Elem and one-byte sequences
 public:
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -37,7 +38,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~_Cvt_one_byte() _NOEXCEPT
+	virtual ~_Cvt_one_byte() noexcept
 		{	// destroy the object
 		}
 
@@ -78,11 +79,12 @@ protected:
 			unsigned short _Widecode = (unsigned short)_Hugecode;
 
 			if (_Maxc < _Widecode)
+				{
 				return (_Mybase::error);	// value too large
-			else if (_Widecode < _Table::_Nlow || (_Widecode < 0x100
-				&& _Table::_Btw[_Widecode - _Table::_Nlow] == _Widecode))
-				;	// map wide to same byte value
-			else
+				}
+
+			if (_Widecode >= _Table::_Nlow && (_Widecode >= 0x100
+				|| _Table::_Btw[_Widecode - _Table::_Nlow] != _Widecode))
 				{	// search for a valid mapping
 				unsigned long _Lo = 0;
 				unsigned long _Hi = sizeof (_Table::_Wvalid)
@@ -93,18 +95,26 @@ protected:
 					unsigned long _Mid = (_Hi + _Lo) / 2;
 
 					if (_Widecode < _Table::_Wvalid[_Mid])
+						{
 						_Hi = _Mid;
+						}
 					else if (_Widecode == _Table::_Wvalid[_Mid])
 						{	// found the code, map it
 						_Widecode = _Table::_Wtb[_Mid];
 						break;
 						}
 					else
+						{
 						_Lo = _Mid + 1;
+						}
 					}
+
 				if (_Hi <= _Lo)
+					{
 					return (_Mybase::error);
+					}
 				}
+
 			*_Mid2++ = (_Byte)_Widecode;
 			}
 
@@ -119,24 +129,24 @@ protected:
 		}
 
 	virtual int do_length(_Statype&, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
-		size_t _Wchars = _Last1 - _First1;
+		const auto _Wchars = static_cast<size_t>(_Last1 - _First1);
 
 		return ((int)(_Wchars < _Count ? _Wchars : _Count));
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
 		return (1);	// length of sequence
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
 		return (1);	// >0 => fixed sequence length
 		}
@@ -174,6 +184,7 @@ unsigned char test_table::_Wtb[2] = {0xff, 0xfe};
  #endif /* 0 && defined(_TEST_IT) */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

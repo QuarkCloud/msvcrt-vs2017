@@ -51,7 +51,7 @@ namespace Concurrency { namespace details {
 
         _Threadpool_task(): _M_chore{&_Callback, this} {}
 
-        virtual void _Invoke() throw() = 0;
+        virtual void _Invoke() noexcept = 0;
 
         virtual ~_Threadpool_task()
         {
@@ -68,7 +68,7 @@ namespace Concurrency { namespace details {
             _Reschedule_chore(&_M_chore);
         }
 
-        bool _Is_scheduled() const throw()
+        bool _Is_scheduled() const noexcept
         {
             return _M_chore._M_work != nullptr;
         }

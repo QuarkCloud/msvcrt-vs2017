@@ -16,6 +16,8 @@ Abstract:
 
 --*/
 
+//@[contract("rpcdcep"), comment("MVI_tracked - https://osgwiki.com/wiki/Microsoft_Virus_Initiative")]; 
+
 #ifndef __RPCDCEP_H__
 #define __RPCDCEP_H__
 
@@ -737,6 +739,7 @@ I_RpcServerCheckClientRestriction (
 #define TRANSPORT_TYPE_LPC       0x04
 #define TRANSPORT_TYPE_WMSG      0x08
 
+//@[comment("MVI_tracked")]
 RPCRTAPI
 _Must_inspect_result_
 RPC_STATUS
@@ -1265,6 +1268,7 @@ I_RpcBindingSetPrivateOption (
 
 #define RPC_C_OPT_PRIVATE_SUPPRESS_WAKE     1
 #define RPC_C_OPT_PRIVATE_DO_NOT_DISTURB    2
+#define RPC_C_OPT_PRIVATE_BREAK_ON_SUSPEND  3
 
 #endif // (NTDDI_VERSION >= NTDDI_WIN8)
 

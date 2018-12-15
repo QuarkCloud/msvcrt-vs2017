@@ -193,7 +193,7 @@ extern "C++"
     struct __crt_seh_guarded_call
     {
         template <typename Setup, typename Action, typename Cleanup>
-        auto operator()(Setup&& setup, Action&& action, Cleanup&& cleanup) throw()
+        auto operator()(Setup&& setup, Action&& action, Cleanup&& cleanup)
             -> decltype(action())
         {
             decltype(action()) result{};
@@ -216,7 +216,7 @@ extern "C++"
     struct __crt_seh_guarded_call<void>
     {
         template <typename Setup, typename Action, typename Cleanup>
-        void operator()(Setup&& setup, Action&& action, Cleanup&& cleanup) throw()
+        void operator()(Setup&& setup, Action&& action, Cleanup&& cleanup)
         {
             setup();
             __try
@@ -231,7 +231,7 @@ extern "C++"
     };
 
     template <typename Action, typename Cleanup>
-    auto __crt_call_and_cleanup(Action&& action, Cleanup&& cleanup) throw()
+    auto __crt_call_and_cleanup(Action&& action, Cleanup&& cleanup)
         -> decltype(action())
     {
         return __crt_seh_guarded_call<decltype(action())>()([](){}, action, cleanup);
@@ -268,19 +268,26 @@ extern "C++"
 
 #else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
 
-    #define _calloc_crt   _calloc_base
-    #define _free_crt     _free_base
-    #define _malloc_crt   _malloc_base
-    #define _realloc_crt  _realloc_base
+    // The *_crt macros call the allocation function that vcruntime should use for
+    // internal allocations. It changes based off of where it is being built.
 
-    // Within the Universal CRT, we must call _msize_base and _recalloc_base.
-    // These functions are internal implementation details (not exported).  We
-    // must call a consistent set of APIs (_base or non-_base) to work around
-    // binaries that hook CRT APIs at runtime.
     #ifdef _CRT_WINDOWS
+    // When building for the UCRT, we want to use the internal allocation functions.
+    // We need to ensure that users hooking the public allocation functions do not
+    // interfere with the UCRT's allocations.
+        #define _calloc_crt   _calloc_base
+        #define _free_crt     _free_base
+        #define _malloc_crt   _malloc_base
+        #define _realloc_crt  _realloc_base
         #define _msize_crt    _msize_base
         #define _recalloc_crt _recalloc_base
     #else
+    // When building for vcruntime*.dll, we are not a part of the UCRT or OS so we
+    // should use the public allocation functions exported by the UCRT.
+        #define _calloc_crt   calloc
+        #define _free_crt     free
+        #define _malloc_crt   malloc
+        #define _realloc_crt  realloc
         #define _msize_crt    _msize
         #define _recalloc_crt _recalloc
     #endif
@@ -323,7 +330,7 @@ extern "C++" {
     struct __crt_internal_free_policy
     {
         template <typename T>
-        void operator()(T const* const p) const throw()
+        void operator()(T const* const p) const noexcept
         {
             _free_crt(const_cast<T*>(p));
         }
@@ -332,7 +339,7 @@ extern "C++" {
     struct __crt_public_free_policy
     {
         template <typename T>
-        void operator()(T const* const p) const throw()
+        void operator()(T const* const p) const noexcept
         {
             free(const_cast<T*>(p));
         }
@@ -343,23 +350,26 @@ extern "C++" {
     {
     public:
 
-        explicit __crt_unique_heap_ptr(T* const p = nullptr) throw()
+        explicit __crt_unique_heap_ptr(T* const p = nullptr) noexcept
             : _p(p)
         {
         }
 
-        __crt_unique_heap_ptr(__crt_unique_heap_ptr&& other) throw()
+        __crt_unique_heap_ptr(__crt_unique_heap_ptr const&) = delete;
+        __crt_unique_heap_ptr& operator=(__crt_unique_heap_ptr const&) = delete;
+
+        __crt_unique_heap_ptr(__crt_unique_heap_ptr&& other) noexcept
             : _p(other._p)
         {
             other._p = nullptr;
         }
 
-        ~__crt_unique_heap_ptr() throw()
+        ~__crt_unique_heap_ptr() noexcept
         {
             release();
         }
 
-        __crt_unique_heap_ptr& operator=(__crt_unique_heap_ptr&& other) throw()
+        __crt_unique_heap_ptr& operator=(__crt_unique_heap_ptr&& other) noexcept
         {
             release();
             _p = other._p;
@@ -367,56 +377,52 @@ extern "C++" {
             return *this;
         }
 
-        T* detach() throw()
+        T* detach() noexcept
         {
             T* const local_p{_p};
             _p = nullptr;
             return local_p;
         }
 
-        void attach(T* const p) throw()
+        void attach(T* const p) noexcept
         {
             release();
             _p = p;
         }
 
-        void release() throw()
+        void release() noexcept
         {
             Free()(_p);
             _p = nullptr;
         }
 
-        bool is_valid() const throw()
+        bool is_valid() const noexcept
         {
             return _p != nullptr;
         }
 
-        explicit operator bool() const throw()
+        explicit operator bool() const noexcept
         {
             return is_valid();
         }
 
-        T* get() const throw()
+        T* get() const noexcept
         {
             return _p;
         }
 
-        T** get_address_of() throw()
+        T** get_address_of() noexcept
         {
             return &_p;
         }
 
-        T** release_and_get_address_of() throw()
+        T** release_and_get_address_of() noexcept
         {
             release();
             return &_p;
         }
 
     private:
-
-        __crt_unique_heap_ptr(__crt_unique_heap_ptr const&);
-        __crt_unique_heap_ptr& operator=(__crt_unique_heap_ptr const&);
-
         T* _p;
     };
 
@@ -424,7 +430,7 @@ extern "C++" {
     template <typename T>
     struct __crt_scoped_stack_ptr_tag
     {
-        __crt_scoped_stack_ptr_tag(T* const p) throw()
+        __crt_scoped_stack_ptr_tag(T* const p) noexcept
             : _p(p)
         {
         }
@@ -437,31 +443,31 @@ extern "C++" {
     {
     public:
 
-        explicit __crt_scoped_stack_ptr(__crt_scoped_stack_ptr_tag<T> const p) throw()
+        explicit __crt_scoped_stack_ptr(__crt_scoped_stack_ptr_tag<T> const p) noexcept
             : _p(p._p)
         {
         }
 
-        ~__crt_scoped_stack_ptr() throw()
+        __crt_scoped_stack_ptr(__crt_scoped_stack_ptr const&) = delete;
+        __crt_scoped_stack_ptr& operator=(__crt_scoped_stack_ptr const&) = delete;
+
+        ~__crt_scoped_stack_ptr() noexcept
         {
             _freea_crt(_p);
         }
 
-        T* get() const throw() { return _p; }
+        T* get() const noexcept { return _p; }
 
         // Note that we do not provide a release() because one would not be
         // useful:  a stack allocation is only useful in the scope in which it
         // was allocated.
 
-        explicit operator bool() const throw()
+        explicit operator bool() const noexcept
         {
             return _p != nullptr;
         }
 
     private:
-        __crt_scoped_stack_ptr(__crt_scoped_stack_ptr const&) throw();
-        void operator=(__crt_scoped_stack_ptr const&) throw();
-
         T* const _p;
     };
 
@@ -480,12 +486,14 @@ extern "C++" {
         __crt_maximum_pointer_shift = sizeof(uintptr_t) * 8
     };
 
-    inline unsigned int __crt_rotate_pointer_value(unsigned int const value, int const shift) throw()
+    inline unsigned int __crt_rotate_pointer_value(unsigned int const value,
+        int const shift) noexcept
     {
         return RotateRight32(value, shift);
     }
 
-    inline unsigned __int64 __crt_rotate_pointer_value(unsigned __int64 const value, int const shift) throw()
+    inline unsigned __int64 __crt_rotate_pointer_value(unsigned __int64 const value,
+        int const shift) noexcept
     {
         return RotateRight64(value, shift);
     }
@@ -493,7 +501,7 @@ extern "C++" {
     // Fast alternatives to the encode/decode pointer functions that do not use
     // the EncodePointer and DecodePointer functions.
     template <typename T>
-    T __crt_fast_decode_pointer(T const p) throw()
+    T __crt_fast_decode_pointer(T const p) noexcept
     {
         return reinterpret_cast<T>(
             __crt_rotate_pointer_value(
@@ -504,7 +512,7 @@ extern "C++" {
     }
 
     template <typename T>
-    T __crt_fast_encode_pointer(T const p) throw()
+    T __crt_fast_encode_pointer(T const p) noexcept
     {
         return reinterpret_cast<T>(
             __crt_rotate_pointer_value(
@@ -523,10 +531,13 @@ extern "C++" {
     struct __crt_fast_encoded_nullptr_t
     {
         template <typename T>
-        operator T*() const throw() { return __crt_fast_encode_pointer(static_cast<T*>(nullptr)); }
+        operator T*() const noexcept
+        {
+            return __crt_fast_encode_pointer(static_cast<T*>(nullptr));
+        }
     };
 
-    inline __crt_fast_encoded_nullptr_t __crt_fast_encode_pointer(decltype(nullptr)) throw()
+    inline __crt_fast_encoded_nullptr_t __crt_fast_encode_pointer(decltype(nullptr)) noexcept
     {
         return __crt_fast_encoded_nullptr_t();
     }
@@ -534,13 +545,13 @@ extern "C++" {
 
 
     template <typename T>
-    T __crt_get_proc_address(HMODULE const m, char const* const f) throw()
+    T __crt_get_proc_address(HMODULE const m, char const* const f) noexcept
     {
         return reinterpret_cast<T>(::GetProcAddress(m, f));
     }
 
     template <typename T, typename V>
-    T* __crt_interlocked_exchange_pointer(T* const volatile* target, V const value) throw()
+    T* __crt_interlocked_exchange_pointer(T* const volatile* target, V const value) noexcept
     {
         // This is required to silence a spurious unreferenced formal parameter
         // warning.
@@ -550,7 +561,8 @@ extern "C++" {
     }
 
     template <typename T, typename E, typename C>
-    T __crt_interlocked_compare_exchange(T* const volatile target, E const exchange, C const comparand) throw()
+    T __crt_interlocked_compare_exchange(T* const volatile target, E const exchange,
+        C const comparand) noexcept
     {
         UNREFERENCED_PARAMETER(exchange);  // These are required to silence spurious
         UNREFERENCED_PARAMETER(comparand); // unreferenced formal parameter warnings.
@@ -561,7 +573,8 @@ extern "C++" {
     }
 
     template <typename T, typename E, typename C>
-    T* __crt_interlocked_compare_exchange_pointer(T* const volatile* target, E const exchange, C const comparand) throw()
+    T* __crt_interlocked_compare_exchange_pointer(T* const volatile* target, E const exchange,
+        C const comparand) noexcept
     {
         UNREFERENCED_PARAMETER(exchange);  // These are required to silence spurious
         UNREFERENCED_PARAMETER(comparand); // unreferenced formal parameter warnings.
@@ -578,7 +591,7 @@ extern "C++" {
             #define __crt_interlocked_memory_barrier() (__dmb(_ARM64_BARRIER_ISH))
         #endif
 
-        inline __int32 __crt_interlocked_read_32(__int32 const volatile* target) throw()
+        inline __int32 __crt_interlocked_read_32(__int32 const volatile* target) noexcept
         {
             #if defined _M_IX86 || defined _M_X64
             __int32 const result = *target;
@@ -594,7 +607,7 @@ extern "C++" {
         }
 
         #if defined _WIN64
-            inline __int64 __crt_interlocked_read_64(__int64 const volatile* target) throw()
+            inline __int64 __crt_interlocked_read_64(__int64 const volatile* target) noexcept
             {
                 #if defined _M_X64
                 __int64 const result = *target;
@@ -611,7 +624,7 @@ extern "C++" {
         #endif // _WIN64
 
         template <typename T>
-        T __crt_interlocked_read(T const volatile* target) throw()
+        T __crt_interlocked_read(T const volatile* target) noexcept
         {
             static_assert(sizeof(T) == sizeof(__int32), "Type being read must be 32 bits in size.");
             return (T)__crt_interlocked_read_32((__int32*)target);
@@ -619,7 +632,7 @@ extern "C++" {
 
 
         template <typename T>
-        T* __crt_interlocked_read_pointer(T* const volatile* target) throw()
+        T* __crt_interlocked_read_pointer(T* const volatile* target) noexcept
         {
             #ifdef _WIN64
             return (T*)__crt_interlocked_read_64((__int64*)target);

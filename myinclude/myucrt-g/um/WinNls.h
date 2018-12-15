@@ -846,6 +846,7 @@ extern "C" {
 #define CAL_RETURN_NUMBER         LOCALE_RETURN_NUMBER          // return number instead of string
 #endif /* WINVER >= 0x0500 */
 
+
 #if (WINVER >= _WIN32_WINNT_WIN7)
 #define CAL_RETURN_GENITIVE_NAMES LOCALE_RETURN_GENITIVE_NAMES  // return genitive forms of month names
 #endif // winver >= windows 7
@@ -1325,7 +1326,9 @@ typedef enum _NORM_FORM {
 
 #ifdef STRICT
 
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef BOOL (CALLBACK* LANGUAGEGROUP_ENUMPROCA)(LGRPID, LPSTR, LPSTR, DWORD, LONG_PTR);    // Deprecated, please use Unicode
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef BOOL (CALLBACK* LANGGROUPLOCALE_ENUMPROCA)(LGRPID, LCID, LPSTR, LONG_PTR);          // Deprecated, please use Unicode
 typedef BOOL (CALLBACK* UILANGUAGE_ENUMPROCA)(LPSTR, LONG_PTR);                             // Deprecated, please use Unicode
 typedef BOOL (CALLBACK* CODEPAGE_ENUMPROCA)(LPSTR);                                         // Deprecated, please use Unicode
@@ -1336,7 +1339,9 @@ typedef BOOL (CALLBACK* CALINFO_ENUMPROCA)(LPSTR);                              
 typedef BOOL (CALLBACK* CALINFO_ENUMPROCEXA)(LPSTR, CALID);                                 // Deprecated, please use Unicode
 typedef BOOL (CALLBACK* LOCALE_ENUMPROCA)(LPSTR);                                           // Deprecated, please use Unicode
 typedef BOOL (CALLBACK* LOCALE_ENUMPROCW)(LPWSTR);                                          // DEPRECATED: please use LOCALE_ENUMPROCEX
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef BOOL (CALLBACK* LANGUAGEGROUP_ENUMPROCW)(LGRPID, LPWSTR, LPWSTR, DWORD, LONG_PTR);  // DEPRECATED: Language groups are no longer supported
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef BOOL (CALLBACK* LANGGROUPLOCALE_ENUMPROCW)(LGRPID, LCID, LPWSTR, LONG_PTR);         // DEPRECATED: Language groups are no longer supported
 typedef BOOL (CALLBACK* UILANGUAGE_ENUMPROCW)(LPWSTR, LONG_PTR);
 typedef BOOL (CALLBACK* CODEPAGE_ENUMPROCW)(LPWSTR);            // Please use Unicode / UTF-8
@@ -1352,7 +1357,9 @@ typedef BOOL (CALLBACK* GEO_ENUMNAMEPROC)(PWSTR, LPARAM);
 
 #else // !STRICT
 
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef FARPROC LANGUAGEGROUP_ENUMPROCA;       // Deprecated, please use Unicode
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef FARPROC LANGGROUPLOCALE_ENUMPROCA;     // Deprecated, please use Unicode
 typedef FARPROC UILANGUAGE_ENUMPROCA;          // Deprecated, please use Unicode
 typedef FARPROC CODEPAGE_ENUMPROCA;            // Deprecated, please use Unicode
@@ -1364,7 +1371,9 @@ typedef FARPROC CALINFO_ENUMPROCEXA;           // Deprecated, please use Unicode
 typedef FARPROC GEO_ENUMPROC;                  // DEPRECATED, use GEO_ENUMNAMEPROC instead
 typedef FARPROC LOCALE_ENUMPROCA;              // Deprecated, please use Unicode
 typedef FARPROC LOCALE_ENUMPROCW;              // DEPRECATED: please use LOCALE_ENUMPROCEX
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef FARPROC LANGUAGEGROUP_ENUMPROCW;       // DEPRECATED: Language groups are no longer supported
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 typedef FARPROC LANGGROUPLOCALE_ENUMPROCW;     // DEPRECATED: Language groups are no longer supported
 typedef FARPROC UILANGUAGE_ENUMPROCW;
 typedef FARPROC CODEPAGE_ENUMPROCW;            // Please use Unicode / UTF-8
@@ -1381,7 +1390,9 @@ typedef FARPROC GEO_ENUMNAMEPROC;
 
 #ifdef UNICODE
 
+// DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 #define LANGUAGEGROUP_ENUMPROC    LANGUAGEGROUP_ENUMPROCW
+// DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 #define LANGGROUPLOCALE_ENUMPROC  LANGGROUPLOCALE_ENUMPROCW
 #define UILANGUAGE_ENUMPROC       UILANGUAGE_ENUMPROCW
 #define CODEPAGE_ENUMPROC         CODEPAGE_ENUMPROCW
@@ -1394,7 +1405,9 @@ typedef FARPROC GEO_ENUMNAMEPROC;
 
 #else
 
+// DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 #define LANGUAGEGROUP_ENUMPROC    LANGUAGEGROUP_ENUMPROCA
+// DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 #define LANGGROUPLOCALE_ENUMPROC  LANGGROUPLOCALE_ENUMPROCA
 #define UILANGUAGE_ENUMPROC       UILANGUAGE_ENUMPROCA
 #define CODEPAGE_ENUMPROC         CODEPAGE_ENUMPROCA
@@ -2049,7 +2062,7 @@ EnumDateFormatsExW(
 #endif /* WINVER >= 0x0500 */
 
 #if(WINVER >= 0x0500)
-// DEPRECATED: The Language Group concept is obsolete and no longer supported.
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 WINBASEAPI
 BOOL
 WINAPI
@@ -2066,16 +2079,6 @@ GetNLSVersion(
     _In_    NLS_FUNCTION     Function,
     _In_    LCID             Locale,
     _Inout_ LPNLSVERSIONINFO lpVersionInformation);
-
-WINBASEAPI
-BOOL
-WINAPI
-IsNLSDefinedString(
-    _In_ NLS_FUNCTION     Function,
-    _In_ DWORD            dwFlags,
-    _In_ LPNLSVERSIONINFO lpVersionInformation,
-    _In_reads_(cchStr) LPCWSTR          lpString,
-    _In_ INT              cchStr);
 
 // DEPRECATED: IsValidLocaleName is preferred
 WINBASEAPI
@@ -2167,11 +2170,16 @@ WINAPI
 GetUserGeoID(
     _In_ GEOCLASS    GeoClass);
 
+/**
+ * Note: This API was added in the Windows 10 Fall Creators Update.
+ * (Please use this API instead of calling GetUserGeoID.)
+ *
+ */
 WINBASEAPI
 int
 WINAPI
 GetUserDefaultGeoName(
-    _Out_writes_(geoName) LPWSTR geoName,
+    _Out_writes_z_(geoNameCount) LPWSTR geoName,
     _In_ int geoNameCount
 );
 
@@ -2520,7 +2528,7 @@ EnumSystemLocalesW(
 
 #if(WINVER >= 0x0500)
 
-// DEPRECATED, language groups are obsolete and erratic.
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 WINBASEAPI
 BOOL
 WINAPI
@@ -2528,7 +2536,7 @@ EnumSystemLanguageGroupsA(
     _In_ LANGUAGEGROUP_ENUMPROCA lpLanguageGroupEnumProc,
     _In_ DWORD                   dwFlags,
     _In_ LONG_PTR                lParam);
-// DEPRECATED, language groups are obsolete and erratic.
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 WINBASEAPI
 BOOL
 WINAPI
@@ -2542,7 +2550,7 @@ EnumSystemLanguageGroupsW(
 #define EnumSystemLanguageGroups  EnumSystemLanguageGroupsA
 #endif // !UNICODE
 
-// DEPRECATED, language groups are obsolete and erratic.
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 WINBASEAPI
 BOOL
 WINAPI
@@ -2551,7 +2559,7 @@ EnumLanguageGroupLocalesA(
     _In_ LGRPID                    LanguageGroup,
     _In_ DWORD                     dwFlags,
     _In_ LONG_PTR                  lParam);
-// DEPRECATED, language groups are obsolete and erratic.
+DEPRECATED("The Language Group concept is obsolete and no longer supported. Set DISABLE_NLS_DEPRECATION to disable this warning.")
 WINBASEAPI
 BOOL
 WINAPI
@@ -2829,6 +2837,16 @@ GetSystemDefaultLocaleName(
     _Out_writes_(cchLocaleName) LPWSTR lpLocaleName,
     _In_ int cchLocaleName
 );
+
+WINBASEAPI
+BOOL
+WINAPI
+IsNLSDefinedString(
+    _In_ NLS_FUNCTION     Function,
+    _In_ DWORD            dwFlags,
+    _In_ LPNLSVERSIONINFO lpVersionInformation,
+    _In_reads_(cchStr) LPCWSTR          lpString,
+    _In_ INT              cchStr);
 
 WINBASEAPI
 BOOL

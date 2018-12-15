@@ -702,7 +702,7 @@ class TraceLoggingActivity
     typedef
         _TlgActivityBase<TraceLoggingActivity<provider, keyword, level, TlgReflectorTag>, keyword, level>
         BaseTy;
-    friend class BaseTy;
+    friend BaseTy;
 
     void OnStarted()
     {
@@ -784,7 +784,7 @@ class TraceLoggingThreadActivity
     typedef
         _TlgActivityBase<TraceLoggingThreadActivity<provider, keyword, level, TlgReflectorTag>, keyword, level>
         BaseTy;
-    friend class BaseTy;
+    friend BaseTy;
 
     void OnStarted()
     {

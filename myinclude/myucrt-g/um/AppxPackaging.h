@@ -172,6 +172,13 @@ typedef interface IAppxManifestReader5 IAppxManifestReader5;
 #endif 	/* __IAppxManifestReader5_FWD_DEFINED__ */
 
 
+#ifndef __IAppxManifestReader6_FWD_DEFINED__
+#define __IAppxManifestReader6_FWD_DEFINED__
+typedef interface IAppxManifestReader6 IAppxManifestReader6;
+
+#endif 	/* __IAppxManifestReader6_FWD_DEFINED__ */
+
+
 #ifndef __IAppxManifestOptionalPackageInfo_FWD_DEFINED__
 #define __IAppxManifestOptionalPackageInfo_FWD_DEFINED__
 typedef interface IAppxManifestOptionalPackageInfo IAppxManifestOptionalPackageInfo;
@@ -326,6 +333,13 @@ typedef interface IAppxBundleWriter3 IAppxBundleWriter3;
 #endif 	/* __IAppxBundleWriter3_FWD_DEFINED__ */
 
 
+#ifndef __IAppxBundleWriter4_FWD_DEFINED__
+#define __IAppxBundleWriter4_FWD_DEFINED__
+typedef interface IAppxBundleWriter4 IAppxBundleWriter4;
+
+#endif 	/* __IAppxBundleWriter4_FWD_DEFINED__ */
+
+
 #ifndef __IAppxBundleReader_FWD_DEFINED__
 #define __IAppxBundleReader_FWD_DEFINED__
 typedef interface IAppxBundleReader IAppxBundleReader;
@@ -359,6 +373,13 @@ typedef interface IAppxBundleManifestPackageInfoEnumerator IAppxBundleManifestPa
 typedef interface IAppxBundleManifestPackageInfo IAppxBundleManifestPackageInfo;
 
 #endif 	/* __IAppxBundleManifestPackageInfo_FWD_DEFINED__ */
+
+
+#ifndef __IAppxBundleManifestPackageInfo2_FWD_DEFINED__
+#define __IAppxBundleManifestPackageInfo2_FWD_DEFINED__
+typedef interface IAppxBundleManifestPackageInfo2 IAppxBundleManifestPackageInfo2;
+
+#endif 	/* __IAppxBundleManifestPackageInfo2_FWD_DEFINED__ */
 
 
 #ifndef __IAppxBundleManifestOptionalBundleInfoEnumerator_FWD_DEFINED__
@@ -417,6 +438,20 @@ typedef interface IAppxContentGroupMapWriter IAppxContentGroupMapWriter;
 #endif 	/* __IAppxContentGroupMapWriter_FWD_DEFINED__ */
 
 
+#ifndef __IAppxPackagingDiagnosticEventSink_FWD_DEFINED__
+#define __IAppxPackagingDiagnosticEventSink_FWD_DEFINED__
+typedef interface IAppxPackagingDiagnosticEventSink IAppxPackagingDiagnosticEventSink;
+
+#endif 	/* __IAppxPackagingDiagnosticEventSink_FWD_DEFINED__ */
+
+
+#ifndef __IAppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__
+#define __IAppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__
+typedef interface IAppxPackagingDiagnosticEventSinkManager IAppxPackagingDiagnosticEventSinkManager;
+
+#endif 	/* __IAppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__ */
+
+
 #ifndef __IAppxEncryptionFactory_FWD_DEFINED__
 #define __IAppxEncryptionFactory_FWD_DEFINED__
 typedef interface IAppxEncryptionFactory IAppxEncryptionFactory;
@@ -473,6 +508,20 @@ typedef interface IAppxEncryptedBundleWriter2 IAppxEncryptedBundleWriter2;
 #endif 	/* __IAppxEncryptedBundleWriter2_FWD_DEFINED__ */
 
 
+#ifndef __IAppxEncryptedBundleWriter3_FWD_DEFINED__
+#define __IAppxEncryptedBundleWriter3_FWD_DEFINED__
+typedef interface IAppxEncryptedBundleWriter3 IAppxEncryptedBundleWriter3;
+
+#endif 	/* __IAppxEncryptedBundleWriter3_FWD_DEFINED__ */
+
+
+#ifndef __IAppxPackageEditor_FWD_DEFINED__
+#define __IAppxPackageEditor_FWD_DEFINED__
+typedef interface IAppxPackageEditor IAppxPackageEditor;
+
+#endif 	/* __IAppxPackageEditor_FWD_DEFINED__ */
+
+
 #ifndef __AppxFactory_FWD_DEFINED__
 #define __AppxFactory_FWD_DEFINED__
 
@@ -497,6 +546,18 @@ typedef struct AppxBundleFactory AppxBundleFactory;
 #endif 	/* __AppxBundleFactory_FWD_DEFINED__ */
 
 
+#ifndef __AppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__
+#define __AppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class AppxPackagingDiagnosticEventSinkManager AppxPackagingDiagnosticEventSinkManager;
+#else
+typedef struct AppxPackagingDiagnosticEventSinkManager AppxPackagingDiagnosticEventSinkManager;
+#endif /* __cplusplus */
+
+#endif 	/* __AppxPackagingDiagnosticEventSinkManager_FWD_DEFINED__ */
+
+
 #ifndef __AppxEncryptionFactory_FWD_DEFINED__
 #define __AppxEncryptionFactory_FWD_DEFINED__
 
@@ -507,6 +568,18 @@ typedef struct AppxEncryptionFactory AppxEncryptionFactory;
 #endif /* __cplusplus */
 
 #endif 	/* __AppxEncryptionFactory_FWD_DEFINED__ */
+
+
+#ifndef __AppxPackageEditor_FWD_DEFINED__
+#define __AppxPackageEditor_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class AppxPackageEditor AppxPackageEditor;
+#else
+typedef struct AppxPackageEditor AppxPackageEditor;
+#endif /* __cplusplus */
+
+#endif 	/* __AppxPackageEditor_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -636,6 +709,19 @@ enum APPX_CAPABILITY_CLASS_TYPE
         APPX_CAPABILITY_CLASS_CUSTOM	= 0x8
     } 	APPX_CAPABILITY_CLASS_TYPE;
 
+typedef /* [v1_enum] */ 
+enum APPX_PACKAGING_CONTEXT_CHANGE_TYPE
+    {
+        APPX_PACKAGING_CONTEXT_CHANGE_TYPE_START	= 0,
+        APPX_PACKAGING_CONTEXT_CHANGE_TYPE_CHANGE	= 1,
+        APPX_PACKAGING_CONTEXT_CHANGE_TYPE_DETAILS	= 2,
+        APPX_PACKAGING_CONTEXT_CHANGE_TYPE_END	= 3
+    } 	APPX_PACKAGING_CONTEXT_CHANGE_TYPE;
+
+
+
+
+
 
 
 
@@ -685,6 +771,7 @@ enum APPX_CAPABILITY_CLASS_TYPE
 #pragma endregion
 #pragma region Desktop Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+
 
 
 
@@ -2907,6 +2994,86 @@ EXTERN_C const IID IID_IAppxManifestReader5;
 
 
 #endif 	/* __IAppxManifestReader5_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAppxManifestReader6_INTERFACE_DEFINED__
+#define __IAppxManifestReader6_INTERFACE_DEFINED__
+
+/* interface IAppxManifestReader6 */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxManifestReader6;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("34DEACA4-D3C0-4E3E-B312-E42625E3807E")
+    IAppxManifestReader6 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetIsNonQualifiedResourcePackage( 
+            /* [retval][out] */ __RPC__out BOOL *isNonQualifiedResourcePackage) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxManifestReader6Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxManifestReader6 * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxManifestReader6 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxManifestReader6 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIsNonQualifiedResourcePackage )( 
+            __RPC__in IAppxManifestReader6 * This,
+            /* [retval][out] */ __RPC__out BOOL *isNonQualifiedResourcePackage);
+        
+        END_INTERFACE
+    } IAppxManifestReader6Vtbl;
+
+    interface IAppxManifestReader6
+    {
+        CONST_VTBL struct IAppxManifestReader6Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxManifestReader6_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxManifestReader6_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxManifestReader6_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxManifestReader6_GetIsNonQualifiedResourcePackage(This,isNonQualifiedResourcePackage)	\
+    ( (This)->lpVtbl -> GetIsNonQualifiedResourcePackage(This,isNonQualifiedResourcePackage) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxManifestReader6_INTERFACE_DEFINED__ */
 
 
 #ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
@@ -5149,6 +5316,118 @@ EXTERN_C const IID IID_IAppxBundleWriter3;
 #endif 	/* __IAppxBundleWriter3_INTERFACE_DEFINED__ */
 
 
+#ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
+#define __IAppxBundleWriter4_INTERFACE_DEFINED__
+
+/* interface IAppxBundleWriter4 */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxBundleWriter4;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("9CD9D523-5009-4C01-9882-DC029FBD47A3")
+    IAppxBundleWriter4 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadPackage( 
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE AddPackageReference( 
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxBundleWriter4Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxBundleWriter4 * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxBundleWriter4 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxBundleWriter4 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *AddPayloadPackage )( 
+            __RPC__in IAppxBundleWriter4 * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ BOOL isDefaultApplicablePackage);
+        
+        HRESULT ( STDMETHODCALLTYPE *AddPackageReference )( 
+            __RPC__in IAppxBundleWriter4 * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage);
+        
+        HRESULT ( STDMETHODCALLTYPE *AddExternalPackageReference )( 
+            __RPC__in IAppxBundleWriter4 * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage);
+        
+        END_INTERFACE
+    } IAppxBundleWriter4Vtbl;
+
+    interface IAppxBundleWriter4
+    {
+        CONST_VTBL struct IAppxBundleWriter4Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxBundleWriter4_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxBundleWriter4_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxBundleWriter4_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxBundleWriter4_AddPayloadPackage(This,fileName,packageStream,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> AddPayloadPackage(This,fileName,packageStream,isDefaultApplicablePackage) ) 
+
+#define IAppxBundleWriter4_AddPackageReference(This,fileName,inputStream,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> AddPackageReference(This,fileName,inputStream,isDefaultApplicablePackage) ) 
+
+#define IAppxBundleWriter4_AddExternalPackageReference(This,fileName,inputStream,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> AddExternalPackageReference(This,fileName,inputStream,isDefaultApplicablePackage) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
+
+
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
 
@@ -5681,6 +5960,106 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 
 
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__
+#define __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__
+
+/* interface IAppxBundleManifestPackageInfo2 */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxBundleManifestPackageInfo2;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("44C2ACBC-B2CF-4CCB-BBDB-9C6DA8C3BC9E")
+    IAppxBundleManifestPackageInfo2 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetIsPackageReference( 
+            /* [retval][out] */ __RPC__out BOOL *isPackageReference) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetIsNonQualifiedResourcePackage( 
+            /* [retval][out] */ __RPC__out BOOL *isNonQualifiedResourcePackage) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetIsDefaultApplicablePackage( 
+            /* [retval][out] */ __RPC__out BOOL *isDefaultApplicablePackage) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxBundleManifestPackageInfo2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIsPackageReference )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This,
+            /* [retval][out] */ __RPC__out BOOL *isPackageReference);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIsNonQualifiedResourcePackage )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This,
+            /* [retval][out] */ __RPC__out BOOL *isNonQualifiedResourcePackage);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIsDefaultApplicablePackage )( 
+            __RPC__in IAppxBundleManifestPackageInfo2 * This,
+            /* [retval][out] */ __RPC__out BOOL *isDefaultApplicablePackage);
+        
+        END_INTERFACE
+    } IAppxBundleManifestPackageInfo2Vtbl;
+
+    interface IAppxBundleManifestPackageInfo2
+    {
+        CONST_VTBL struct IAppxBundleManifestPackageInfo2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxBundleManifestPackageInfo2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxBundleManifestPackageInfo2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxBundleManifestPackageInfo2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxBundleManifestPackageInfo2_GetIsPackageReference(This,isPackageReference)	\
+    ( (This)->lpVtbl -> GetIsPackageReference(This,isPackageReference) ) 
+
+#define IAppxBundleManifestPackageInfo2_GetIsNonQualifiedResourcePackage(This,isNonQualifiedResourcePackage)	\
+    ( (This)->lpVtbl -> GetIsNonQualifiedResourcePackage(This,isNonQualifiedResourcePackage) ) 
+
+#define IAppxBundleManifestPackageInfo2_GetIsDefaultApplicablePackage(This,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> GetIsDefaultApplicablePackage(This,isDefaultApplicablePackage) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__ */
 
 
 #ifndef __IAppxBundleManifestOptionalBundleInfoEnumerator_INTERFACE_DEFINED__
@@ -6451,7 +6830,185 @@ EXTERN_C const IID IID_IAppxContentGroupMapWriter;
 #endif 	/* __IAppxContentGroupMapWriter_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_appxpackaging_0000_0054 */
+#ifndef __IAppxPackagingDiagnosticEventSink_INTERFACE_DEFINED__
+#define __IAppxPackagingDiagnosticEventSink_INTERFACE_DEFINED__
+
+/* interface IAppxPackagingDiagnosticEventSink */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxPackagingDiagnosticEventSink;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("17239D47-6ADB-45D2-80F6-F9CBC3BF059D")
+    IAppxPackagingDiagnosticEventSink : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE ReportContextChange( 
+            /* [in] */ APPX_PACKAGING_CONTEXT_CHANGE_TYPE changeType,
+            /* [in] */ LONG contextId,
+            /* [string][in] */ __RPC__in_string LPCSTR contextName,
+            /* [string][in] */ __RPC__in_string LPCWSTR contextMessage,
+            /* [string][in] */ __RPC__in_string LPCWSTR detailsMessage) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ReportError( 
+            /* [string][in] */ __RPC__in_string LPCWSTR errorMessage) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxPackagingDiagnosticEventSinkVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxPackagingDiagnosticEventSink * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxPackagingDiagnosticEventSink * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxPackagingDiagnosticEventSink * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *ReportContextChange )( 
+            __RPC__in IAppxPackagingDiagnosticEventSink * This,
+            /* [in] */ APPX_PACKAGING_CONTEXT_CHANGE_TYPE changeType,
+            /* [in] */ LONG contextId,
+            /* [string][in] */ __RPC__in_string LPCSTR contextName,
+            /* [string][in] */ __RPC__in_string LPCWSTR contextMessage,
+            /* [string][in] */ __RPC__in_string LPCWSTR detailsMessage);
+        
+        HRESULT ( STDMETHODCALLTYPE *ReportError )( 
+            __RPC__in IAppxPackagingDiagnosticEventSink * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR errorMessage);
+        
+        END_INTERFACE
+    } IAppxPackagingDiagnosticEventSinkVtbl;
+
+    interface IAppxPackagingDiagnosticEventSink
+    {
+        CONST_VTBL struct IAppxPackagingDiagnosticEventSinkVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxPackagingDiagnosticEventSink_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxPackagingDiagnosticEventSink_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxPackagingDiagnosticEventSink_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxPackagingDiagnosticEventSink_ReportContextChange(This,changeType,contextId,contextName,contextMessage,detailsMessage)	\
+    ( (This)->lpVtbl -> ReportContextChange(This,changeType,contextId,contextName,contextMessage,detailsMessage) ) 
+
+#define IAppxPackagingDiagnosticEventSink_ReportError(This,errorMessage)	\
+    ( (This)->lpVtbl -> ReportError(This,errorMessage) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxPackagingDiagnosticEventSink_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAppxPackagingDiagnosticEventSinkManager_INTERFACE_DEFINED__
+#define __IAppxPackagingDiagnosticEventSinkManager_INTERFACE_DEFINED__
+
+/* interface IAppxPackagingDiagnosticEventSinkManager */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxPackagingDiagnosticEventSinkManager;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("369648FA-A7EB-4909-A15D-6954A078F18A")
+    IAppxPackagingDiagnosticEventSinkManager : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE SetSinkForProcess( 
+            /* [in] */ __RPC__in_opt IAppxPackagingDiagnosticEventSink *sink) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxPackagingDiagnosticEventSinkManagerVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxPackagingDiagnosticEventSinkManager * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxPackagingDiagnosticEventSinkManager * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxPackagingDiagnosticEventSinkManager * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetSinkForProcess )( 
+            __RPC__in IAppxPackagingDiagnosticEventSinkManager * This,
+            /* [in] */ __RPC__in_opt IAppxPackagingDiagnosticEventSink *sink);
+        
+        END_INTERFACE
+    } IAppxPackagingDiagnosticEventSinkManagerVtbl;
+
+    interface IAppxPackagingDiagnosticEventSinkManager
+    {
+        CONST_VTBL struct IAppxPackagingDiagnosticEventSinkManagerVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxPackagingDiagnosticEventSinkManager_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxPackagingDiagnosticEventSinkManager_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxPackagingDiagnosticEventSinkManager_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxPackagingDiagnosticEventSinkManager_SetSinkForProcess(This,sink)	\
+    ( (This)->lpVtbl -> SetSinkForProcess(This,sink) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxPackagingDiagnosticEventSinkManager_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_appxpackaging_0000_0059 */
 /* [local] */ 
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
@@ -6499,8 +7056,8 @@ typedef struct APPX_ENCRYPTED_EXEMPTIONS
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0054_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0054_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0059_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0059_v0_0_s_ifspec;
 
 #ifndef __IAppxEncryptionFactory_INTERFACE_DEFINED__
 #define __IAppxEncryptionFactory_INTERFACE_DEFINED__
@@ -7382,15 +7939,294 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
 #endif 	/* __IAppxEncryptedBundleWriter2_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_appxpackaging_0000_0062 */
+/* interface __MIDL_itf_appxpackaging_0000_0067 */
+/* [local] */ 
+
+typedef /* [v1_enum] */ 
+enum APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION
+    {
+        APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION_APPEND_DELTA	= 0
+    } 	APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION;
+
+typedef /* [v1_enum] */ 
+enum APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTIONS
+    {
+        APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTION_NONE	= 0,
+        APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTION_SKIP_VALIDATION	= 0x1,
+        APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTION_LOCALIZED	= 0x2
+    } 	APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTIONS;
+
+DEFINE_ENUM_FLAG_OPERATORS(APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTIONS);
+
+
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0067_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0067_v0_0_s_ifspec;
+
+#ifndef __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
+#define __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
+
+/* interface IAppxEncryptedBundleWriter3 */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxEncryptedBundleWriter3;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("0D34DEB3-5CAE-4DD3-977C-504932A51D31")
+    IAppxEncryptedBundleWriter3 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadPackageEncrypted( 
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxEncryptedBundleWriter3Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxEncryptedBundleWriter3 * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxEncryptedBundleWriter3 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxEncryptedBundleWriter3 * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *AddPayloadPackageEncrypted )( 
+            __RPC__in IAppxEncryptedBundleWriter3 * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ BOOL isDefaultApplicablePackage);
+        
+        HRESULT ( STDMETHODCALLTYPE *AddExternalPackageReference )( 
+            __RPC__in IAppxEncryptedBundleWriter3 * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+            /* [in] */ __RPC__in_opt IStream *inputStream,
+            /* [in] */ BOOL isDefaultApplicablePackage);
+        
+        END_INTERFACE
+    } IAppxEncryptedBundleWriter3Vtbl;
+
+    interface IAppxEncryptedBundleWriter3
+    {
+        CONST_VTBL struct IAppxEncryptedBundleWriter3Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxEncryptedBundleWriter3_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxEncryptedBundleWriter3_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxEncryptedBundleWriter3_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxEncryptedBundleWriter3_AddPayloadPackageEncrypted(This,fileName,packageStream,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> AddPayloadPackageEncrypted(This,fileName,packageStream,isDefaultApplicablePackage) ) 
+
+#define IAppxEncryptedBundleWriter3_AddExternalPackageReference(This,fileName,inputStream,isDefaultApplicablePackage)	\
+    ( (This)->lpVtbl -> AddExternalPackageReference(This,fileName,inputStream,isDefaultApplicablePackage) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__ */
+
+
+#ifndef __IAppxPackageEditor_INTERFACE_DEFINED__
+#define __IAppxPackageEditor_INTERFACE_DEFINED__
+
+/* interface IAppxPackageEditor */
+/* [ref][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IAppxPackageEditor;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("E2ADB6DC-5E71-4416-86B6-86E5F5291A6B")
+    IAppxPackageEditor : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE SetWorkingDirectory( 
+            /* [string][in] */ __RPC__in_string LPCWSTR workingDirectory) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE CreateDeltaPackage( 
+            /* [in] */ __RPC__in_opt IStream *updatedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *baselinePackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE CreateDeltaPackageUsingBaselineBlockMap( 
+            /* [in] */ __RPC__in_opt IStream *updatedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *baselineBlockMapStream,
+            /* [string][in] */ __RPC__in_string LPCWSTR baselinePackageFullName,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE UpdatePackage( 
+            /* [in] */ __RPC__in_opt IStream *baselinePackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION updateOption) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE UpdateEncryptedPackage( 
+            /* [in] */ __RPC__in_opt IStream *baselineEncryptedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION updateOption,
+            /* [in] */ __RPC__in const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
+            /* [in] */ __RPC__in const APPX_KEY_INFO *keyInfo) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE UpdatePackageManifest( 
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ __RPC__in_opt IStream *updatedManifestStream,
+            /* [in] */ BOOL isPackageEncrypted,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTIONS options) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IAppxPackageEditorVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IAppxPackageEditor * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IAppxPackageEditor * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetWorkingDirectory )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [string][in] */ __RPC__in_string LPCWSTR workingDirectory);
+        
+        HRESULT ( STDMETHODCALLTYPE *CreateDeltaPackage )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in_opt IStream *updatedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *baselinePackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream);
+        
+        HRESULT ( STDMETHODCALLTYPE *CreateDeltaPackageUsingBaselineBlockMap )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in_opt IStream *updatedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *baselineBlockMapStream,
+            /* [string][in] */ __RPC__in_string LPCWSTR baselinePackageFullName,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream);
+        
+        HRESULT ( STDMETHODCALLTYPE *UpdatePackage )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in_opt IStream *baselinePackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION updateOption);
+        
+        HRESULT ( STDMETHODCALLTYPE *UpdateEncryptedPackage )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in_opt IStream *baselineEncryptedPackageStream,
+            /* [in] */ __RPC__in_opt IStream *deltaPackageStream,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_OPTION updateOption,
+            /* [in] */ __RPC__in const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
+            /* [in] */ __RPC__in const APPX_KEY_INFO *keyInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *UpdatePackageManifest )( 
+            __RPC__in IAppxPackageEditor * This,
+            /* [in] */ __RPC__in_opt IStream *packageStream,
+            /* [in] */ __RPC__in_opt IStream *updatedManifestStream,
+            /* [in] */ BOOL isPackageEncrypted,
+            /* [in] */ APPX_PACKAGE_EDITOR_UPDATE_PACKAGE_MANIFEST_OPTIONS options);
+        
+        END_INTERFACE
+    } IAppxPackageEditorVtbl;
+
+    interface IAppxPackageEditor
+    {
+        CONST_VTBL struct IAppxPackageEditorVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IAppxPackageEditor_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IAppxPackageEditor_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IAppxPackageEditor_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IAppxPackageEditor_SetWorkingDirectory(This,workingDirectory)	\
+    ( (This)->lpVtbl -> SetWorkingDirectory(This,workingDirectory) ) 
+
+#define IAppxPackageEditor_CreateDeltaPackage(This,updatedPackageStream,baselinePackageStream,deltaPackageStream)	\
+    ( (This)->lpVtbl -> CreateDeltaPackage(This,updatedPackageStream,baselinePackageStream,deltaPackageStream) ) 
+
+#define IAppxPackageEditor_CreateDeltaPackageUsingBaselineBlockMap(This,updatedPackageStream,baselineBlockMapStream,baselinePackageFullName,deltaPackageStream)	\
+    ( (This)->lpVtbl -> CreateDeltaPackageUsingBaselineBlockMap(This,updatedPackageStream,baselineBlockMapStream,baselinePackageFullName,deltaPackageStream) ) 
+
+#define IAppxPackageEditor_UpdatePackage(This,baselinePackageStream,deltaPackageStream,updateOption)	\
+    ( (This)->lpVtbl -> UpdatePackage(This,baselinePackageStream,deltaPackageStream,updateOption) ) 
+
+#define IAppxPackageEditor_UpdateEncryptedPackage(This,baselineEncryptedPackageStream,deltaPackageStream,updateOption,settings,keyInfo)	\
+    ( (This)->lpVtbl -> UpdateEncryptedPackage(This,baselineEncryptedPackageStream,deltaPackageStream,updateOption,settings,keyInfo) ) 
+
+#define IAppxPackageEditor_UpdatePackageManifest(This,packageStream,updatedManifestStream,isPackageEncrypted,options)	\
+    ( (This)->lpVtbl -> UpdatePackageManifest(This,packageStream,updatedManifestStream,isPackageEncrypted,options) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IAppxPackageEditor_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_appxpackaging_0000_0069 */
 /* [local] */ 
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 
 
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0062_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0062_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0069_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0069_v0_0_s_ifspec;
 
 
 #ifndef __APPXPACKAGING_LIBRARY_DEFINED__
@@ -7426,6 +8262,14 @@ class DECLSPEC_UUID("378E0446-5384-43B7-8877-E7DBDD883446")
 AppxBundleFactory;
 #endif
 
+EXTERN_C const CLSID CLSID_AppxPackagingDiagnosticEventSinkManager;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("50CA0A46-1588-4161-8ED2-EF9E469CED5D")
+AppxPackagingDiagnosticEventSinkManager;
+#endif
+
 EXTERN_C const CLSID CLSID_AppxEncryptionFactory;
 
 #ifdef __cplusplus
@@ -7433,16 +8277,24 @@ EXTERN_C const CLSID CLSID_AppxEncryptionFactory;
 class DECLSPEC_UUID("DC664FDD-D868-46EE-8780-8D196CB739F7")
 AppxEncryptionFactory;
 #endif
+
+EXTERN_C const CLSID CLSID_AppxPackageEditor;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("F004F2CA-AEBC-4B0D-BF58-E516D5BCC0AB")
+AppxPackageEditor;
+#endif
 #endif /* __APPXPACKAGING_LIBRARY_DEFINED__ */
 
-/* interface __MIDL_itf_appxpackaging_0000_0063 */
+/* interface __MIDL_itf_appxpackaging_0000_0070 */
 /* [local] */ 
 
 #endif // (NTDDI >= NTDDI_WIN7)
 
 
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0063_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0063_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0070_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_appxpackaging_0000_0070_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

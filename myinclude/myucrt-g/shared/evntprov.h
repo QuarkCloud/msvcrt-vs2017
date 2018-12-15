@@ -43,6 +43,16 @@ Revision History:
 #endif // MIDL_PASS
 #endif // EVNTAPI
 
+#ifndef EVNTPROV_PFORCEINLINE
+  #if defined(PFORCEINLINE)
+    #define EVNTPROV_PFORCEINLINE PFORCEINLINE
+  #elif defined(FORCEINLINE)
+    #define EVNTPROV_PFORCEINLINE FORCEINLINE
+  #else
+    #define EVNTPROV_PFORCEINLINE __forceinline
+  #endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -159,7 +169,7 @@ A REGHANDLE is opened with EventRegister and closed with EventUnregister.
 typedef ULONGLONG REGHANDLE, *PREGHANDLE;
 
 #pragma warning(push)
-#pragma warning(disable:4201) // Nonstandard extension: unnamed struct/union 
+#pragma warning(disable:4201) // Nonstandard extension: unnamed struct/union
 
 /*
 EVENT_DATA_DESCRIPTOR is used with EventWrite to provide user data items.
@@ -189,7 +199,7 @@ typedef struct _EVENT_DATA_DESCRIPTOR {
 EVENT_DESCRIPTOR describes and categorizes an event.
 Note that for TraceLogging events, the Id and Version fields are not
 meaningful and should be ignored.
-*/ 
+*/
 typedef struct _EVENT_DESCRIPTOR {
 
     USHORT Id; /*
@@ -313,7 +323,7 @@ typedef const EVENT_DESCRIPTOR *PCEVENT_DESCRIPTOR;
 
 /*
 EVENT_FILTER_DESCRIPTOR describes a filter data item for EnableTraceEx2.
-*/ 
+*/
 typedef struct _EVENT_FILTER_DESCRIPTOR {
 
     ULONGLONG   Ptr;  // Pointer to filter data. Set to (ULONGLONG)(ULONG_PTR)pData.
@@ -338,7 +348,7 @@ typedef struct _EVENT_FILTER_HEADER {
 } EVENT_FILTER_HEADER, *PEVENT_FILTER_HEADER;
 
 /*
-EVENT_FILTER_EVENT_ID is used to pass EventId filter for 
+EVENT_FILTER_EVENT_ID is used to pass EventId filter for
 stack walk filters.
 */
 typedef struct _EVENT_FILTER_EVENT_ID {
@@ -493,7 +503,7 @@ if (EventProviderEnabled(regHandle, event.Level, event.Keyword))
     EventWrite(...);
 }
 */
-typedef 
+typedef
 VOID
 (NTAPI *PENABLECALLBACK) (
     _In_ LPCGUID SourceId,
@@ -503,7 +513,7 @@ VOID
     _In_ ULONGLONG MatchAllKeyword,
     _In_opt_ PEVENT_FILTER_DESCRIPTOR FilterData,
     _Inout_opt_ PVOID CallbackContext
-    );  
+    );
 
 #ifndef _APISET_EVENTING
 
@@ -561,12 +571,6 @@ EventSetInformation(
     _In_ ULONG InformationLength
     );
 #endif
-
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 #if (WINVER >= _WIN32_WINNT_VISTA)
 /*
@@ -654,12 +658,6 @@ EventProviderEnabled(
 //
 // Writing (Publishing/Logging) APIs
 //
-
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Application Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 #if (WINVER >= _WIN32_WINNT_VISTA)
 /*
@@ -790,14 +788,14 @@ EventActivityIdControl(
 
 #endif // _APISET_EVENTING
 
-#endif // _ETW_KM_ 
+#endif // _ETW_KM_
 
 #pragma region Application Family or OneCore Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 /*
 Initializes an EVENT_DATA_DESCRIPTOR with the given values.
 */
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 VOID
 EventDataDescCreate(
     _Out_ PEVENT_DATA_DESCRIPTOR EventDataDescriptor,
@@ -820,7 +818,7 @@ EventDataDescCreate(
 /*
 Initializes an EVENT_DESCRIPTOR with the given values.
 */
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 VOID
 EventDescCreate(
     _Out_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -846,7 +844,7 @@ EventDescCreate(
 /*
 Initializes an EVENT_DESCRIPTOR. Sets all values to 0.
 */
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 VOID
 EventDescZero(
     _Out_ PEVENT_DESCRIPTOR EventDescriptor
@@ -860,7 +858,7 @@ EventDescZero(
 // Macros to extract info from an Event Descriptor
 //
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 USHORT
 EventDescGetId(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -869,7 +867,7 @@ EventDescGetId(
     return (EventDescriptor->Id);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 UCHAR
 EventDescGetVersion(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -878,7 +876,7 @@ EventDescGetVersion(
     return (EventDescriptor->Version);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 USHORT
 EventDescGetTask(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -887,7 +885,7 @@ EventDescGetTask(
     return (EventDescriptor->Task);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 UCHAR
 EventDescGetOpcode(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -896,7 +894,7 @@ EventDescGetOpcode(
     return (EventDescriptor->Opcode);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 UCHAR
 EventDescGetChannel(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -905,7 +903,7 @@ EventDescGetChannel(
     return (EventDescriptor->Channel);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 UCHAR
 EventDescGetLevel(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -914,7 +912,7 @@ EventDescGetLevel(
     return (EventDescriptor->Level);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 ULONGLONG
 EventDescGetKeyword(
     _In_ PCEVENT_DESCRIPTOR EventDescriptor
@@ -927,7 +925,7 @@ EventDescGetKeyword(
 // Macros to set info into an Event Descriptor
 //
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetId(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -938,7 +936,7 @@ EventDescSetId(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetVersion(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -949,7 +947,7 @@ EventDescSetVersion(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetTask(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -960,7 +958,7 @@ EventDescSetTask(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetOpcode(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -971,7 +969,7 @@ EventDescSetOpcode(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetLevel(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -982,7 +980,7 @@ EventDescSetLevel(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetChannel(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -993,7 +991,7 @@ EventDescSetChannel(
     return (EventDescriptor);
 }
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescSetKeyword(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,
@@ -1005,7 +1003,7 @@ EventDescSetKeyword(
 }
 
 
-FORCEINLINE
+EVNTPROV_PFORCEINLINE
 PEVENT_DESCRIPTOR
 EventDescOrKeyword(
     _In_ PEVENT_DESCRIPTOR EventDescriptor,

@@ -203,7 +203,7 @@ enum class __scrt_module_type
 
     // Returns true if it is currently safe for managed code to execute in this
     // module; false otherwise.
-    inline bool __scrt_is_safe_for_managed_code() throw()
+    inline bool __scrt_is_safe_for_managed_code() noexcept
     {
         switch (__scrt_native_dllmain_reason)
         {
@@ -239,6 +239,7 @@ extern "C" void __CRTDECL _initialize_default_precision();
 extern "C" void __CRTDECL _initialize_invalid_parameter_handler();
 extern "C" void __CRTDECL _initialize_denormal_control();
 
+_CRT_SECURITYCRITICAL_ATTRIBUTE
 extern "C" void __CRTDECL __scrt_initialize_default_local_stdio_options();
 extern "C" bool __cdecl __scrt_is_nonwritable_in_current_image(void const* target);
 extern "C" int  __cdecl __scrt_is_user_matherr_present();
@@ -343,7 +344,12 @@ extern "C" bool __cdecl __scrt_is_managed_app();
 // Initializes the Windows Runtime (via RoInitialize) in the calling thread.
 // In Windows Store apps, this is called during EXE startup.  In Desktop apps,
 // this function has no effect.
-extern "C" int  __cdecl __scrt_initialize_winrt();
+extern "C" int __cdecl __scrt_initialize_winrt();
+
+// Optionally initializes a process-wide MTA (via CoIncrementMTAUsage).
+// In Desktop apps, this is conditional upon the exe_initialize_mta.lib linkopt.
+// In Windows Store apps, enclaves, and DLLs, this has no effect.
+extern "C" int __cdecl __scrt_initialize_mta();
 
 // Initializes the unhandled exception filter.  In Desktop apps, this filter is
 // what calls std::terminate when a C++ exception goes unhandled.  In Windows
@@ -380,7 +386,7 @@ __declspec(noreturn) void __CRTDECL __scrt_throw_std_bad_array_new_length();
 extern "C" int _Init_global_epoch;
 extern "C" void __cdecl _Init_thread_lock();
 extern "C" void __cdecl _Init_thread_unlock();
-extern "C" bool __cdecl _Init_thread_wait(DWORD const timeout);
+extern "C" void __cdecl _Init_thread_wait(DWORD const timeout);
 extern "C" void __cdecl _Init_thread_notify();
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -391,17 +397,17 @@ extern "C" void __cdecl _Init_thread_notify();
 
 struct __scrt_narrow_argv_policy
 {
-    static int configure_argv() throw() { return _configure_narrow_argv(_get_startup_argv_mode()); }
+    static int configure_argv() noexcept { return _configure_narrow_argv(_get_startup_argv_mode()); }
 };
 
 struct __scrt_wide_argv_policy
 {
-    static int configure_argv() throw() { return _configure_wide_argv(_get_startup_argv_mode()); }
+    static int configure_argv() noexcept { return _configure_wide_argv(_get_startup_argv_mode()); }
 };
 
 struct __scrt_no_argv_policy
 {
-    static int configure_argv() throw() { return 0; }
+    static int configure_argv() noexcept { return 0; }
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -412,17 +418,17 @@ struct __scrt_no_argv_policy
 
 struct __scrt_narrow_environment_policy
 {
-    static int initialize_environment() throw() { return _initialize_narrow_environment(); }
+    static int initialize_environment() noexcept { return _initialize_narrow_environment(); }
 };
 
 struct __scrt_wide_environment_policy
 {
-    static int initialize_environment() throw() { return _initialize_wide_environment(); }
+    static int initialize_environment() noexcept { return _initialize_wide_environment(); }
 };
 
 struct __scrt_no_environment_policy
 {
-    static int initialize_environment() throw() { return 0; }
+    static int initialize_environment() noexcept { return 0; }
 };
 
 // Dll initialization policies

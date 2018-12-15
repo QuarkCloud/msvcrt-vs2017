@@ -1476,6 +1476,13 @@ typedef struct _KDDEBUGGER_DATA64 {
     USHORT    Padding;
     ULONG64   PteBase;
 
+    // Windows 10 RS5 Addition
+
+    ULONG64 RetpolineStubFunctionTable;
+    ULONG RetpolineStubFunctionTableSize;
+    ULONG RetpolineStubOffset;
+    ULONG RetpolineStubSize;
+
 } KDDEBUGGER_DATA64, *PKDDEBUGGER_DATA64;
 
 

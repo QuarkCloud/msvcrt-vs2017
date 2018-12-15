@@ -1345,6 +1345,11 @@ DEFINE_GUID(MFSampleExtension_MeanAbsoluteDifference,
 DEFINE_GUID(MFSampleExtension_LongTermReferenceFrameInfo,
 0x9154733f, 0xe1bd, 0x41bf, 0x81, 0xd3, 0xfc, 0xd9, 0x18, 0xf7, 0x13, 0x32);
 
+typedef struct _ROI_AREA {
+    RECT rect;
+    INT32 QPDelta;
+} ROI_AREA, *PROI_AREA;
+
 // MFSampleExtension_ROIRectangle {3414a438-4998-4d2c-be82-be3ca0b24d43}
 // Type: BLOB
 DEFINE_GUID(MFSampleExtension_ROIRectangle,
@@ -1355,11 +1360,40 @@ DEFINE_GUID(MFSampleExtension_ROIRectangle,
 DEFINE_GUID(MFSampleExtension_LastSlice,
 0x2b5d5457, 0x5547, 0x4f07, 0xb8, 0xc8, 0xb4, 0xa3, 0xa9, 0xa1, 0xda, 0xac);
 
-typedef struct _ROI_AREA {
-  RECT rect;
-  INT32 QPDelta;
-} ROI_AREA, *PROI_AREA;
+// Indicates macroblock is not needed for output and can be skipped
+#define MACROBLOCK_FLAG_SKIP 0x00000001                 
+// Indicates macroblock is changed from the previous frame
+#define MACROBLOCK_FLAG_DIRTY 0x00000002
+// Indicates macroblock from the previous frame has moved to a new position
+#define MACROBLOCK_FLAG_MOTION 0x00000004
+// Indicates macroblock contains video playback or other continuous motion, rather than a slower moving screen capture
+#define MACROBLOCK_FLAG_VIDEO 0x00000008
+// Indicates that the motion vector values of MACROBLOCK_DATA are valid, and should be used in preference to
+// the encoder's calculated motion vector values
+#define MACROBLOCK_FLAG_HAS_MOTION_VECTOR 0x00000010
+// Indicates that the QPDelta value of MACROBLOCK_DATA is valid, and specifies the QP of this macroblock relative
+// to the rest of the frame
+#define MACROBLOCK_FLAG_HAS_QP 0x00000020
 
+typedef struct _MACROBLOCK_DATA {
+    UINT32 flags;
+    INT16 motionVectorX;
+    INT16 motionVectorY;
+    INT32 QPDelta;
+} MACROBLOCK_DATA;
+
+// MFSampleExtension_FeatureMap {a032d165-46fc-400a-b449-49de53e62a6e}
+// Type: BLOB
+// Blob should contain one MACROBLOCK_DATA structure for each macroblock in the
+// input frame.
+DEFINE_GUID(MFSampleExtension_FeatureMap,
+0xa032d165, 0x46fc, 0x400a, 0xb4, 0x49, 0x49, 0xde, 0x53, 0xe6, 0x2a, 0x6e);
+
+// MFSampleExtension_ChromaOnly {1eb9179c-a01f-4845-8c04-0e65a26eb04f}
+// Type: BOOL (UINT32)
+// Set to 1 if the input sample is a chroma-only frame
+DEFINE_GUID(MFSampleExtension_ChromaOnly,
+0x1eb9179c, 0xa01f, 0x4845, 0x8c, 0x04, 0x0e, 0x65, 0xa2, 0x6e, 0xb0, 0x4f);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// These are the attribute GUIDs that need to be used by MFT0 to provide
@@ -1569,7 +1603,6 @@ DEFINE_GUID(MF_CAPTURE_METADATA_SCANLINE_DIRECTION,
 #define MFCAPTURE_METADATA_SCAN_BOTTOM_TOP         0x00000002
 #define MFCAPTURE_METADATA_SCANLINE_VERTICAL       0x00000004
 
-
 typedef struct tagFaceRectInfoBlobHeader
 {
     ULONG Size;     // Size of this header + all FaceRectInfo following
@@ -1582,11 +1615,13 @@ typedef struct tagFaceRectInfo
     LONG confidenceLevel;   // Confidence Level of the region being a face
 } FaceRectInfo;
 
+
 typedef struct tagFaceCharacterizationBlobHeader
 {
     ULONG Size;  // Size of this header + all FaceCharacterization following
     ULONG Count; // Number of FaceCharacterization's in the blob. Must match the number of FaceRectInfo's in FaceRectInfoBlobHeader
 } FaceCharacterizationBlobHeader;
+
 
 typedef struct tagFaceCharacterization
 {
@@ -1749,7 +1784,7 @@ DEFINE_GUID(MFT_CATEGORY_VIDEO_PROCESSOR,
 DEFINE_GUID(MFT_CATEGORY_OTHER,
 0x90175d57, 0xb7ea, 0x4901, 0xae, 0xb3, 0x93, 0x3a, 0x87, 0x47, 0x75, 0x6f);
 
-#if (WINVER >= _WIN32_WINNT_WIN10_RS1)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 DEFINE_GUID(MFT_CATEGORY_ENCRYPTOR,  
 0xb0c687be, 0x01cd, 0x44b5, 0xb8, 0xb2, 0x7c, 0x1d, 0x7e, 0x05, 0x8b, 0x1f);
 #endif
@@ -2175,6 +2210,7 @@ typedef enum _MFFrameSourceTypes
     MFFrameSourceTypes_Color                = 0x0001,
     MFFrameSourceTypes_Infrared             = 0x0002,
     MFFrameSourceTypes_Depth                = 0x0004,
+    MFFrameSourceTypes_Image                = 0x0008,
     MFFrameSourceTypes_Custom               = 0x0080
 } MFFrameSourceTypes;
 
@@ -2251,7 +2287,7 @@ DEFINE_MEDIATYPE_GUID( MFAudioFormat_ADTS,              WAVE_FORMAT_MPEG_ADTS_AA
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_AMR_NB,            WAVE_FORMAT_AMR_NB );
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_AMR_WB,            WAVE_FORMAT_AMR_WB );
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_AMR_WP,            WAVE_FORMAT_AMR_WP );
-#if (WINVER >= _WIN32_WINNT_THRESHOLD)
+#if (WINVER >= _WIN32_WINNT_WINTHRESHOLD)
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_FLAC,              WAVE_FORMAT_FLAC );
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_ALAC,              WAVE_FORMAT_ALAC );
 DEFINE_MEDIATYPE_GUID( MFAudioFormat_Opus,              WAVE_FORMAT_OPUS );
@@ -2345,6 +2381,22 @@ DEFINE_GUID(MFSubtitleFormat_SSA,
 // {1BB3D849-6614-4D80-8882-ED24AA82DA92}      MFSubtitleFormat_CustomUserData
 DEFINE_GUID(MFSubtitleFormat_CustomUserData,
     0x1bb3d849, 0x6614, 0x4d80, 0x88, 0x82, 0xed, 0x24, 0xaa, 0x82, 0xda, 0x92);
+
+
+//
+// Binary Data MediaTypes
+//
+
+#ifndef DEFINE_BINARY_MEDIATYPE_GUID
+#define DEFINE_BINARY_MEDIATYPE_GUID(name, format) \
+    DEFINE_GUID(name,                       \
+    format, 0xbf10, 0x48b4, 0xbc, 0x18, 0x59, 0x3d, 0xc1, 0xdb, 0x95, 0xf);
+#endif
+
+DEFINE_BINARY_MEDIATYPE_GUID(MFBinaryFormat_Base, 0x00000000);
+DEFINE_BINARY_MEDIATYPE_GUID(MFBinaryFormat_GPMD, 'gpmd');
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////  Media Type Attributes GUIDs ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -2447,12 +2499,15 @@ DEFINE_GUID( MFSampleExtension_3DVideo_SampleFormat,
 
 // Enum describing the video rotation formats
 // Only the values of 0, 90, 180, and 270 are valid.
+#ifndef _MFVideoRotationFormat_
+#define _MFVideoRotationFormat_
 typedef enum _MFVideoRotationFormat {
     MFVideoRotationFormat_0        = 0,
     MFVideoRotationFormat_90       = 90,
     MFVideoRotationFormat_180      = 180,
     MFVideoRotationFormat_270      = 270,
 } MFVideoRotationFormat;
+#endif
 
 // MF_MT_VIDEO_ROTATION      {C380465D-2271-428C-9B83-ECEA3B4A85C1}
 // Type: UINT32
@@ -2468,7 +2523,7 @@ typedef enum _MFVideoRotationFormat {
 DEFINE_GUID(MF_MT_VIDEO_ROTATION,
 0xc380465d, 0x2271, 0x428c, 0x9b, 0x83, 0xec, 0xea, 0x3b, 0x4a, 0x85, 0xc1);
 
-#if (WINVER >= _WIN32_WINNT_WIN10_RS2)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 DEFINE_GUID(MF_DEVICESTREAM_MULTIPLEXED_MANAGER,
 0x6ea542b0, 0x281f, 0x4231, 0xa4, 0x64, 0xfe, 0x2f, 0x50, 0x22, 0x50, 0x1c);    
 
@@ -2633,6 +2688,18 @@ DEFINE_GUID(MF_MT_VIDEO_RENDERER_EXTENSION_PROFILE,
 0x8437d4b9, 0xd448, 0x4fcd, 0x9b, 0x6b, 0x83, 0x9b, 0xf9, 0x6c, 0x77, 0x98);
 
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_RS2) 
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4) 
+
+// MF_DECODER_FWD_CUSTOM_SEI_DECODE_ORDER {f13bbe3c-36d4-410a-b985-7a951a1e6294}  
+// Type: UINT32  
+// Specifies that the SEI unit type to forward on output samples of the decoder  
+// shall be sent out in decode order (i.e. ahead of time)  
+// This is required for downstream apps to process the SEI in advance of receiving  
+// the frame it is meant to be attached to  
+DEFINE_GUID(MF_DECODER_FWD_CUSTOM_SEI_DECODE_ORDER, 0xf13bbe3c, 0x36d4, 0x410a, 0xb9, 0x85, 0x7a, 0x95, 0x1a, 0x1e, 0x62, 0x94);
+
+#endif /* (NTDDI_VERSION >= NTDDI_WIN10_RS4) */ 
 
 //
 // AUDIO data
@@ -2889,7 +2956,7 @@ DEFINE_GUID(MF_MT_MIN_MASTERING_LUMINANCE,
 // 
 // MF_MT_DECODER_USE_MAX_RESOLUTION hints the decoder should allocate worst 
 // case supported resolution whenever possible
-// {4c547c24-af9a-4f38-96ad-978773cf53xe7} MF_MT_DECODER_USE_MAX_RESOLUTION {UINT32 (BOOL)}
+// {4c547c24-af9a-4f38-96ad-978773cf53e7} MF_MT_DECODER_USE_MAX_RESOLUTION {UINT32 (BOOL)}
 DEFINE_GUID(MF_MT_DECODER_USE_MAX_RESOLUTION,
 0x4c547c24, 0xaf9a, 0x4f38, 0x96, 0xad, 0x97, 0x87, 0x73, 0xcf, 0x53, 0xe7);
 
@@ -3138,6 +3205,10 @@ DEFINE_GUID(MF_MT_H264_LAYOUT_PER_STREAM,
 DEFINE_GUID(MF_MT_IN_BAND_PARAMETER_SET,
 0x75da5090, 0x910b, 0x4a03, 0x89, 0x6c, 0x7b, 0x89, 0x8f, 0xee, 0xa5, 0xaf);
 
+//{54F486DD-9327-4F6D-80AB-6F709EBB4CCE}          {UINT32, FourCC of the track type in MPEG-4 used for binary streams}
+DEFINE_GUID(MF_MT_MPEG4_TRACK_TYPE,
+    0x54f486dd, 0x9327, 0x4f6d, 0x80, 0xab, 0x6f, 0x70, 0x9e, 0xbb, 0x4c, 0xce);
+
 //
 // INTERLEAVED - DV extra data
 //
@@ -3223,6 +3294,17 @@ DEFINE_GUID(MF_MT_MPEG4_SAMPLE_DESCRIPTION,
 // {9aa7e155-b64a-4c1d-a500-455d600b6560}   MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY {UINT32}
 DEFINE_GUID(MF_MT_MPEG4_CURRENT_SAMPLE_ENTRY,
 0x9aa7e155, 0xb64a, 0x4c1d, 0xa5, 0x00, 0x45, 0x5d, 0x60, 0x0b, 0x65, 0x60);
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+//
+// Ambisonics Stream Attribute
+// The value of this blob must be AMBISONICS_PARAMS structure defined in AudioClient.h
+//
+// {F715CF3E-A964-4C3F-94AE-9D6BA7264641}   MF_SD_AMBISONICS_SAMPLE3D_DESCRIPTION   {BLOB}
+DEFINE_GUID(MF_SD_AMBISONICS_SAMPLE3D_DESCRIPTION,
+0xf715cf3e, 0xa964, 0x4c3f, 0x94, 0xae, 0x9d, 0x6b, 0xa7, 0x26, 0x46, 0x41);
+
+#endif
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
 #pragma endregion
@@ -4293,6 +4375,40 @@ STDAPI MFGetContentProtectionSystemCLSID(
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
+
+#pragma region Application Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+
+// MF_DEVICESTREAM_ATTRIBUTE_FACEAUTH_CAPABILITY
+// Data type: UINT64
+// Represents the Capability field of the KSCAMERA_EXTENDEDPROP_HEADER corresponding to the
+// KSPROPERTY_CAMERACONTROL_EXTENDED_FACEAUTH_MODE extended property control.  If this control
+// is not supported, this attribute will not be present on the stream.  
+// The capability advertised will only contain the bitwise OR of the available
+// supported modes defined by the Face Auth DDI in ksmedia.h:
+// 
+//      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_DISABLED
+//      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_ALTERNATIVE_FRAME_ILLUMINATION
+//      KSCAMERA_EXTENDEDPROP_FACEAUTH_MODE_BACKGROUND_SUBTRACTION
+DEFINE_GUID(MF_DEVICESTREAM_ATTRIBUTE_FACEAUTH_CAPABILITY,
+0xCB6FD12A, 0x2248, 0x4E41, 0xAD, 0x46, 0xE7, 0x8B, 0xB9, 0x0A, 0xB9, 0xFC);
+
+// MF_DEVICESTREAM_ATTRIBUTE_SECURE_CAPABILITY
+// Data type: UINT64
+// Represents the Capability field of the KSCAMERA_EXTENDEDPROP_HEADER corresponding to the
+// KSPROPERTY_CAMERACONTROL_EXTENDED_SECURE_MODE extended property control.  If this control
+// is not supported, this attribute will not be present on the stream.  
+// The capability advertised will only contain the bitwise OR of the available
+// supported modes defined by the Secure DDI in ksmedia.h:
+// 
+//      KSCAMERA_EXTENDEDPROP_SECURE_MODE_DISABLED
+//      KSCAMERA_EXTENDEDPROP_SECURE_MODE_ENABLED
+DEFINE_GUID(MF_DEVICESTREAM_ATTRIBUTE_SECURE_CAPABILITY,
+0x940FD626, 0xEA6E, 0x4684, 0x98, 0x40, 0x36, 0xBD, 0x6E, 0xC9, 0xFB, 0xEF);
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
+#pragma endregion
+
 
 #if defined(__cplusplus)
 }

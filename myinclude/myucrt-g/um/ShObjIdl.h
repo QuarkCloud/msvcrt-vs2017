@@ -396,13 +396,6 @@ typedef interface IDesktopGadget IDesktopGadget;
 #endif 	/* __IDesktopGadget_FWD_DEFINED__ */
 
 
-#ifndef __IVirtualDesktopManager_FWD_DEFINED__
-#define __IVirtualDesktopManager_FWD_DEFINED__
-typedef interface IVirtualDesktopManager IVirtualDesktopManager;
-
-#endif 	/* __IVirtualDesktopManager_FWD_DEFINED__ */
-
-
 #ifndef __QueryCancelAutoPlay_FWD_DEFINED__
 #define __QueryCancelAutoPlay_FWD_DEFINED__
 
@@ -727,6 +720,18 @@ typedef struct VirtualDesktopManager VirtualDesktopManager;
 #endif 	/* __VirtualDesktopManager_FWD_DEFINED__ */
 
 
+#ifndef __StorageProviderBanners_FWD_DEFINED__
+#define __StorageProviderBanners_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class StorageProviderBanners StorageProviderBanners;
+#else
+typedef struct StorageProviderBanners StorageProviderBanners;
+#endif /* __cplusplus */
+
+#endif 	/* __StorageProviderBanners_FWD_DEFINED__ */
+
+
 #ifndef __IAccessibilityDockingServiceCallback_FWD_DEFINED__
 #define __IAccessibilityDockingServiceCallback_FWD_DEFINED__
 typedef interface IAccessibilityDockingServiceCallback IAccessibilityDockingServiceCallback;
@@ -739,6 +744,20 @@ typedef interface IAccessibilityDockingServiceCallback IAccessibilityDockingServ
 typedef interface IAccessibilityDockingService IAccessibilityDockingService;
 
 #endif 	/* __IAccessibilityDockingService_FWD_DEFINED__ */
+
+
+#ifndef __IBannerNotificationHandler_FWD_DEFINED__
+#define __IBannerNotificationHandler_FWD_DEFINED__
+typedef interface IBannerNotificationHandler IBannerNotificationHandler;
+
+#endif 	/* __IBannerNotificationHandler_FWD_DEFINED__ */
+
+
+#ifndef __IStorageProviderBanners_FWD_DEFINED__
+#define __IStorageProviderBanners_FWD_DEFINED__
+typedef interface IStorageProviderBanners IStorageProviderBanners;
+
+#endif 	/* __IStorageProviderBanners_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -7275,125 +7294,11 @@ EXTERN_C const IID IID_IDesktopGadget;
 /* [local] */ 
 
 #if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+#endif // NTDDI_WINTHRESHOLD
 
 
 extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0051_v0_0_c_ifspec;
 extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0051_v0_0_s_ifspec;
-
-#ifndef __IVirtualDesktopManager_INTERFACE_DEFINED__
-#define __IVirtualDesktopManager_INTERFACE_DEFINED__
-
-/* interface IVirtualDesktopManager */
-/* [object][uuid] */ 
-
-
-EXTERN_C const IID IID_IVirtualDesktopManager;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("a5cd92ff-29be-454c-8d04-d82879fb3f1b")
-    IVirtualDesktopManager : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE IsWindowOnCurrentVirtualDesktop( 
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [out] */ __RPC__out BOOL *onCurrentDesktop) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE GetWindowDesktopId( 
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [out] */ __RPC__out GUID *desktopId) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE MoveWindowToDesktop( 
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [in] */ __RPC__in REFGUID desktopId) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct IVirtualDesktopManagerVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            __RPC__in IVirtualDesktopManager * This,
-            /* [in] */ __RPC__in REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            __RPC__in IVirtualDesktopManager * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            __RPC__in IVirtualDesktopManager * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *IsWindowOnCurrentVirtualDesktop )( 
-            __RPC__in IVirtualDesktopManager * This,
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [out] */ __RPC__out BOOL *onCurrentDesktop);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetWindowDesktopId )( 
-            __RPC__in IVirtualDesktopManager * This,
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [out] */ __RPC__out GUID *desktopId);
-        
-        HRESULT ( STDMETHODCALLTYPE *MoveWindowToDesktop )( 
-            __RPC__in IVirtualDesktopManager * This,
-            /* [in] */ __RPC__in HWND topLevelWindow,
-            /* [in] */ __RPC__in REFGUID desktopId);
-        
-        END_INTERFACE
-    } IVirtualDesktopManagerVtbl;
-
-    interface IVirtualDesktopManager
-    {
-        CONST_VTBL struct IVirtualDesktopManagerVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define IVirtualDesktopManager_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define IVirtualDesktopManager_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define IVirtualDesktopManager_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define IVirtualDesktopManager_IsWindowOnCurrentVirtualDesktop(This,topLevelWindow,onCurrentDesktop)	\
-    ( (This)->lpVtbl -> IsWindowOnCurrentVirtualDesktop(This,topLevelWindow,onCurrentDesktop) ) 
-
-#define IVirtualDesktopManager_GetWindowDesktopId(This,topLevelWindow,desktopId)	\
-    ( (This)->lpVtbl -> GetWindowDesktopId(This,topLevelWindow,desktopId) ) 
-
-#define IVirtualDesktopManager_MoveWindowToDesktop(This,topLevelWindow,desktopId)	\
-    ( (This)->lpVtbl -> MoveWindowToDesktop(This,topLevelWindow,desktopId) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __IVirtualDesktopManager_INTERFACE_DEFINED__ */
-
-
-/* interface __MIDL_itf_shobjidl_0000_0052 */
-/* [local] */ 
-
-#endif // NTDDI_WINTHRESHOLD
-
-
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0052_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0052_v0_0_s_ifspec;
 
 
 #ifndef __ShellObjects_LIBRARY_DEFINED__
@@ -7621,9 +7526,17 @@ EXTERN_C const CLSID CLSID_VirtualDesktopManager;
 class DECLSPEC_UUID("aa509086-5ca9-4c25-8f95-589d3c07b48a")
 VirtualDesktopManager;
 #endif
+
+EXTERN_C const CLSID CLSID_StorageProviderBanners;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("7CCDF9F4-E576-455A-8BC7-F6EC68D6F063")
+StorageProviderBanners;
+#endif
 #endif /* __ShellObjects_LIBRARY_DEFINED__ */
 
-/* interface __MIDL_itf_shobjidl_0000_0053 */
+/* interface __MIDL_itf_shobjidl_0000_0052 */
 /* [local] */ 
 
 #if (NTDDI_VERSION >= NTDDI_WIN7)
@@ -7676,8 +7589,8 @@ enum UNDOCK_REASON
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0053_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0053_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0052_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0052_v0_0_s_ifspec;
 
 #ifndef __IAccessibilityDockingServiceCallback_INTERFACE_DEFINED__
 #define __IAccessibilityDockingServiceCallback_INTERFACE_DEFINED__
@@ -7869,10 +7782,238 @@ EXTERN_C const IID IID_IAccessibilityDockingService;
 #endif 	/* __IAccessibilityDockingService_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_shobjidl_0000_0055 */
+/* interface __MIDL_itf_shobjidl_0000_0054 */
 /* [local] */ 
 
 #endif // NTDDI_WIN8
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0054_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0054_v0_0_s_ifspec;
+
+#ifndef __IBannerNotificationHandler_INTERFACE_DEFINED__
+#define __IBannerNotificationHandler_INTERFACE_DEFINED__
+
+/* interface IBannerNotificationHandler */
+/* [unique][uuid][object] */ 
+
+typedef /* [v1_enum] */ 
+enum BANNER_NOTIFICATION_EVENT
+    {
+        BNE_Rendered	= 0,
+        BNE_Hovered	= ( BNE_Rendered + 1 ) ,
+        BNE_Closed	= ( BNE_Hovered + 1 ) ,
+        BNE_Dismissed	= ( BNE_Closed + 1 ) ,
+        BNE_Button1Clicked	= ( BNE_Dismissed + 1 ) ,
+        BNE_Button2Clicked	= ( BNE_Button1Clicked + 1 ) 
+    } 	BANNER_NOTIFICATION_EVENT;
+
+typedef struct BANNER_NOTIFICATION
+    {
+    BANNER_NOTIFICATION_EVENT event;
+    LPCWSTR providerIdentity;
+    LPCWSTR contentId;
+    } 	BANNER_NOTIFICATION;
+
+
+EXTERN_C const IID IID_IBannerNotificationHandler;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("8d7b2ba7-db05-46a8-823c-d2b6de08ee91")
+    IBannerNotificationHandler : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE OnBannerEvent( 
+            /* [in] */ __RPC__in const BANNER_NOTIFICATION *notification) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IBannerNotificationHandlerVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IBannerNotificationHandler * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IBannerNotificationHandler * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IBannerNotificationHandler * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnBannerEvent )( 
+            __RPC__in IBannerNotificationHandler * This,
+            /* [in] */ __RPC__in const BANNER_NOTIFICATION *notification);
+        
+        END_INTERFACE
+    } IBannerNotificationHandlerVtbl;
+
+    interface IBannerNotificationHandler
+    {
+        CONST_VTBL struct IBannerNotificationHandlerVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IBannerNotificationHandler_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IBannerNotificationHandler_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IBannerNotificationHandler_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IBannerNotificationHandler_OnBannerEvent(This,notification)	\
+    ( (This)->lpVtbl -> OnBannerEvent(This,notification) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IBannerNotificationHandler_INTERFACE_DEFINED__ */
+
+
+#ifndef __IStorageProviderBanners_INTERFACE_DEFINED__
+#define __IStorageProviderBanners_INTERFACE_DEFINED__
+
+/* interface IStorageProviderBanners */
+/* [unique][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IStorageProviderBanners;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("5efb46d7-47C0-4b68-acda-ded47c90ec91")
+    IStorageProviderBanners : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE SetBanner( 
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId,
+            /* [in] */ __RPC__in LPCWSTR contentId) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ClearBanner( 
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ClearAllBanners( 
+            /* [in] */ __RPC__in LPCWSTR providerIdentity) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetBanner( 
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId,
+            /* [out] */ __RPC__deref_out_opt LPWSTR *contentId) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IStorageProviderBannersVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            __RPC__in IStorageProviderBanners * This,
+            /* [in] */ __RPC__in REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            __RPC__in IStorageProviderBanners * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            __RPC__in IStorageProviderBanners * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetBanner )( 
+            __RPC__in IStorageProviderBanners * This,
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId,
+            /* [in] */ __RPC__in LPCWSTR contentId);
+        
+        HRESULT ( STDMETHODCALLTYPE *ClearBanner )( 
+            __RPC__in IStorageProviderBanners * This,
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId);
+        
+        HRESULT ( STDMETHODCALLTYPE *ClearAllBanners )( 
+            __RPC__in IStorageProviderBanners * This,
+            /* [in] */ __RPC__in LPCWSTR providerIdentity);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetBanner )( 
+            __RPC__in IStorageProviderBanners * This,
+            /* [in] */ __RPC__in LPCWSTR providerIdentity,
+            /* [in] */ __RPC__in LPCWSTR subscriptionId,
+            /* [out] */ __RPC__deref_out_opt LPWSTR *contentId);
+        
+        END_INTERFACE
+    } IStorageProviderBannersVtbl;
+
+    interface IStorageProviderBanners
+    {
+        CONST_VTBL struct IStorageProviderBannersVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IStorageProviderBanners_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IStorageProviderBanners_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IStorageProviderBanners_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IStorageProviderBanners_SetBanner(This,providerIdentity,subscriptionId,contentId)	\
+    ( (This)->lpVtbl -> SetBanner(This,providerIdentity,subscriptionId,contentId) ) 
+
+#define IStorageProviderBanners_ClearBanner(This,providerIdentity,subscriptionId)	\
+    ( (This)->lpVtbl -> ClearBanner(This,providerIdentity,subscriptionId) ) 
+
+#define IStorageProviderBanners_ClearAllBanners(This,providerIdentity)	\
+    ( (This)->lpVtbl -> ClearAllBanners(This,providerIdentity) ) 
+
+#define IStorageProviderBanners_GetBanner(This,providerIdentity,subscriptionId,contentId)	\
+    ( (This)->lpVtbl -> GetBanner(This,providerIdentity,subscriptionId,contentId) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IStorageProviderBanners_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_shobjidl_0000_0056 */
+/* [local] */ 
+
+#endif // NTDDI_WIN10_RS4
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 #if _MSC_VER >= 1200
@@ -7880,8 +8021,8 @@ EXTERN_C const IID IID_IAccessibilityDockingService;
 #endif
 
 
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0055_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0055_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0056_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_shobjidl_0000_0056_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

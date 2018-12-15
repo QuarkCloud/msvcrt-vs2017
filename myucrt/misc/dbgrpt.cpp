@@ -19,7 +19,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <suppress.h>
+
 
 /*---------------------------------------------------------------------------
  *
@@ -403,9 +403,9 @@ static int __cdecl common_message_window(
 
     if (sprintf_result < 0)
     {
-        //_ERRCHECK(wcscpy_s(message_buffer, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
+        _ERRCHECK(wcscpy_s(message_buffer, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
     }
-/**
+
     int const message_box_result = __acrt_show_wide_message_box(
         message_buffer,
         L"Microsoft Visual C++ Runtime Library",
@@ -438,8 +438,6 @@ static int __cdecl common_message_window(
         return 0; // Ignore:  Continue execution
     }
     }
-*/
-	return 0 ;	
 }
 
 extern "C" int __cdecl __acrt_MessageWindowA(

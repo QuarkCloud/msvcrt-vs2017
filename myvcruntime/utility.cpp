@@ -24,7 +24,7 @@ extern "C" void*                       __scrt_native_startup_lock           = nu
 
 // Tests whether a PE image is located at the given image base.  Returns true if
 // the given image base potentially points to a loaded PE image; false otherwise.
-static bool __cdecl is_potentially_valid_image_base(void* const image_base) throw()
+static bool __cdecl is_potentially_valid_image_base(void* const image_base) noexcept
 {
     if (!image_base)
     {
@@ -57,7 +57,7 @@ static bool __cdecl is_potentially_valid_image_base(void* const image_base) thro
 
 // Given an RVA, finds the PE section in the pointed-to image that includes the
 // RVA.  Returns null if no such section exists or the section is not found.
-static PIMAGE_SECTION_HEADER __cdecl find_pe_section(unsigned char* const image_base, uintptr_t const rva) throw()
+static PIMAGE_SECTION_HEADER __cdecl find_pe_section(unsigned char* const image_base, uintptr_t const rva) noexcept
 {
     auto const dos_header        = reinterpret_cast<PIMAGE_DOS_HEADER>(image_base);
     auto const nt_header_address = reinterpret_cast<PBYTE>(dos_header) + dos_header->e_lfanew;

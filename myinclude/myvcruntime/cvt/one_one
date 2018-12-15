@@ -11,11 +11,14 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
+#if !_HAS_IF_CONSTEXPR
  #pragma warning(disable: 4127)	// conditional expression is constant
  #pragma warning(disable: 6326)	// Potential comparison of a constant with another constant.
+#endif /* ^^^ original code ^^^ */
 
 namespace stdext {
 	namespace cvt {
@@ -35,7 +38,7 @@ template<class _Elem,
 public:
 	static_assert(_Bytes_per_word >= 1 && _Bytes_per_word <= 4, "bad byte count parameter");
 
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -47,7 +50,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~codecvt_one_one() _NOEXCEPT
+	virtual ~codecvt_one_one() noexcept
 		{	// destroy the object
 		}
 
@@ -67,27 +70,48 @@ protected:
 			unsigned long _Ch = 0;
 
 			if (*_Pstate == _LITTLE_FIRST)
+				{
 				for (_Count = _Bytes_per_word; 0 < _Count; )
+					{
 					_Ch = _Ch << 8 | _Ptr[--_Count];
+					}
+				}
 			else if (*_Pstate == _BIG_FIRST)
+				{
 				for (_Count = 0; _Count < _Bytes_per_word; ++_Count)
+					{
 					_Ch = _Ch << 8 | _Ptr[_Count];
+					}
+				}
 			else
 				{	// no header seen yet, try preferred mode
-				unsigned char _Default_endian =
+				constexpr unsigned char _Default_endian =
 					(_Mode & _STD little_endian) != 0
 					? _LITTLE_FIRST : _BIG_FIRST;
 
-				 if ((_Mode & _STD little_endian) != 0)
+				if _CONSTEXPR_IF ((_Mode & _STD little_endian) != 0)
+					{
 					for (_Count = _Bytes_per_word; 0 < _Count; )
+						{
 						_Ch = _Ch << 8 | _Ptr[--_Count];
+						}
+					}
 				else
+					{
 					for (_Count = 0; _Count < _Bytes_per_word; ++_Count)
+						{
 						_Ch = _Ch << 8 | _Ptr[_Count];
-				if ((_Mode & _STD consume_header) == 0
-					|| (_Ch != 0xfeff
-						&& _Ch != (0xfffe0000 >> 8 * (4 - _Bytes_per_word))))
+						}
+					}
+
+				if _CONSTEXPR_IF ((_Mode & _STD consume_header) == 0)
+					{
 					*_Pstate = _Default_endian;
+					}
+				else if (_Ch != 0xfeff && _Ch != (0xfffe0000 >> 8 * (4 - _Bytes_per_word)))
+					{
+					*_Pstate = _Default_endian;
+					}
 				else
 					{	// consume header, fixate on endianness, and retry
 					_Mid1 += _Bytes_per_word;
@@ -108,7 +132,9 @@ protected:
 
 			_Mid1 += _Bytes_per_word;
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);	// code too large
+				}
 			*_Mid2++ = (_Elem)_Ch;
 			}
 
@@ -128,25 +154,40 @@ protected:
 			{	// determine endianness once, maybe generate header
 			unsigned long _Header = 0xfeff;
 
-			*_Pstate = (_Mode & _STD little_endian) != 0
-				? _LITTLE_FIRST : _BIG_FIRST;
-			if ((_Mode & _STD generate_header) == 0)
-				;
+			if _CONSTEXPR_IF ((_Mode & _STD little_endian) != 0)
+				{
+				*_Pstate = _LITTLE_FIRST;
+				}
+			else
+				{
+				*_Pstate = _BIG_FIRST;
+				}
+
+			if _CONSTEXPR_IF ((_Mode & _STD generate_header) == 0)
+				{
+				(void) _Header;	// unused
+				}
 			else if (_Last2 - _Mid2 < 2 * _Bytes_per_word)
+				{
 				return (_Mybase::partial);	// not enough room for both
+				}
 			else if (*_Pstate == _LITTLE_FIRST)
+				{
 				for (_Count = 0; _Count < _Bytes_per_word; ++_Count)
 					{	// put LS byte first
-					*_Mid2++ = (unsigned char)_Header;
+					*_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Header));
 					_Header >>= 8;
 					}
+				}
 			else
+				{
 				for (_Header <<= 8 * (4 - _Bytes_per_word), _Count = 0;
 					_Count < _Bytes_per_word; ++_Count)
 					{	// put MS byte first
-					*_Mid2++ = (unsigned char)(_Header >> 24);
+					*_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Header >> 24));
 					_Header <<= 8;
 					}
+				}
 			}
 
 		while (_Mid1 != _Last1 && _Bytes_per_word <= _Last2 - _Mid2)
@@ -154,21 +195,27 @@ protected:
 			unsigned long _Ch = (unsigned long)*_Mid1++;
 
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);
+				}
 
 			if (*_Pstate == _LITTLE_FIRST)
+				{
 				for (_Count = 0; _Count < _Bytes_per_word; ++_Count)
 					{	// put LS byte first
-					*_Mid2++ = (unsigned char)_Ch;
+					*_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Ch));
 					_Ch >>= 8;
 					}
+				}
 			else
+				{
 				for (_Ch <<= 8 * (4 - _Bytes_per_word), _Count = 0;
 					_Count < _Bytes_per_word; ++_Count)
 					{	// put MS byte first
-					*_Mid2++ = (unsigned char)(_Ch >> 24);
+					*_Mid2++ = static_cast<_Byte>(static_cast<unsigned char>(_Ch >> 24));
 					_Ch <<= 8;
 					}
+				}
 			}
 
 		return (_First1 == _Mid1 ? _Mybase::partial : _Mybase::ok);
@@ -182,7 +229,7 @@ protected:
 		}
 
 	virtual int do_length(_Statype& _State, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
 		size_t _Wchars = 0;
 		_Statype _Mystate = _State;
@@ -199,7 +246,7 @@ protected:
 			case _Mybase::noconv:
 				return ((int)(_Wchars + (_Last1 - _First1)));
 
-			case  _Mybase::ok:
+			case _Mybase::ok:
 				if (_Mid2 == &_Ch + 1)
 					++_Wchars;	// replacement do_in might not convert one
 				_First1 = _Mid1;
@@ -213,21 +260,33 @@ protected:
 		return ((int)_Wchars);
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? 2 * _Bytes_per_word : _Bytes_per_word);
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (2 * _Bytes_per_word);
+			}
+		else
+			{
+			return (_Bytes_per_word);
+			}
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? -1 : (int)_Bytes_per_word);	// -1 => state dependent
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (-1);	// -1 => state dependent
+			}
+		else
+			{
+			return ((int)_Bytes_per_word);
+			}
 		}
 	};
 #pragma warning(pop)
@@ -243,6 +302,7 @@ protected:
   #include <cvt/xtest>
  #endif /* _TEST_IT */
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

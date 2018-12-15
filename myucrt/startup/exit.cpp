@@ -5,9 +5,9 @@
 //
 // The exit() implementation
 //
-//#include <nt.h>
-//#include <ntrtl.h>
-//#include <nturtl.h>
+#include <nt.h>
+#include <ntrtl.h>
+#include <nturtl.h>
 #include <corecrt_internal.h>
 #include <eh.h>
 #include <process.h>
@@ -109,16 +109,15 @@ static void __cdecl try_cor_exit_process(UINT const return_code) throw()
 // compatibility with the legacy runtimes.
 static bool __cdecl should_call_terminate_process() throw()
 {
-    //if (__acrt_get_process_end_policy() == process_end_policy_exit_process)
+    if (__acrt_get_process_end_policy() == process_end_policy_exit_process)
     {
-    //    return false;
+        return false;
     }
 
     // If application verifier is running, we still want to call ExitProcess,
     // to enable tools that require DLLs to be unloaded cleanly at process exit
     // to do their work.
-    //bool const application_verifier_enabled = (NtCurrentPeb()->NtGlobalFlag & FLG_APPLICATION_VERIFIER) != 0;
-    bool const application_verifier_enabled = false;
+    bool const application_verifier_enabled = (NtCurrentPeb()->NtGlobalFlag & FLG_APPLICATION_VERIFIER) != 0;
     if (application_verifier_enabled)
     {
         return false;
@@ -199,8 +198,7 @@ static void __cdecl common_exit(
     // Run the C termination:
     bool crt_uninitialization_required = false;
 
-    //__acrt_lock_and_call(__acrt_select_exit_lock(), [&]
-    __acrt_lock_and_call(__acrt_os_exit_lock, [&]
+    __acrt_lock_and_call(__acrt_select_exit_lock(), [&]
     {
         static bool c_exit_complete = false;
         if (c_exit_complete)

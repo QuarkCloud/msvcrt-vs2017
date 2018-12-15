@@ -7,10 +7,12 @@
 #ifndef RC_INVOKED
 #include <cstdlib>
 #include <xtr1common>
+#include <yvals.h>
 
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -29,7 +31,7 @@ _STD_END
 #define _GENERIC_MATH1R(FUN, RET, CRTTYPE) \
 extern "C" _Check_return_ CRTTYPE RET __cdecl FUN(_In_ double); \
 template<class _Ty, \
-	class = _STD enable_if_t<_STD is_integral_v<_Ty>>> inline \
+	class = _STD enable_if_t<_STD is_integral_v<_Ty>>> _NODISCARD inline \
 	RET FUN(_Ty _Left) \
 	{ \
 	return (_CSTD FUN(static_cast<double>(_Left))); \
@@ -41,7 +43,7 @@ template<class _Ty, \
 #define _GENERIC_MATH1X(FUN, ARG2, CRTTYPE) \
 extern "C" _Check_return_ CRTTYPE double __cdecl FUN(_In_ double, ARG2); \
 template<class _Ty, \
-	class = _STD enable_if_t<_STD is_integral_v<_Ty>>> inline \
+	class = _STD enable_if_t<_STD is_integral_v<_Ty>>> _NODISCARD inline \
 	double FUN(_Ty _Left, ARG2 _Arg2) \
 	{ \
 	return (_CSTD FUN(static_cast<double>(_Left), _Arg2)); \
@@ -51,11 +53,11 @@ template<class _Ty, \
 extern "C" _Check_return_ CRTTYPE double CALL_OPT FUN(_In_ double, _In_ double); \
 template<class _Ty1, \
 	class _Ty2, \
-	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>> inline \
+	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>> _NODISCARD inline \
 	_STD _Common_float_type_t<_Ty1, _Ty2> FUN(_Ty1 _Left, _Ty2 _Right) \
 	{ \
-	typedef _STD _Common_float_type_t<_Ty1, _Ty2> type; \
-	return (_CSTD FUN(static_cast<type>(_Left), static_cast<type>(_Right))); \
+	using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>; \
+	return (_CSTD FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right))); \
 	}
 
 #define _GENERIC_MATH2(FUN, CRTTYPE) \
@@ -63,11 +65,11 @@ template<class _Ty1, \
 
 template<class _Ty1,
 	class _Ty2,
-	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>> inline
+	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>> _NODISCARD inline
 	_STD _Common_float_type_t<_Ty1, _Ty2> pow(const _Ty1 _Left, const _Ty2 _Right)
 	{	// bring mixed types to a common type
-	typedef _STD _Common_float_type_t<_Ty1, _Ty2> type;
-	return (_CSTD pow(static_cast<type>(_Left), static_cast<type>(_Right)));
+	using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
+	return (_CSTD pow(static_cast<_Common>(_Left), static_cast<_Common>(_Right)));
 	}
 
 //_GENERIC_MATH1(abs, _CRTDEFAULT)	// has integer overloads
@@ -99,7 +101,7 @@ _GENERIC_MATH1(tanh, _CRTDEFAULT)
 		// C99 MATH FUNCTIONS
 
 		// FUNCTION TEMPLATE fma
-
+#if !_HAS_IF_CONSTEXPR
 inline float _Fma(float _Left, float _Middle, float _Right)
 	{	// call float fma
 	return (_CSTD fmaf(_Left, _Middle, _Right));
@@ -115,19 +117,37 @@ inline long double _Fma(long double _Left, long double _Middle,
 	{	// call long double fma
 	return (_CSTD fmal(_Left, _Middle, _Right));
 	}
+#endif /* ^^^ original code ^^^ */
 
 template<class _Ty1,
 	class _Ty2,
-	class _Ty3> inline
+	class _Ty3,
+	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>
+		&& _STD is_arithmetic_v<_Ty3>>> _NODISCARD inline
 	_STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>>
 	fma(_Ty1 _Left, _Ty2 _Middle, _Ty3 _Right)
 	{	// bring mixed types to a common type
-	typedef _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>> type;
-	return (_Fma((type)_Left, (type)_Middle, (type)_Right));
+	using _Common = _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>>;
+#if _HAS_IF_CONSTEXPR
+	if constexpr (_STD is_same_v<_Common, float>)
+		{
+		return (_CSTD fmaf(static_cast<_Common>(_Left), static_cast<_Common>(_Middle), static_cast<_Common>(_Right)));
+		}
+	else if constexpr (_STD is_same_v<_Common, double>)
+		{
+		return (_CSTD fma(static_cast<_Common>(_Left), static_cast<_Common>(_Middle), static_cast<_Common>(_Right)));
+		}
+	else
+		{
+		return (_CSTD fmal(static_cast<_Common>(_Left), static_cast<_Common>(_Middle), static_cast<_Common>(_Right)));
+		}
+#else /* vvv original code vvv */
+	return (_Fma(static_cast<_Common>(_Left), static_cast<_Common>(_Middle), static_cast<_Common>(_Right)));
+#endif /* ^^^ original code ^^^ */
 	}
 
 		// FUNCTION TEMPLATE remquo
-
+#if !_HAS_IF_CONSTEXPR
 inline float _Remquo(float _Left, float _Right, int *_Pquo)
 	{	// call float remquo
 	return (_CSTD remquof(_Left, _Right, _Pquo));
@@ -142,14 +162,31 @@ inline long double _Remquo(long double _Left, long double _Right, int *_Pquo)
 	{	// call long double remquo
 	return (_CSTD remquol(_Left, _Right, _Pquo));
 	}
+#endif /* ^^^ original code ^^^ */
 
 template<class _Ty1,
-	class _Ty2> inline
+	class _Ty2,
+	class = _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>>> inline
 	_STD _Common_float_type_t<_Ty1, _Ty2>
 	remquo(_Ty1 _Left, _Ty2 _Right, int *_Pquo)
 	{	// bring mixed types to a common type
-	typedef _STD _Common_float_type_t<_Ty1, _Ty2> type;
-	return (_Remquo((type)_Left, (type)_Right, _Pquo));
+	using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
+#if _HAS_IF_CONSTEXPR
+	if constexpr (_STD is_same_v<_Common, float>)
+		{
+		return (_CSTD remquof(static_cast<_Common>(_Left), static_cast<_Common>(_Right), _Pquo));
+		}
+	else if constexpr (_STD is_same_v<_Common, double>)
+		{
+		return (_CSTD remquo(static_cast<_Common>(_Left), static_cast<_Common>(_Right), _Pquo));
+		}
+	else
+		{
+		return (_CSTD remquol(static_cast<_Common>(_Left), static_cast<_Common>(_Right), _Pquo));
+		}
+#else /* vvv original code vvv */
+	return (_Remquo(static_cast<_Common>(_Left), static_cast<_Common>(_Right), _Pquo));
+#endif /* ^^^ original code ^^^ */
 	}
 
 _GENERIC_MATH1(acosh, _CRTSPECIAL)
@@ -196,6 +233,7 @@ _GENERIC_MATH1(trunc, _CRTSPECIAL)
 #undef _GENERIC_MATH2
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

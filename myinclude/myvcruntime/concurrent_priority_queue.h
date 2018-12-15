@@ -63,7 +63,7 @@ namespace details
 
         _Aggregated_operation() :
             _M_status(0),
-            _M_pNext(NULL)
+            _M_pNext(nullptr)
         {
         }
     };
@@ -79,7 +79,7 @@ namespace details
     public:
         _Aggregator() : _M_handler_busy(0)
         {
-            _M_pPending_operations = NULL;
+            _M_pPending_operations = nullptr;
         }
 
         ~_Aggregator()
@@ -104,7 +104,7 @@ namespace details
                 _Op->_M_pNext = _Res = _M_pPending_operations;
             } while (_InterlockedCompareExchangePointer(reinterpret_cast<void *volatile *>(&_M_pPending_operations), _Op, _Res) != _Res);
 
-            if (_Res == NULL)
+            if (_Res == nullptr)
             {
                 // This item was the first one in the list; this thread will handle the operations. Note that by the time the
                 // thread pops the list of operations to handle, there may be several operations queued up.
@@ -149,7 +149,7 @@ namespace details
             _CONCRT_ASSERT(_OldVal == 0);
 
             // Get the list of pending operations
-            _POp_list = reinterpret_cast<_Operation_type *>(_InterlockedExchangePointer(reinterpret_cast<void * volatile *>(&_M_pPending_operations), NULL));
+            _POp_list = reinterpret_cast<_Operation_type *>(_InterlockedExchangePointer(reinterpret_cast<void * volatile *>(&_M_pPending_operations), nullptr));
 
             // Handle all the operations
             _M_handle_operations(_POp_list);
@@ -645,12 +645,12 @@ public:
     /// </summary>
     void _M_handle_operations(_Cpq_operation *_POp_list)
     {
-        _Cpq_operation *_PTmp, *_PPop_list=NULL;
+        _Cpq_operation *_PTmp, *_PPop_list=nullptr;
 
         _CONCRT_ASSERT(_M_mark == _M_data.size());
 
         // First pass processes all constant time operations: pushes, some pops.
-        while (_POp_list != NULL)
+        while (_POp_list != nullptr)
         {
             _CONCRT_ASSERT(_POp_list->_M_type != _INVALID_OP);
             _PTmp = _POp_list;
@@ -707,7 +707,7 @@ public:
         }
 
         // Second pass processes pop operations.
-        while (_PPop_list != NULL)
+        while (_PPop_list != nullptr)
         {
             _PTmp = _PPop_list;
             _PPop_list = _PPop_list->_M_pNext;

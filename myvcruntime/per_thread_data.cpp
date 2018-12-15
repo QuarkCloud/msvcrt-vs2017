@@ -18,12 +18,12 @@ namespace
     {
     public:
 
-        scoped_get_last_error_reset() throw()
+        scoped_get_last_error_reset() noexcept
             : _old_last_error(GetLastError())
         {
         }
 
-        ~scoped_get_last_error_reset() throw()
+        ~scoped_get_last_error_reset() noexcept
         {
             SetLastError(_old_last_error);
         }
@@ -54,7 +54,10 @@ static bool __cdecl store_and_initialize_ptd(__vcrt_ptd* const ptd)
     if (!__vcrt_FlsSetValue(__vcrt_flsindex, ptd))
         return false;
 
-    // Zero-initialization of the PTD is sufficient.
+#if defined _M_X64 || defined _M_ARM || defined _M_ARM64 || defined _M_HYBRID
+    ptd->_HandlerSearchState = INVALID_CATCH_SPECIFIC_STATE;
+    ptd->_UnwindStateorOffset = INVALID_CATCH_SPECIFIC_STATE;
+#endif
     return true;
 }
 

@@ -40,14 +40,14 @@ extern "C++" {
         int         _BlockUse,
         char const* _FileName,
         int         _LineNumber
-        ) throw();
+        ) noexcept;
 
     void __CRTDECL operator delete[](
         void*       _Block,
         int         _BlockUse,
         char const* _FileName,
         int         _LineNumber
-        ) throw();
+        ) noexcept;
 
 #endif
 

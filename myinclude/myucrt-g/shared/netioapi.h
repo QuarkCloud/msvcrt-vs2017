@@ -3075,6 +3075,191 @@ Return Value:
 
 --*/
 
+#define DNS_SETTINGS_VERSION1             0x0001
+#define DNS_INTERFACE_SETTINGS_VERSION1   0x0001
+
+#define DNS_SETTING_IPV6                  0x0001
+#define DNS_SETTING_NAMESERVER            0x0002
+#define DNS_SETTING_SEARCHLIST            0x0004
+#define DNS_SETTING_REGISTRATION_ENABLED  0x0008
+#define DNS_SETTING_REGISTER_ADAPTER_NAME 0x0010
+#define DNS_SETTING_DOMAIN                0x0020
+#define DNS_SETTING_HOSTNAME              0x0040
+#define DNS_SETTINGS_ENABLE_LLMNR         0x0080
+#define DNS_SETTINGS_QUERY_ADAPTER_NAME   0x0100
+#define DNS_SETTING_PROFILE_NAMESERVER    0x0200
+
+typedef struct _DNS_SETTINGS
+{
+    ULONG Version;
+    ULONG64 Flags;
+    PWSTR Hostname;
+    PWSTR Domain;
+    PWSTR SearchList;
+} DNS_SETTINGS;
+
+typedef struct _DNS_INTERFACE_SETTINGS
+{
+    ULONG Version;
+    ULONG64 Flags;
+    PWSTR Domain;
+    PWSTR NameServer;
+    PWSTR SearchList;
+    ULONG RegistrationEnabled;
+    ULONG RegisterAdapterName;
+    ULONG EnableLLMNR;
+    ULONG QueryAdapterName;
+    PWSTR ProfileNameServer;
+} DNS_INTERFACE_SETTINGS;
+
+NETIOAPI_API
+GetDnsSettings(
+    _Inout_ DNS_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Retrieves the DNS settings specified in the Settings parameter.
+
+    The user must call FreeDnsSettings(Settings) afterwards.
+
+Arguments:
+
+    Settings - GetDnsSettings will populate all the settings
+        in this structure. Version must be set.
+
+Return Value:
+
+    User-Mode: NO_ERROR on success, error code on failure.
+
+    Kernel-Mode: STATUS_SUCCESS on success, error code on failure.
+
+--*/
+
+VOID
+NETIOAPI_API_
+FreeDnsSettings(
+    _Inout_ DNS_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Frees the settings previously retrieved by GetDnsSettings.
+    This is done by invoking MIDL_user_free.
+
+Arguments:
+
+    Settings - The settings structure. Version must be set.
+
+Return Value:
+
+    None.
+
+--*/
+
+NETIOAPI_API
+SetDnsSettings(
+    _In_ const DNS_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Set the DNS settings specified in the Settings parameter.
+
+Arguments:
+
+    Settings - Specifies the settings to be set.
+        Version must be set.
+        Flags is used to control which settings are to be set.
+
+Return Value:
+
+    User-Mode: NO_ERROR on success, error code on failure.
+
+    Kernel-Mode: STATUS_SUCCESS on success, error code on failure.
+
+--*/
+
+NETIOAPI_API
+GetInterfaceDnsSettings(
+    _In_ GUID Interface,
+    _Inout_ DNS_INTERFACE_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Retrieves the DNS settings specified in the Settings parameter.
+
+    The user must call FreeInterfaceDnsSettings(Settings) afterwards.
+
+Arguments:
+
+    Interface - The Interface GUID that the settings refer to.
+
+    Settings - GetInterfaceDnsSettings will populate all the settings
+        in this structure. Version must be set.
+
+Return Value:
+
+    User-Mode: NO_ERROR on success, error code on failure.
+
+    Kernel-Mode: STATUS_SUCCESS on success, error code on failure.
+
+--*/
+
+VOID
+NETIOAPI_API_
+FreeInterfaceDnsSettings(
+    _Inout_ DNS_INTERFACE_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Frees the settings previously retrieved by GetInterfaceDnsSettings.
+    This is done by invoking MIDL_user_free.
+
+Arguments:
+
+    Settings - The settings structure. Version must be set.
+
+Return Value:
+
+    None.
+
+--*/
+
+NETIOAPI_API
+SetInterfaceDnsSettings(
+    _In_ GUID Interface,
+    _In_ const DNS_INTERFACE_SETTINGS *Settings
+    );
+/*++
+
+Routine Description:
+
+    Set the per interface DNS settings specified in the Settings parameter.
+
+Arguments:
+
+    Interface - The Interface GUID that the settings refer to.
+
+    Settings - Specifies the settings to be set.
+        Version must be set.
+        Flags is used to control which settings are to be set.
+
+Return Value:
+
+    User-Mode: NO_ERROR on success, error code on failure.
+
+    Kernel-Mode: STATUS_SUCCESS on success, error code on failure.
+
+--*/
+
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 

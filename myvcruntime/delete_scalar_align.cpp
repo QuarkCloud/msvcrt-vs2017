@@ -7,6 +7,7 @@
 //
 #include <malloc.h>
 #include <vcruntime_new.h>
+#include <vcstartup_internal.h>
 
 //////////////////////////////////////////////////////////////////////////////////
 // Aligned delete() Fallback Ordering
@@ -25,6 +26,7 @@
 // |delete_array_size_align|  |delete_array_align_nothrow|
 // +-----------------------+  +--------------------------+
 
+_CRT_SECURITYCRITICAL_ATTRIBUTE
 void __CRTDECL operator delete(void* const block, std::align_val_t const) noexcept
 {
     _aligned_free(block);

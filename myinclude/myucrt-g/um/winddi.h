@@ -924,6 +924,7 @@ typedef struct  tagCDDDXGK_REDIRBITMAPPRESENTINFO
     RECT*           DirtyRect;                                  // in 
     UINT            NumContexts;                                // in
     HANDLE          hContext[WINDDI_MAX_BROADCAST_CONTEXT+1];   // in  Presenting DXGCONTEXTs
+    BOOLEAN         bDoNotSynchronizeWithDxContent;             // in
 } CDDDXGK_REDIRBITMAPPRESENTINFO;
 
 #endif // NTDDI_WIN8

@@ -119,7 +119,7 @@ namespace details
         typedef _Message type;
 
         // Create a Queue
-        _Queue() : _M_pHead(NULL), _M_ppTail(&_M_pHead), _M_count(0)
+        _Queue() : _M_pHead(nullptr), _M_ppTail(&_M_pHead), _M_count(0)
         {
         }
 
@@ -139,11 +139,11 @@ namespace details
         // Returns a Boolean indicating whether the operation succeeded.
         bool _Enqueue(_Message *_Element)
         {
-            _CONCRT_ASSERT(_Element->_M_pNext == NULL);
-            _CONCRT_ASSERT(*_M_ppTail == NULL);
+            _CONCRT_ASSERT(_Element->_M_pNext == nullptr);
+            _CONCRT_ASSERT(*_M_ppTail == nullptr);
 
             *_M_ppTail = _Element;
-            _Element->_M_pNext = NULL;
+            _Element->_M_pNext = nullptr;
             _M_ppTail = &(_Element->_M_pNext);
             _M_count++;
 
@@ -157,24 +157,24 @@ namespace details
         {
             bool _Result = false;
 
-            _CONCRT_ASSERT(_OldElement != NULL);
+            _CONCRT_ASSERT(_OldElement != nullptr);
 
             if (_M_pHead == _OldElement)
             {
                 _M_pHead = _OldElement->_M_pNext;
-                if (_M_pHead == NULL)
+                if (_M_pHead == nullptr)
                 {
                     _M_ppTail = &_M_pHead;
                 }
 
-                _OldElement->_M_pNext = NULL;
+                _OldElement->_M_pNext = nullptr;
                 _M_count--;
                 _Result = true;
             }
             else
             {
-                _Message * _Next = NULL;
-                for (_Message * _Node = _M_pHead; _Node != NULL; _Node = _Next)
+                _Message * _Next = nullptr;
+                for (_Message * _Node = _M_pHead; _Node != nullptr; _Node = _Next)
                 {
                     _Next = _Node->_M_pNext;
 
@@ -182,12 +182,12 @@ namespace details
                     {
                         _Node->_M_pNext = _OldElement->_M_pNext;
                         // if this is the last element of the _Queue
-                        if (_Node->_M_pNext == NULL && _M_count == 1)
+                        if (_Node->_M_pNext == nullptr && _M_count == 1)
                         {
                             _M_ppTail = &_M_pHead;
                         }
 
-                        _OldElement->_M_pNext = NULL;
+                        _OldElement->_M_pNext = nullptr;
                         _M_count--;
                         _Result = true;
                         break;
@@ -203,20 +203,20 @@ namespace details
         // Returns a pointer to the message found at the head of the queue.
         _Message * _Dequeue()
         {
-            if (_M_pHead == NULL)
+            if (_M_pHead == nullptr)
             {
-                return NULL;
+                return nullptr;
             }
 
             _Message * _Result = _M_pHead;
 
             _M_pHead = _Result->_M_pNext;
-            if (_M_pHead == NULL)
+            if (_M_pHead == nullptr)
             {
                 _M_ppTail = &_M_pHead;
             }
 
-            _Result->_M_pNext = NULL;
+            _Result->_M_pNext = nullptr;
             _M_count--;
             return _Result;
         }
@@ -236,7 +236,7 @@ namespace details
             // check if the IDs match
             _Message * _Msg = _M_pHead;
 
-            if (_Msg == NULL || _Msg->msg_id() != _MsgId)
+            if (_Msg == nullptr || _Msg->msg_id() != _MsgId)
             {
                 return false;
             }
@@ -306,7 +306,7 @@ namespace details
         //
         void _Clear()
         {
-            if (_M_array != NULL)
+            if (_M_array != nullptr)
             {
                 delete [] _M_array;
                 _Init();
@@ -384,7 +384,7 @@ namespace details
         //
         void _Init()
         {
-            _M_array = NULL;
+            _M_array = nullptr;
             _M_index = 0;
             _M_size = 0;
         }
@@ -398,7 +398,7 @@ namespace details
 
             _Type * _Array = new _Type[_NewSize];
 
-            if (_M_array != NULL)
+            if (_M_array != nullptr)
             {
                 // Copy over the elements
                 for (size_t _I = 0; _I < _M_size; _I++)
@@ -486,7 +486,7 @@ public:
     ///     Construct iterator
     /// </summary>
     /**/
-    _Network_link_iterator(_MyContainer * _PNetwork_link, size_t _Index) : _M_pNetwork_link(_PNetwork_link), _M_index(_Index), _M_value(NULL)
+    _Network_link_iterator(_MyContainer * _PNetwork_link, size_t _Index) : _M_pNetwork_link(_PNetwork_link), _M_index(_Index), _M_value(nullptr)
     {
         _M_pNetwork_link->_Next_index(_M_index);
     }
@@ -739,7 +739,7 @@ public:
     ///     Constructs a <c>single_link_registry</c> object.
     /// </summary>
     /**/
-    single_link_registry() : _M_connectedLink(NULL)
+    single_link_registry() : _M_connectedLink(nullptr)
     {
     }
 
@@ -774,13 +774,13 @@ public:
     /**/
     virtual void add(typename network_link_registry<_Block>::_EType _Link)
     {
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return;
         }
 
         // Only one link can be added.
-        if (_M_connectedLink != NULL)
+        if (_M_connectedLink != nullptr)
         {
             throw invalid_link_target("_Link");
         }
@@ -800,9 +800,9 @@ public:
     /**/
     virtual bool remove(typename network_link_registry<_Block>::_EType _Link)
     {
-        if ((_Link != NULL) && (_M_connectedLink == _Link))
+        if ((_Link != nullptr) && (_M_connectedLink == _Link))
         {
-            _M_connectedLink = NULL;
+            _M_connectedLink = nullptr;
             return true;
         }
 
@@ -821,7 +821,7 @@ public:
     /**/
     virtual bool contains(typename network_link_registry<_Block>::_EType _Link)
     {
-        return ((_Link != NULL) && (_M_connectedLink == _Link));
+        return ((_Link != nullptr) && (_M_connectedLink == _Link));
     }
 
     /// <summary>
@@ -833,7 +833,7 @@ public:
     /**/
     virtual size_t count()
     {
-        return (_M_connectedLink == NULL) ? 0 : 1;
+        return (_M_connectedLink == nullptr) ? 0 : 1;
     }
 
     /// <summary>
@@ -863,7 +863,7 @@ protected:
     /**/
     virtual void _Next_index(size_t& _Index)
     {
-        if (_M_connectedLink == NULL)
+        if (_M_connectedLink == nullptr)
         {
             _Index++;
         }
@@ -887,7 +887,7 @@ protected:
             return _M_connectedLink;
         }
 
-        return NULL;
+        return nullptr;
     }
 
 private:
@@ -969,7 +969,7 @@ public:
     /**/
     virtual void add(typename network_link_registry<_Block>::_EType _Link)
     {
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return;
         }
@@ -989,7 +989,7 @@ public:
     /**/
     virtual bool remove(typename network_link_registry<_Block>::_EType _Link)
     {
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return false;
         }
@@ -1009,7 +1009,7 @@ public:
     /**/
     virtual bool contains(typename network_link_registry<_Block>::_EType _Link)
     {
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return false;
         }
@@ -1059,7 +1059,7 @@ protected:
         size_t _Size = _M_vector._Size();
         while (_Index < _Size)
         {
-            if (_M_vector[_Index] != NULL)
+            if (_M_vector[_Index] != nullptr)
             {
                 break;
             }
@@ -1086,7 +1086,7 @@ protected:
             return _M_vector[_Index];
         }
 
-        return NULL;
+        return nullptr;
     }
 
 private:
@@ -1103,7 +1103,7 @@ private:
         size_t _Size = _M_vector._Size();
         size_t _Insert_pos = 0;
 
-        _CONCRT_ASSERT(_Link != NULL);
+        _CONCRT_ASSERT(_Link != nullptr);
 
         // If max links is set, ensure that inserting the new
         // link will not exceed the bound.
@@ -1114,7 +1114,7 @@ private:
 
         for (size_t _Index = 0; _Index < _Size; _Index++)
         {
-            if (_M_vector[_Index] != NULL)
+            if (_M_vector[_Index] != nullptr)
             {
                 // We want to find the first NULL entry after all the
                 // non-NULL entries.
@@ -1150,13 +1150,13 @@ private:
     /**/
     bool _Remove(typename network_link_registry<_Block>::_EType _Link)
     {
-        _CONCRT_ASSERT(_Link != NULL);
+        _CONCRT_ASSERT(_Link != nullptr);
 
         for (size_t _Index = 0; _Index < _M_vector._Size(); _Index++)
         {
             if (_M_vector[_Index] == _Link)
             {
-                _M_vector[_Index] = NULL;
+                _M_vector[_Index] = nullptr;
 
                 // If max links is set, prevent new additions to the registry
                 if (_M_maxLinks != _NOT_SET && _M_maxLinks > 0)
@@ -1210,7 +1210,7 @@ private:
 
         for (size_t _Index = 0; _Index < _M_vector._Size(); _Index++)
         {
-            if (_M_vector[_Index] != NULL)
+            if (_M_vector[_Index] != nullptr)
             {
                 _Count++;
             }
@@ -1259,7 +1259,7 @@ public:
     ///     Construct iterator
     /// </summary>
     /**/
-    _Source_link_iterator(_MyContainer * _PNetwork_link, size_t _Index) : _M_pNetwork_link(_PNetwork_link), _M_index(_Index), _M_sentinel(NULL)
+    _Source_link_iterator(_MyContainer * _PNetwork_link, size_t _Index) : _M_pNetwork_link(_PNetwork_link), _M_index(_Index), _M_sentinel(nullptr)
     {
         // Take a snapshot of the link registry. This will reference the registry.
         _M_pNetwork_link->_To_array(_M_array);
@@ -1271,7 +1271,7 @@ public:
     /**/
     virtual ~_Source_link_iterator()
     {
-        if (_M_pNetwork_link != NULL)
+        if (_M_pNetwork_link != nullptr)
         {
             _M_pNetwork_link->release();
         }
@@ -1296,7 +1296,7 @@ public:
     _Myt const& operator=(_Myt const& _Right)
     {
         _MyContainer * _OldContainer = _M_pNetwork_link;
-        _CONCRT_ASSERT(_OldContainer != NULL);
+        _CONCRT_ASSERT(_OldContainer != nullptr);
 
         _M_pNetwork_link = _Right._M_pNetwork_link;
         _M_index = _Right._M_index;
@@ -1483,7 +1483,7 @@ public:
     ///     Constructs a <c>source_link_manager</c> object.
     /// </summary>
     /**/
-    source_link_manager() : _M_iteratorCount(0), _M_pLinkedTarget(NULL)
+    source_link_manager() : _M_iteratorCount(0), _M_pLinkedTarget(nullptr)
     {
     }
 
@@ -1530,7 +1530,7 @@ public:
     /**/
     void add(_EType _Link)
     {
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return;
         }
@@ -1569,10 +1569,10 @@ public:
     bool remove(_EType _Link)
     {
         bool _Removed = false;
-        _EType _RemovedLink = NULL;
+        _EType _RemovedLink = nullptr;
         ITarget<typename _Block::source_type> * _LinkedTarget = _M_pLinkedTarget;
 
-        if (_Link == NULL)
+        if (_Link == nullptr)
         {
             return false;
         }
@@ -1603,7 +1603,7 @@ public:
         // NOTE: touching "this" pointer is dangerous as soon as the above lock is released
 
         // Release the reference for this link
-        if (_RemovedLink != NULL)
+        if (_RemovedLink != nullptr)
         {
             _RemovedLink->release_ref(_LinkedTarget);
         }
@@ -1711,7 +1711,7 @@ private:
         _LockHolder _Lock(_M_lock);
         _M_iteratorCount++;
 
-        for(auto _Link = _M_links.begin(); *_Link != NULL; ++_Link)
+        for(auto _Link = _M_links.begin(); *_Link != nullptr; ++_Link)
         {
             _Array._Push_back(*_Link);
         }
@@ -1790,7 +1790,7 @@ public:
     ///     if the parameter <paramref name="_Msg"/> is <c>NULL</c>.
     /// </remarks>
     /**/
-    message(_Type const &_P) : payload(_P), _M_pNext(NULL), _M_refCount(0) { }
+    message(_Type const &_P) : payload(_P), _M_pNext(nullptr), _M_refCount(0) { }
 
     /// <summary>
     ///     Constructs a <c>message</c> object.
@@ -1808,7 +1808,7 @@ public:
     /// </remarks>
     /**/
     message(_Type const &_P, runtime_object_identity _Id)
-        : ::Concurrency::details::_Runtime_object(_Id), payload(_P), _M_pNext(NULL), _M_refCount(0)
+        : ::Concurrency::details::_Runtime_object(_Id), payload(_P), _M_pNext(nullptr), _M_refCount(0)
     {
     }
 
@@ -1824,7 +1824,7 @@ public:
     ///     if the parameter <paramref name="_Msg"/> is <c>NULL</c>.
     /// </remarks>
     /**/
-    message(message const & _Msg) : payload(_Msg.payload), _M_pNext(NULL), _M_refCount(0) { }
+    message(message const & _Msg) : payload(_Msg.payload), _M_pNext(nullptr), _M_refCount(0) { }
 
     /// <summary>
     ///     Constructs a <c>message</c> object.
@@ -1837,9 +1837,9 @@ public:
     ///     if the parameter <paramref name="_Msg"/> is <c>NULL</c>.
     /// </remarks>
     /**/
-    message(_In_ message const * _Msg) : payload((_Msg == NULL) ? NULL : _Msg->payload), _M_pNext(NULL), _M_refCount(0)
+    message(_In_ message const * _Msg) : payload((_Msg == nullptr) ? nullptr : _Msg->payload), _M_pNext(nullptr), _M_refCount(0)
     {
-        if (_Msg == NULL)
+        if (_Msg == nullptr)
         {
             throw std::invalid_argument("_Msg");
         }
@@ -2019,7 +2019,7 @@ public:
     ///     The signature of the callback method invoked while propagating messages.
     /// </summary>
     /**/
-    typedef std::function<void(void)>  _Propagator_method;
+    typedef std::function<void()>  _Propagator_method;
 
     /// <summary>
     ///     A type alias for <typeparamref name="_Type"/>.
@@ -2037,8 +2037,8 @@ public:
     /**/
     ordered_message_processor() :
       _M_queuedDataCount(0),
-      _M_pScheduler(NULL),
-      _M_pScheduleGroup(NULL),
+      _M_pScheduler(nullptr),
+      _M_pScheduleGroup(nullptr),
       _M_stopProcessing(1),
       _M_lwtCount(0),
       _M_handler(nullptr),
@@ -2108,7 +2108,7 @@ public:
     /**/
     virtual void sync_send(_Inout_opt_ message<_Type> * _Msg)
     {
-        if (_M_handler == NULL)
+        if (_M_handler == nullptr)
         {
             throw invalid_operation("sync_send called without registering a callback");
         }
@@ -2126,7 +2126,7 @@ public:
     /**/
     virtual void async_send(_Inout_opt_ message<_Type> * _Msg)
     {
-        if (_M_handler == NULL)
+        if (_M_handler == nullptr)
         {
             throw invalid_operation("async_send called without registering a callback");
         }
@@ -2137,7 +2137,7 @@ public:
         // the messages that are in its queue.  For example, an unbounded_buffer
         // that has its head node released after reservation.
         //
-        if (_Msg != NULL)
+        if (_Msg != nullptr)
         {
             _M_queuedMessages.push(_Msg);
         }
@@ -2156,11 +2156,11 @@ public:
 
                 TaskProc _Proc = &::Concurrency::ordered_message_processor<_Type>::_Process_incoming_message_wrapper;
 #ifdef _CRT_USE_WINAPI_FAMILY_DESKTOP_APP
-                if (_M_pScheduleGroup != NULL)
+                if (_M_pScheduleGroup != nullptr)
                 {
                     _M_pScheduleGroup->ScheduleTask(_Proc, this);
                 }
-                else if (_M_pScheduler != NULL)
+                else if (_M_pScheduler != nullptr)
                 {
                     _M_pScheduler->ScheduleTask(_Proc, this);
                 }
@@ -2233,7 +2233,7 @@ protected:
 
     void _Clear_queued_messages()
     {
-        message<_Type> * _Msg = NULL;
+        message<_Type> * _Msg = nullptr;
         while (_M_queuedMessages.try_pop(_Msg))
         {
             delete _Msg;
@@ -2261,7 +2261,7 @@ protected:
         {
             // Destructor is running. Do not process the message
             // Delete the msg, if any.
-            if (_Msg != NULL)
+            if (_Msg != nullptr)
             {
                 delete _Msg;
             }
@@ -2322,14 +2322,14 @@ protected:
         // Process _Count number of messages
         for(int _I = 0; _I < _Count; _I++)
         {
-            message<_Type> * _Msg = NULL;
+            message<_Type> * _Msg = nullptr;
             _M_queuedMessages.try_pop(_Msg);
-            if (_M_processor == NULL)
+            if (_M_processor == nullptr)
             {
                 // If a processor function does not exist, the message processor is using single
                 // message processing rather than batched processing.  There should also be no
                 // propagator function defined in this case.
-                _CONCRT_ASSERT(_M_propagator == NULL);
+                _CONCRT_ASSERT(_M_propagator == nullptr);
                 _M_handler(_Msg);
             }
             else
@@ -2340,7 +2340,7 @@ protected:
         }
 
         // Call the handler which propagates the message(s)
-        if (_M_propagator != NULL)
+        if (_M_propagator != nullptr)
         {
             _M_propagator();
         }
@@ -2349,12 +2349,12 @@ protected:
     // Invoke the message block handler for the given message
     void _Invoke_handler(message<_Type> * _Msg)
     {
-        if (_M_processor == NULL)
+        if (_M_processor == nullptr)
         {
             // If a processor function does not exist, the message processor is using single
             // message processing rather than batched processing.  There should also be no
             // propagator function defined in this case.
-            _CONCRT_ASSERT(_M_propagator == NULL);
+            _CONCRT_ASSERT(_M_propagator == nullptr);
             _M_handler(_Msg);
         }
         else
@@ -2363,7 +2363,7 @@ protected:
             _M_processor(_Msg);
 
             // Call the handler which propagates the message(s)
-            if (_M_propagator != NULL)
+            if (_M_propagator != nullptr)
             {
                 _M_propagator();
             }
@@ -2814,7 +2814,7 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         // Create a Blocking Recipient
         _Blocking_recipient(ISource<_Type> * _PSource,
             unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE) :
-            _M_fState(_NotInitialized), _M_pConnectedTo(NULL), _M_pMessage(NULL), _M_timeout(_Timeout), _M_pFilter(NULL)
+            _M_fState(_NotInitialized), _M_pConnectedTo(nullptr), _M_pMessage(nullptr), _M_timeout(_Timeout), _M_pFilter(nullptr)
         {
             _Connect(_PSource);
         }
@@ -2823,9 +2823,9 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         _Blocking_recipient(ISource<_Type> * _PSource,
             typename ITarget<_Type>::filter_method const& _Filter,
             unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE) :
-            _M_fState(_NotInitialized), _M_pConnectedTo(NULL), _M_pMessage(NULL), _M_timeout(_Timeout), _M_pFilter(NULL)
+            _M_fState(_NotInitialized), _M_pConnectedTo(nullptr), _M_pMessage(nullptr), _M_timeout(_Timeout), _M_pFilter(nullptr)
         {
-            if (_Filter != NULL)
+            if (_Filter != nullptr)
             {
                 _M_pFilter = new typename ITarget<_Type>::filter_method(_Filter);
             }
@@ -2856,12 +2856,12 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         virtual message_status propagate(message<_Type> * _PMessage, ISource<_Type> * _PSource)
         {
             // Throw exception if the message being propagated to this block is NULL
-            if (_PMessage == NULL)
+            if (_PMessage == nullptr)
             {
                 throw std::invalid_argument("_PMessage");
             }
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -2873,16 +2873,16 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
             }
 
             // Reject if the message does not meet the filter requirements
-            if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+            if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
             {
                 return declined;
             }
 
             // Accept the message
-            _CONCRT_ASSERT(_PSource != NULL);
+            _CONCRT_ASSERT(_PSource != nullptr);
             _M_pMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-            if (_M_pMessage != NULL)
+            if (_M_pMessage != nullptr)
             {
                 // Set the initialized flag on this block
                 if (_InterlockedExchange(&_M_fState, _Initialized) == _Blocked)
@@ -2900,12 +2900,12 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         // already have propagated into the block.
         virtual message_status send(message<_Type> * _PMessage, ISource<_Type> * _PSource)
         {
-            if (_PMessage == NULL)
+            if (_PMessage == nullptr)
             {
                 throw std::invalid_argument("_PMessage");
             }
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -2929,7 +2929,7 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         // Remove a source messaging block for this BlockingRecipient
         virtual void unlink_source(ISource<_Type> * _PSource)
         {
-            if (_InterlockedCompareExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)NULL, _PSource) == _PSource)
+            if (_InterlockedCompareExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)nullptr, _PSource) == _PSource)
             {
                 _PSource->release_ref(this);
             }
@@ -2938,8 +2938,8 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         // Remove the source messaging block for this BlockingRecipient
         virtual void unlink_sources()
         {
-            ISource<_Type> * _PSource = reinterpret_cast<ISource<_Type> *>(_InterlockedExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)NULL));
-            if (_PSource != NULL)
+            ISource<_Type> * _PSource = reinterpret_cast<ISource<_Type> *>(_InterlockedExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)nullptr));
+            if (_PSource != nullptr)
             {
                 _PSource->unlink_target(this);
                 _PSource->release_ref(this);
@@ -2950,7 +2950,7 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         // Connect the blocking recipient to the source
         void _Connect(ISource<_Type> * _PSource)
         {
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -3019,7 +3019,7 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
         typename ITarget<_Type>::filter_method * _M_pFilter;
     };
 
-    if (_Filter_proc != NULL)
+    if (_Filter_proc != nullptr)
     {
         _Blocking_recipient _Recipient(_Src, *_Filter_proc, _Timeout);
         return _Recipient._Value();
@@ -3062,7 +3062,7 @@ _Type _Receive_impl(ISource<_Type> * _Src, unsigned int _Timeout, typename ITarg
 template <class _Type>
 _Type receive(_Inout_ ISource<_Type> * _Src, unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE)
 {
-    return _Receive_impl(_Src, _Timeout, NULL);
+    return _Receive_impl(_Src, _Timeout, nullptr);
 }
 
 /// <summary>
@@ -3133,7 +3133,7 @@ _Type receive(_Inout_ ISource<_Type> * _Src, typename ITarget<_Type>::filter_met
 template <class _Type>
 _Type receive(ISource<_Type> &_Src, unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE)
 {
-    return _Receive_impl(&_Src, _Timeout, NULL);
+    return _Receive_impl(&_Src, _Timeout, nullptr);
 }
 
 /// <summary>
@@ -3204,7 +3204,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
     public:
         // Create an Immediate Recipient
         _Immediate_recipient(ISource<_Type> * _PSource) :
-            _M_pFilter(NULL), _M_pConnectedTo(NULL), _M_pMessage(NULL), _M_isInitialized(0)
+            _M_pFilter(nullptr), _M_pConnectedTo(nullptr), _M_pMessage(nullptr), _M_isInitialized(0)
         {
             _Connect(_PSource);
         }
@@ -3212,9 +3212,9 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         // Create an Immediate Recipient
         _Immediate_recipient(ISource<_Type> * _PSource,
             typename ITarget<_Type>::filter_method const& _Filter) :
-            _M_pFilter(NULL), _M_pConnectedTo(NULL), _M_pMessage(NULL), _M_isInitialized(0)
+            _M_pFilter(nullptr), _M_pConnectedTo(nullptr), _M_pMessage(nullptr), _M_isInitialized(0)
         {
-            if (_Filter != NULL)
+            if (_Filter != nullptr)
             {
                 _M_pFilter = new typename ITarget<_Type>::filter_method(_Filter);
             }
@@ -3237,7 +3237,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
             // Unlinking from our source guarantees that there are no threads in propagate
             _Disconnect();
 
-            if (_M_pMessage != NULL)
+            if (_M_pMessage != nullptr)
             {
                 _value = _M_pMessage->payload;
                 return true;
@@ -3253,12 +3253,12 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
             message_status _Result = accepted;
 
             // Throw exception if the message being propagated to this block is NULL
-            if (_PMessage == NULL)
+            if (_PMessage == nullptr)
             {
                 throw std::invalid_argument("_PMessage");
             }
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -3270,18 +3270,18 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
             }
 
             // Reject if the message does not meet the filter requirements
-            if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+            if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
             {
                 return declined;
             }
 
             // Accept the message
-            _CONCRT_ASSERT(_PSource != NULL);
+            _CONCRT_ASSERT(_PSource != nullptr);
             _M_pMessage = _PSource->accept(_PMessage->msg_id(), this);
 
             // Set the initialized flag on this block
 
-            if (_M_pMessage != NULL)
+            if (_M_pMessage != nullptr)
             {
                 // Fence to ensure that the above update to _M_pMessage is visible
                 _InterlockedExchange(&_M_isInitialized, 1);
@@ -3300,12 +3300,12 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         // already have propagated into the block.
         virtual message_status send(message<_Type> * _PMessage, ISource<_Type> * _PSource)
         {
-            if (_PMessage == NULL)
+            if (_PMessage == nullptr)
             {
                 throw std::invalid_argument("_PMessage");
             }
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -3329,7 +3329,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         // Remove a source messaging block for this BlockingRecipient
         virtual void unlink_source(ISource<_Type> * _PSource)
         {
-            if (_InterlockedCompareExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)NULL, _PSource) == _PSource)
+            if (_InterlockedCompareExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)nullptr, _PSource) == _PSource)
             {
                 _PSource->release_ref(this);
             }
@@ -3338,8 +3338,8 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         // Remove the source messaging block for this BlockingRecipient
         virtual void unlink_sources()
         {
-            ISource<_Type> * _PSource = reinterpret_cast<ISource<_Type> *>(_InterlockedExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)NULL));
-            if (_PSource != NULL)
+            ISource<_Type> * _PSource = reinterpret_cast<ISource<_Type> *>(_InterlockedExchangePointer(reinterpret_cast<void *volatile *>(&_M_pConnectedTo), (void *)nullptr));
+            if (_PSource != nullptr)
             {
                 _PSource->unlink_target(this);
                 _PSource->release_ref(this);
@@ -3349,7 +3349,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         // Connect to a source block
         void _Connect(ISource<_Type> * _PSource)
         {
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 throw std::invalid_argument("_PSource");
             }
@@ -3381,7 +3381,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
         typename ITarget<_Type>::filter_method * _M_pFilter;
     };
 
-    if (_Filter_proc != NULL)
+    if (_Filter_proc != nullptr)
     {
         _Immediate_recipient _Recipient(_Src, *_Filter_proc);
         return _Recipient._Value(_value);
@@ -3420,7 +3420,7 @@ bool _Try_receive_impl(ISource<_Type> * _Src, _Type & _value, typename ITarget<_
 template <class _Type>
 bool try_receive(_Inout_ ISource<_Type> * _Src, _Type & _value)
 {
-    return _Try_receive_impl(_Src, _value, NULL);
+    return _Try_receive_impl(_Src, _value, nullptr);
 }
 
 /// <summary>
@@ -3483,7 +3483,7 @@ bool try_receive(_Inout_ ISource<_Type> * _Src, _Type & _value, typename ITarget
 template <class _Type>
 bool try_receive(ISource<_Type> & _Src, _Type & _value)
 {
-    return _Try_receive_impl(&_Src, _value, NULL);
+    return _Try_receive_impl(&_Src, _value, nullptr);
 }
 
 /// <summary>
@@ -3534,7 +3534,7 @@ namespace details
         typedef single_link_registry<ITarget<_Type>> _Target_registry;
 
         // Create an Originator
-        _AnonymousOriginator() : _M_pMessage(NULL),  _M_pTarget(NULL)
+        _AnonymousOriginator() : _M_pMessage(nullptr),  _M_pTarget(nullptr)
         {
         }
 
@@ -3562,12 +3562,12 @@ namespace details
         {
             if (_PTarget != _M_pTarget)
             {
-                return NULL;
+                return nullptr;
             }
 
-            if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+            if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
             {
-                return NULL;
+                return nullptr;
             }
 
             // The IDs match. Actually transfer ownership of the message and
@@ -3576,7 +3576,7 @@ namespace details
 
             // The ownership of this message has changed.  Set the internal pointer to NULL
             // so it won't be deleted in the destructor
-            _M_pMessage = NULL;
+            _M_pMessage = nullptr;
 
             return _Result;
         }
@@ -3619,14 +3619,14 @@ namespace details
         {
             _M_pTarget = _PTarget;
 
-            _CONCRT_ASSERT(_M_pTarget != NULL);
+            _CONCRT_ASSERT(_M_pTarget != nullptr);
             _CONCRT_ASSERT(_M_pTarget->supports_anonymous_source());
 
             // Create the message
             message_status _Status = declined;
             message<_Type> * _Msg = new message<_Type>(_Value);
 
-            _CONCRT_ASSERT(_M_pMessage == NULL);
+            _CONCRT_ASSERT(_M_pMessage == nullptr);
             _M_pMessage = _Msg;
 
             // Send the message
@@ -3644,14 +3644,14 @@ namespace details
         {
             _M_pTarget = _PTarget;
 
-            _CONCRT_ASSERT(_M_pTarget != NULL);
+            _CONCRT_ASSERT(_M_pTarget != nullptr);
             _CONCRT_ASSERT(_M_pTarget->supports_anonymous_source());
 
             // Create the message
             message_status _Status = declined;
             message<_Type> * _Msg = new message<_Type>(_Value);
 
-            _CONCRT_ASSERT(_M_pMessage == NULL);
+            _CONCRT_ASSERT(_M_pMessage == nullptr);
             _M_pMessage = _Msg;
 
             // Send the message
@@ -3692,7 +3692,7 @@ namespace details
 
         // Create an Originator
         _SyncOriginator() :
-          _M_pMessage(NULL),
+          _M_pMessage(nullptr),
           _M_fStatus(postponed),
           _M_referenceCount(0)
         {
@@ -3711,7 +3711,7 @@ namespace details
         // Removes a target messaging block for this Originator
         virtual void unlink_target(ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3736,7 +3736,7 @@ namespace details
             // propagation is in progress.
             _R_lock _Lock(_M_internalLock);
 
-            for (typename _Target_registry::iterator _Iter = _M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (typename _Target_registry::iterator _Iter = _M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Type> * _PTarget = *_Iter;
                 if (_M_connectedTargets.remove(_PTarget))
@@ -3756,19 +3756,19 @@ namespace details
         // propagated message
         virtual message<_Type> * accept(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
-                return NULL;
+                return nullptr;
             }
 
             if (!_M_connectedTargets.contains(_PTarget))
             {
-                return NULL;
+                return nullptr;
             }
 
-            if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+            if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
             {
-                return NULL;
+                return nullptr;
             }
 
             // The IDs match. Actually transfer ownership of the message and
@@ -3777,7 +3777,7 @@ namespace details
 
             // The ownership of this message has changed.  Set the internal pointer to NULL
             // so it won't be deleted in the destructor
-            _M_pMessage = NULL;
+            _M_pMessage = nullptr;
 
             // The message has been accepted/consumed, propagate indication that it has succeeded
             _Done(accepted);
@@ -3790,7 +3790,7 @@ namespace details
         // the data at a later time.
         virtual bool reserve(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3812,7 +3812,7 @@ namespace details
         // previously reserved message.
         virtual message<_Type> * consume(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3830,7 +3830,7 @@ namespace details
         // the data at a later time.
         virtual void release(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3840,7 +3840,7 @@ namespace details
                 throw bad_target();
             }
 
-            if ((_M_pMessage == NULL) || (_M_pMessage->msg_id() != _MsgId))
+            if ((_M_pMessage == nullptr) || (_M_pMessage->msg_id() != _MsgId))
             {
                 throw message_not_found();
             }
@@ -3868,7 +3868,7 @@ namespace details
         bool _internal_send(ITarget<_Type> * _PTarget, _Type const & _Value)
         {
             // _send should only be called once.
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3884,7 +3884,7 @@ namespace details
                 // link to the target, create a message and send it
                 link_target(_PTarget);
 
-                _CONCRT_ASSERT(_M_pMessage == NULL);
+                _CONCRT_ASSERT(_M_pMessage == nullptr);
                 _M_pMessage = _Msg;
 
                 // Send the message synchronously to the target
@@ -3910,7 +3910,7 @@ namespace details
         // Add a target messaging block for this Originator
         virtual void link_target(ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -3919,7 +3919,7 @@ namespace details
             this->_Invoke_link_source(_PTarget);
 
             // There should be no pending messages to propagate at this time.
-            _CONCRT_ASSERT(_M_pMessage == NULL);
+            _CONCRT_ASSERT(_M_pMessage == nullptr);
         }
 
         // Wait for the status to reach one of the terminal
@@ -3988,7 +3988,7 @@ namespace details
         // Removes a target messaging block for this AsyncOriginator
         virtual void unlink_target(ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -4024,7 +4024,7 @@ namespace details
                 _R_lock _Lock(_M_internalLock);
 
                 for (typename _Target_registry::iterator _Iter = _M_connectedTargets.begin();
-                    *_Iter != NULL;
+                    *_Iter != nullptr;
                     ++_Iter)
                 {
                     ITarget<_Type> * _PTarget = *_Iter;
@@ -4052,26 +4052,26 @@ namespace details
         // propagated message. This can only be called from propagate.
         virtual message<_Type> * accept(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
-                return NULL;
+                return nullptr;
             }
 
             if (!_M_connectedTargets.contains(_PTarget))
             {
-                return NULL;
+                return nullptr;
             }
 
-            if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+            if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
             {
-                return NULL;
+                return nullptr;
             }
 
             //
             // If the IDs match, actually transfer ownership of the message.
             //
             message<_Type> * _Result = _M_pMessage;
-            _M_pMessage = NULL;
+            _M_pMessage = nullptr;
 
             return _Result;
         }
@@ -4081,7 +4081,7 @@ namespace details
         // the data at a later time.
         virtual bool reserve(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -4091,7 +4091,7 @@ namespace details
                 return false;
             }
 
-            if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+            if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
             {
                 return false;
             }
@@ -4103,7 +4103,7 @@ namespace details
         // previously reserved message.
         virtual message<_Type> * consume(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -4113,16 +4113,16 @@ namespace details
                 throw bad_target();
             }
 
-            if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+            if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
             {
-                return NULL;
+                return nullptr;
             }
 
             // The ownership of this message has changed.  Set the internal pointer to NULL
             // so it won't be deleted in the destructor
 
             message<_Type> * _Result = _M_pMessage;
-            _M_pMessage = NULL;
+            _M_pMessage = nullptr;
 
             // We are done. Unlink from the target. DO NOT TOUCH "this" pointer after unlink
             unlink_target(_PTarget);
@@ -4135,7 +4135,7 @@ namespace details
         // the data at a later time.
         virtual void release(runtime_object_identity _MsgId, ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -4145,7 +4145,7 @@ namespace details
                 throw bad_target();
             }
 
-            if ((_M_pMessage == NULL) || (_M_pMessage->msg_id() != _MsgId))
+            if ((_M_pMessage == nullptr) || (_M_pMessage->msg_id() != _MsgId))
             {
                 throw message_not_found();
             }
@@ -4172,7 +4172,7 @@ namespace details
         // Create an AsyncOriginator (constructor is private to ensure that
         // it is allocated on the heap).
         _AsyncOriginator() :
-          _M_pMessage(NULL),
+          _M_pMessage(nullptr),
           _M_refcount(0)
         {
         }
@@ -4195,7 +4195,7 @@ namespace details
                 // link to the target, create a message and send it
                 link_target(_PTarget);
 
-                _CONCRT_ASSERT(_M_pMessage == NULL);
+                _CONCRT_ASSERT(_M_pMessage == nullptr);
                 _M_pMessage = _Msg;
 
                 _Status = _PTarget->propagate(_M_pMessage, this);
@@ -4217,7 +4217,7 @@ namespace details
         // Add a target messaging block for this AsyncOriginator
         virtual void link_target(ITarget<_Type> * _PTarget)
         {
-            if (_PTarget == NULL)
+            if (_PTarget == nullptr)
             {
                 throw std::invalid_argument("_PTarget");
             }
@@ -4228,7 +4228,7 @@ namespace details
             this->_Invoke_link_source(_PTarget);
 
             // There should be no pending messages to propagate at this time.
-            _CONCRT_ASSERT(_M_pMessage == NULL);
+            _CONCRT_ASSERT(_M_pMessage == nullptr);
 
         }
 
@@ -4272,7 +4272,7 @@ namespace details
         template <class _Type>
         static bool _send(ITarget<_Type> * _Trg, const _Type& _Data)
         {
-            if (_Trg != NULL && _Trg->supports_anonymous_source())
+            if (_Trg != nullptr && _Trg->supports_anonymous_source())
             {
                 // _send will block until the message is accepted/rejected.
                 // Note that this invokes the send method on the target which
@@ -4295,7 +4295,7 @@ namespace details
         {
             // If the block can participate in posting messages without requiring a call back, use that
             // method of initiating the message rather for efficiency purposes.
-            if (_Trg != NULL && _Trg->supports_anonymous_source())
+            if (_Trg != nullptr && _Trg->supports_anonymous_source())
             {
                 _AnonymousOriginator<_Type> _Asend_block;
                 return _Asend_block._internal_asend(_Trg, _Data);
@@ -4470,7 +4470,7 @@ public:
     ///     Constructs a <c>target_block</c> object.
     /// </summary>
     /**/
-    target_block() : _M_pFilter(NULL), _M_fDeclineMessages(false)
+    target_block() : _M_pFilter(nullptr), _M_fDeclineMessages(false)
     {
         _Trace_agents(AGENTS_EVENT_CREATE,
             ::Concurrency::details::_Trace_agents_get_id(this),
@@ -4514,12 +4514,12 @@ public:
         // internal structure that is used by <c>consume</c> and the LWT.  Doing so could
         // result in a deadlock.
 
-        if (_PMessage == NULL)
+        if (_PMessage == nullptr)
         {
             throw std::invalid_argument("_PMessage");
         }
 
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             throw std::invalid_argument("_PSource");
         }
@@ -4529,7 +4529,7 @@ public:
             return declined;
         }
 
-        if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+        if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
         {
             return declined;
         }
@@ -4561,12 +4561,12 @@ public:
     /**/
     virtual message_status send(_Inout_ message<_Source_type> * _PMessage, _Inout_ ISource<_Source_type> * _PSource)
     {
-        if (_PMessage == NULL)
+        if (_PMessage == nullptr)
         {
             throw std::invalid_argument("_PMessage");
         }
 
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             throw std::invalid_argument("_PSource");
         }
@@ -4576,7 +4576,7 @@ public:
             return declined;
         }
 
-        if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+        if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
         {
             return declined;
         }
@@ -4672,7 +4672,7 @@ protected:
     /**/
     virtual void unlink_sources()
     {
-        for (source_iterator _Iter = _M_connectedSources.begin(); *_Iter != NULL; ++_Iter)
+        for (source_iterator _Iter = _M_connectedSources.begin(); *_Iter != nullptr; ++_Iter)
         {
              ISource<_Source_type> * _PSource = *_Iter;
              _PSource->unlink_target(this);
@@ -4704,7 +4704,7 @@ protected:
     /**/
     void register_filter(filter_method const& _Filter)
     {
-        if (_Filter != NULL)
+        if (_Filter != nullptr)
         {
             _M_pFilter = new filter_method(_Filter);
         }
@@ -4735,7 +4735,7 @@ protected:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    void initialize_target(_Inout_opt_ Scheduler * _PScheduler = NULL, _Inout_opt_ ScheduleGroup * _PScheduleGroup = NULL)
+    void initialize_target(_Inout_opt_ Scheduler * _PScheduler = nullptr, _Inout_opt_ ScheduleGroup * _PScheduleGroup = nullptr)
     {
         // Register a callback with the processor
         _M_messageProcessor.initialize(_PScheduler, _PScheduleGroup,
@@ -4897,7 +4897,7 @@ public:
     /// </summary>
     /**/
     source_block() :
-      _M_pReservedFor(NULL),
+      _M_pReservedFor(nullptr),
       _M_reservedId(-1),
       _M_referenceCount(0)
     {
@@ -4933,7 +4933,7 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
@@ -4958,7 +4958,7 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
@@ -4979,10 +4979,10 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        for (target_iterator _Iter = _M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = _M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             ITarget<_Target_type> * _PTarget = *_Iter;
-            _CONCRT_ASSERT(_PTarget != NULL);
+            _CONCRT_ASSERT(_PTarget != nullptr);
 
             unlink_target(_PTarget);
         }
@@ -5015,7 +5015,7 @@ public:
     /**/
     virtual message<_Target_type> * accept(runtime_object_identity _MsgId, _Inout_ ITarget<_Target_type> * _PTarget)
     {
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
@@ -5053,12 +5053,12 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
 
-        if ( _M_pReservedFor != NULL)
+        if ( _M_pReservedFor != nullptr)
         {
             // Someone else is holding the reservation
             return false;
@@ -5109,23 +5109,23 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
 
-        if (_M_pReservedFor == NULL || _PTarget != _M_pReservedFor)
+        if (_M_pReservedFor == nullptr || _PTarget != _M_pReservedFor)
         {
             throw bad_target();
         }
 
         message<_Target_type> * _Msg = consume_message(_MsgId);
 
-        if (_Msg != NULL)
+        if (_Msg != nullptr)
         {
             // Clear the reservation
             // _M_pReservedId is intentionally not reset so that it can assist in debugging
-            _M_pReservedFor = NULL;
+            _M_pReservedFor = nullptr;
 
             // Reservation is assumed to block propagation. Notify that propagation can now be resumed
             resume_propagation();
@@ -5158,7 +5158,7 @@ public:
     {
         _R_lock _Lock(_M_internalLock);
 
-        if (_PTarget == NULL)
+        if (_PTarget == nullptr)
         {
             throw std::invalid_argument("_PTarget");
         }
@@ -5172,7 +5172,7 @@ public:
 
         // Clear the reservation
         // _M_pReservedId is intentionally not reset so that it can assist in debugging
-        _M_pReservedFor = NULL;
+        _M_pReservedFor = nullptr;
 
         // Reservation is assumed to block propagation. Notify that propagation can now be resumed
         resume_propagation();
@@ -5207,7 +5207,7 @@ public:
     /**/
     virtual void release_ref(_Inout_ ITarget<_Target_type> * _PTarget)
     {
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             _R_lock _Lock(_M_internalLock);
 
@@ -5241,9 +5241,9 @@ protected:
     virtual void link_target_notification(_Inout_ ITarget<_Target_type> *)
     {
         // By default, we restart propagation if there is no pending reservation
-        if (_M_pReservedFor == NULL)
+        if (_M_pReservedFor == nullptr)
         {
-            propagate_to_any_targets(NULL);
+            propagate_to_any_targets(nullptr);
         }
     }
 
@@ -5380,7 +5380,7 @@ protected:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    void initialize_source(_Inout_opt_ Scheduler * _PScheduler = NULL, _Inout_opt_ ScheduleGroup * _PScheduleGroup = NULL)
+    void initialize_source(_Inout_opt_ Scheduler * _PScheduler = nullptr, _Inout_opt_ ScheduleGroup * _PScheduleGroup = nullptr)
     {
         // Register a callback
         _M_messageProcessor.initialize(_PScheduler, _PScheduleGroup,
@@ -5404,7 +5404,7 @@ protected:
                 // Handle message through new process_input_message to use CRT110 batch processing
                 this->process_input_messages(_PMessage);
             },
-            [this](void)
+            [this]()
             {
                 this->_Propagate_message();
             });
@@ -5603,7 +5603,7 @@ public:
     ///     Constructs a <c>propagator_block</c> object.
     /// </summary>
     /**/
-    propagator_block() : _M_pFilter(NULL), _M_fDeclineMessages(false)
+    propagator_block() : _M_pFilter(nullptr), _M_fDeclineMessages(false)
     {
     }
 
@@ -5644,12 +5644,12 @@ public:
         // internal structure that is used by <c>consume</c> and the LWT.  Doing so could
         // result in a deadlock.
 
-        if (_PMessage == NULL)
+        if (_PMessage == nullptr)
         {
             throw std::invalid_argument("_PMessage");
         }
 
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             throw std::invalid_argument("_PSource");
         }
@@ -5659,7 +5659,7 @@ public:
             return declined;
         }
 
-        if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+        if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
         {
             return declined;
         }
@@ -5688,12 +5688,12 @@ public:
     /**/
     virtual message_status send(_Inout_ message<_Source_type> * _PMessage, _Inout_ ISource<_Source_type> * _PSource)
     {
-        if (_PMessage == NULL)
+        if (_PMessage == nullptr)
         {
             throw std::invalid_argument("_PMessage");
         }
 
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             throw std::invalid_argument("_PSource");
         }
@@ -5703,7 +5703,7 @@ public:
             return declined;
         }
 
-        if (_M_pFilter != NULL && !(*_M_pFilter)(_PMessage->payload))
+        if (_M_pFilter != nullptr && !(*_M_pFilter)(_PMessage->payload))
         {
             return declined;
         }
@@ -5791,7 +5791,7 @@ protected:
     /**/
     virtual void unlink_sources()
     {
-        for (source_iterator _Iter = _M_connectedSources.begin(); *_Iter != NULL; ++_Iter)
+        for (source_iterator _Iter = _M_connectedSources.begin(); *_Iter != nullptr; ++_Iter)
         {
              ISource<_Source_type> * _PSource = *_Iter;
              _PSource->unlink_target(this);
@@ -5824,7 +5824,7 @@ protected:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    void initialize_source_and_target(_Inout_opt_ Scheduler * _PScheduler = NULL, _Inout_opt_ ScheduleGroup * _PScheduleGroup = NULL)
+    void initialize_source_and_target(_Inout_opt_ Scheduler * _PScheduler = nullptr, _Inout_opt_ ScheduleGroup * _PScheduleGroup = nullptr)
     {
         this->initialize_source(_PScheduler, _PScheduleGroup);
 
@@ -5841,7 +5841,7 @@ protected:
     /**/
     void register_filter(filter_method const& _Filter)
     {
-        if (_Filter != NULL)
+        if (_Filter != nullptr)
         {
             _M_pFilter = new filter_method(_Filter);
         }
@@ -6041,7 +6041,7 @@ public:
     unbounded_buffer(ScheduleGroup& _PScheduleGroup) :
       _M_fForceRepropagation(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
         this->enable_batched_processing();
     }
 
@@ -6068,7 +6068,7 @@ public:
     unbounded_buffer(ScheduleGroup& _PScheduleGroup, filter_method const& _Filter) :
       _M_fForceRepropagation(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
         this->enable_batched_processing();
         this->register_filter(_Filter);
     }
@@ -6147,7 +6147,7 @@ protected:
         // Accept the message being propagated
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             this->async_send(_PMessage);
         }
@@ -6178,7 +6178,7 @@ protected:
     {
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             this->sync_send(_PMessage);
         }
@@ -6220,7 +6220,7 @@ protected:
         // Peek at the head message in the message buffer.  If the IDs match
         // dequeue and transfer ownership
         //
-        message<_Type> * _Msg = NULL;
+        message<_Type> * _Msg = nullptr;
 
         if (_M_messageBuffer._Is_head(_MsgId))
         {
@@ -6302,7 +6302,7 @@ protected:
             _M_fForceRepropagation = true;
 
             // async send a NULL value to initiate the repropagation
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
     }
 
@@ -6317,14 +6317,14 @@ protected:
     {
         // If the message queue is blocked due to reservation
         // there is no need to do any message propagation
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
 
         message<_Type> * _Msg = _M_messageBuffer._Peek();
 
-        if (_Msg != NULL)
+        if (_Msg != nullptr)
         {
             // Propagate the head message to the new target
             message_status _Status = _PTarget->propagate(_Msg, this);
@@ -6346,7 +6346,7 @@ protected:
     /// </summary>
     virtual void process_input_messages(_Inout_ message<_Type> * _PMessage)
     {
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             _M_processedMessages._Enqueue(_PMessage);
         }
@@ -6378,7 +6378,7 @@ protected:
         for(;;)
         {
             message<_Type> * _PInputMessage = _M_processedMessages._Dequeue();
-            if(_PInputMessage == NULL)
+            if(_PInputMessage == nullptr)
             {
                 break;
             }
@@ -6411,17 +6411,17 @@ private:
         message<_Target_type> * _Msg = _MessageBuffer._Peek();
 
         // If someone has reserved the _Head message, don't propagate anymore
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
 
-        while (_Msg != NULL)
+        while (_Msg != nullptr)
         {
             message_status _Status = declined;
 
             // Always start from the first target that linked
-            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Target_type> * _PTarget = *_Iter;
                 _Status = _PTarget->propagate(_Msg, this);
@@ -6435,7 +6435,7 @@ private:
 
                 // If the target just propagated to reserved this message, stop
                 // propagating it to others
-                if (this->_M_pReservedFor != NULL)
+                if (this->_M_pReservedFor != nullptr)
                 {
                     break;
                 }
@@ -6470,7 +6470,7 @@ private:
         for (;;)
         {
             message<_Type> * _Msg = _M_messageBuffer._Dequeue();
-            if (_Msg == NULL)
+            if (_Msg == nullptr)
             {
                 break;
             }
@@ -6548,7 +6548,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer()
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target();
     }
@@ -6570,7 +6570,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer(filter_method const& _Filter)
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target();
         this->register_filter(_Filter);
@@ -6594,7 +6594,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer(Scheduler& _PScheduler)
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target(&_PScheduler);
     }
@@ -6619,7 +6619,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer(Scheduler& _PScheduler, filter_method const& _Filter)
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target(&_PScheduler);
         this->register_filter(_Filter);
@@ -6643,9 +6643,9 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer(ScheduleGroup& _PScheduleGroup)
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -6669,9 +6669,9 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     overwrite_buffer(ScheduleGroup& _PScheduleGroup, filter_method const& _Filter)
-        : _M_pMessage(NULL), _M_pReservedMessage(NULL), _M_fIsInitialized(false)
+        : _M_pMessage(nullptr), _M_pReservedMessage(nullptr), _M_fIsInitialized(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
         this->register_filter(_Filter);
     }
 #endif  /* _CRT_USE_WINAPI_FAMILY_DESKTOP_APP */
@@ -6752,7 +6752,7 @@ protected:
         // If message was accepted, set the member variables for
         // this block and start the asynchronous propagation task
         //
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             // Add a reference for the async_send holding the message
             _PMessage->add_ref();
@@ -6790,7 +6790,7 @@ protected:
         // If message was accepted, set the member variables for
         // this block and start the asynchronous propagation task
         //
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             // Add a reference for the sync_send holding the message
             _PMessage->add_ref();
@@ -6839,9 +6839,9 @@ protected:
         //
         // If the internal message has not yet been initialized yet, return NULL
         //
-        if (_M_pMessage == NULL)
+        if (_M_pMessage == nullptr)
         {
-            return NULL;
+            return nullptr;
         }
 
         //
@@ -6851,7 +6851,7 @@ protected:
         // Because we are returning a copy, the accept routine for an overwritebuffer
         // does not need to grab the internalLock
         //
-        message<_Type> * _Msg = NULL;
+        message<_Type> * _Msg = nullptr;
         if (_M_pMessage->msg_id() == _MsgId)
         {
             _Msg = new message<_Type>(_M_pMessage->payload);
@@ -6877,14 +6877,14 @@ protected:
     virtual bool reserve_message(runtime_object_identity _MsgId)
     {
         // Ensure that this message currently exists in the overwrite buffer
-        if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+        if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
         {
             return false;
         }
 
         // Can only reserve one message, any other blocks trying to reserve
         // will return false
-        _CONCRT_ASSERT(_M_pReservedMessage == NULL);
+        _CONCRT_ASSERT(_M_pReservedMessage == nullptr);
 
         // Save this message away
         _M_pReservedMessage = _M_pMessage;
@@ -6914,12 +6914,12 @@ protected:
         // Leave and return NULL if this msgId doesn't match the reserved message
         // Otherwise this is a pull of a later overwritten message, and messages
         // could them appear out of order.
-        if (_M_pReservedMessage != NULL && _M_pReservedMessage->msg_id() != _MsgId)
+        if (_M_pReservedMessage != nullptr && _M_pReservedMessage->msg_id() != _MsgId)
         {
-            return NULL;
+            return nullptr;
         }
         // This redundant assert is specifically to make the /analyze switch happy, which cannot recognize the same assertion above in if stmnt.
-        _CONCRT_ASSERT( _M_pReservedMessage != NULL );
+        _CONCRT_ASSERT( _M_pReservedMessage != nullptr );
 
         _Type _Payload = _M_pReservedMessage->payload;
 
@@ -6930,7 +6930,7 @@ protected:
         {
             delete _M_pReservedMessage;
         }
-        _M_pReservedMessage = NULL;
+        _M_pReservedMessage = nullptr;
 
         return _Result;
     }
@@ -6945,7 +6945,7 @@ protected:
     virtual void release_message(runtime_object_identity _MsgId)
     {
         _CONCRT_ASSERT(_M_fIsInitialized);
-        _CONCRT_ASSERT(_M_pReservedMessage != NULL);
+        _CONCRT_ASSERT(_M_pReservedMessage != nullptr);
 
         if (_MsgId != _M_pReservedMessage->msg_id())
         {
@@ -6956,7 +6956,7 @@ protected:
         {
             delete _M_pReservedMessage;
         }
-        _M_pReservedMessage = NULL;
+        _M_pReservedMessage = nullptr;
     }
 
     /// <summary>
@@ -6979,7 +6979,7 @@ protected:
     virtual void link_target_notification(_Inout_ ITarget<_Type> * _PTarget)
     {
         // If there is a message available already, propagate it
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             _PTarget->propagate(_M_pMessage, this);
         }
@@ -7004,7 +7004,7 @@ protected:
         // Add a reference for the overwrite_buffer holding the message
         _PMessage->add_ref();
 
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             if (_M_pMessage->remove_ref() == 0)
             {
@@ -7017,7 +7017,7 @@ protected:
         // Now that message has been received, set this block as initialized
         _M_fIsInitialized = true;
 
-        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             // Overwrite buffers can propagate its message out
             // to any number of Targets
@@ -7052,13 +7052,13 @@ private:
         // is deleted.  The reference count of this message has not yet reached
         // zero because it hasn't been overwritten yet.  It is safe because of
         // we have finished all propagation.
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             // A block can only have a reserved message after receiving a message
             // at some point, so it must be within the above if-clause.
             // Now delete the reserved message if it is non-NULL and different from
             // the saved internal message
-            if (_M_pReservedMessage != NULL && _M_pReservedMessage != _M_pMessage)
+            if (_M_pReservedMessage != nullptr && _M_pReservedMessage != _M_pMessage)
             {
                 delete _M_pReservedMessage;
             }
@@ -7263,7 +7263,7 @@ public:
         _Call_method const& _Func) :
         _M_pFunc(_Func)
     {
-        this->initialize_target(NULL, &_PScheduleGroup);
+        this->initialize_target(nullptr, &_PScheduleGroup);
         this->enable_batched_processing();
     }
 
@@ -7297,7 +7297,7 @@ public:
         filter_method const& _Filter) :
         _M_pFunc(_Func)
     {
-        this->initialize_target(NULL, &_PScheduleGroup);
+        this->initialize_target(nullptr, &_PScheduleGroup);
         this->enable_batched_processing();
         this->register_filter(_Filter);
     }
@@ -7349,7 +7349,7 @@ protected:
         //
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             this->async_send(_PMessage);
         }
@@ -7388,7 +7388,7 @@ protected:
         //
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             this->sync_send(_PMessage);
         }
@@ -7433,7 +7433,7 @@ protected:
     virtual void process_input_messages(_Inout_ message<_Type> * _PMessage)
     {
         // Invoke the function provided by the user
-        _CONCRT_ASSERT(_PMessage != NULL);
+        _CONCRT_ASSERT(_PMessage != nullptr);
         _M_pFunc(_PMessage->payload);
         delete _PMessage;
     }
@@ -7510,12 +7510,12 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     transformer(_Transform_method const& _Func,
-        _Inout_opt_ ITarget<_Output> * _PTarget = NULL) :
+        _Inout_opt_ ITarget<_Output> * _PTarget = nullptr) :
         _M_pFunc(_Func)
     {
         this->initialize_source_and_target();
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7553,7 +7553,7 @@ public:
         this->initialize_source_and_target();
         this->register_filter(_Filter);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7586,12 +7586,12 @@ public:
     /**/
     transformer(Scheduler& _PScheduler,
         _Transform_method const& _Func,
-        _Inout_opt_ ITarget<_Output> * _PTarget = NULL) :
+        _Inout_opt_ ITarget<_Output> * _PTarget = nullptr) :
         _M_pFunc(_Func)
     {
         this->initialize_source_and_target(&_PScheduler);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7633,7 +7633,7 @@ public:
         this->initialize_source_and_target(&_PScheduler);
         this->register_filter(_Filter);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7666,12 +7666,12 @@ public:
     /**/
     transformer(ScheduleGroup& _PScheduleGroup,
         _Transform_method const& _Func,
-        _Inout_opt_ ITarget<_Output> * _PTarget = NULL) :
+        _Inout_opt_ ITarget<_Output> * _PTarget = nullptr) :
         _M_pFunc(_Func)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7711,10 +7711,10 @@ public:
         filter_method const& _Filter) :
         _M_pFunc(_Func)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
         this->register_filter(_Filter);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -7769,11 +7769,11 @@ protected:
         //
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             // Enqueue the input message
             _M_inputMessages.push(_PMessage);
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
         else
         {
@@ -7802,11 +7802,11 @@ protected:
     {
         _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-        if (_PMessage != NULL)
+        if (_PMessage != nullptr)
         {
             // Enqueue the input message
             _M_inputMessages.push(_PMessage);
-            this->sync_send(NULL);
+            this->sync_send(nullptr);
         }
         else
         {
@@ -7846,7 +7846,7 @@ protected:
         // Peek at the head message in the message buffer.  If the IDs match
         // dequeue and transfer ownership
         //
-        message<_Output> * _Msg = NULL;
+        message<_Output> * _Msg = nullptr;
 
         if (_M_messageBuffer._Is_head(_MsgId))
         {
@@ -7922,7 +7922,7 @@ protected:
         if (_M_messageBuffer._Count() > 0)
         {
             // async send a NULL value to initiate the repropagation
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
     }
 
@@ -7937,7 +7937,7 @@ protected:
     {
         // If the message queue is blocked due to reservation
         // there is no need to do any message propagation
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
@@ -7951,13 +7951,13 @@ protected:
     /**/
     virtual void propagate_to_any_targets(_Inout_opt_ message<_Output> *)
     {
-        message<_Output> * _Msg = NULL;
+        message<_Output> * _Msg = nullptr;
 
         // Process input message.
-        message<_Input> * _PInputMessage = NULL;
+        message<_Input> * _PInputMessage = nullptr;
         _M_inputMessages.try_pop(_PInputMessage);
 
-        if (_PInputMessage != NULL)
+        if (_PInputMessage != nullptr)
         {
             // Invoke the TransformMethod on the data
             // Let exceptions flow
@@ -7993,17 +7993,17 @@ private:
         message<_Target_type> * _Msg = _MessageBuffer._Peek();
 
         // If someone has reserved the _Head message, don't propagate anymore
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
 
-        while (_Msg != NULL)
+        while (_Msg != nullptr)
         {
             message_status _Status = declined;
 
             // Always start from the first target that linked
-            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Target_type> * _PTarget = *_Iter;
                 _Status = _PTarget->propagate(_Msg, this);
@@ -8017,7 +8017,7 @@ private:
 
                 // If the target just propagated to reserved this message, stop
                 // propagating it to others
-                if (this->_M_pReservedFor != NULL)
+                if (this->_M_pReservedFor != nullptr)
                 {
                     break;
                 }
@@ -8046,7 +8046,7 @@ private:
         // Delete input messages
         // Because the transformer uses its own input queue, it's possible there are messages
         // in this queue and no LWT will be executed to handle them.
-        message<_Input> * _PInputQueueMessage = NULL;
+        message<_Input> * _PInputQueueMessage = nullptr;
 
         while (_M_inputMessages.try_pop(_PInputQueueMessage))
         {
@@ -8058,7 +8058,7 @@ private:
         for (;;)
         {
             message<_Output> * _Msg = _M_messageBuffer._Dequeue();
-            if (_Msg == NULL)
+            if (_Msg == nullptr)
             {
                 break;
             }
@@ -8167,7 +8167,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    timer(unsigned int _Ms, _Type const& _Value, ITarget<_Type> *_PTarget = NULL, bool _Repeating = false) :
+    timer(unsigned int _Ms, _Type const& _Value, ITarget<_Type> *_PTarget = nullptr, bool _Repeating = false) :
         _Timer(_Ms, _Repeating)
     {
         _Initialize(_Value, _PTarget, _Repeating);
@@ -8200,7 +8200,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    timer(Scheduler& _Scheduler, unsigned int _Ms, _Type const& _Value, _Inout_opt_ ITarget<_Type> *_PTarget = NULL, bool _Repeating = false) :
+    timer(Scheduler& _Scheduler, unsigned int _Ms, _Type const& _Value, _Inout_opt_ ITarget<_Type> *_PTarget = nullptr, bool _Repeating = false) :
         _Timer(_Ms, _Repeating)
     {
         _Initialize(_Value, _PTarget, _Repeating, &_Scheduler);
@@ -8233,10 +8233,10 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    timer(ScheduleGroup& _ScheduleGroup, unsigned int _Ms, _Type const& _Value, _Inout_opt_ ITarget<_Type> *_PTarget = NULL, bool _Repeating = false) :
+    timer(ScheduleGroup& _ScheduleGroup, unsigned int _Ms, _Type const& _Value, _Inout_opt_ ITarget<_Type> *_PTarget = nullptr, bool _Repeating = false) :
         _Timer(_Ms, _Repeating)
     {
-        _Initialize(_Value, _PTarget, _Repeating, NULL, &_ScheduleGroup);
+        _Initialize(_Value, _PTarget, _Repeating, nullptr, &_ScheduleGroup);
     }
 #endif  /* _CRT_USE_WINAPI_FAMILY_DESKTOP_APP */
 
@@ -8336,13 +8336,13 @@ protected:
     /**/
     virtual message<_Type> * accept_message(runtime_object_identity _MsgId)
     {
-        if (_M_pMessage == NULL || _MsgId != _M_pMessage->msg_id())
+        if (_M_pMessage == nullptr || _MsgId != _M_pMessage->msg_id())
         {
-            return NULL;
+            return nullptr;
         }
 
         message<_Type> *_PMessage = _M_pMessage;
-        _M_pMessage = NULL;
+        _M_pMessage = nullptr;
 
         return _PMessage;
     }
@@ -8367,7 +8367,7 @@ protected:
         // Semantically, every timer tick is the same value -- it doesn't matter the message ID.  Because we can only
         // have one target as well, we do not need to track anything here.
         //
-        if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+        if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
         {
             return false;
         }
@@ -8403,13 +8403,13 @@ protected:
     /**/
     virtual void release_message(runtime_object_identity _MsgId)
     {
-        if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+        if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
         {
             throw message_not_found();
         }
 
         delete _M_pMessage;
-        _M_pMessage = NULL;
+        _M_pMessage = nullptr;
     }
 
     /// <summary>
@@ -8433,7 +8433,7 @@ protected:
     {
         // If there is a timer message sitting around, it must be propagated to the target now.
 
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             _PTarget->propagate(_M_pMessage, this);
         }
@@ -8445,10 +8445,10 @@ protected:
     /**/
     virtual void propagate_to_any_targets(_Inout_opt_ message<_Type> *)
     {
-        if (_M_pMessage == NULL)
+        if (_M_pMessage == nullptr)
         {
             _M_pMessage = _NewMessage();
-            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Type> * _PTarget = *_Iter;
                 _PTarget->propagate(_M_pMessage, this);
@@ -8491,7 +8491,7 @@ private:
     /**/
     virtual void _Fire()
     {
-        this->async_send(NULL);
+        this->async_send(nullptr);
     }
 
     /// <summary>
@@ -8507,9 +8507,9 @@ private:
     ///     If true, indicates that the timer will fire periodically every _Ms milliseconds.
     /// </param>
     /**/
-    void _Initialize(const _Type& _Value, _Inout_ ITarget<_Type> *_PTarget, bool _Repeating, _Inout_opt_ Scheduler * _PScheduler = NULL, _Inout_opt_ ScheduleGroup * _PScheduleGroup = NULL)
+    void _Initialize(const _Type& _Value, _Inout_ ITarget<_Type> *_PTarget, bool _Repeating, _Inout_opt_ Scheduler * _PScheduler = nullptr, _Inout_opt_ ScheduleGroup * _PScheduleGroup = nullptr)
     {
-        _M_pMessage = NULL;
+        _M_pMessage = nullptr;
         _M_value = _Value;
         _M_fRepeating = _Repeating;
         _M_state = Initialized;
@@ -8520,7 +8520,7 @@ private:
         // the timer threads fired from Windows (what _Fire executes within) will wind up with a default scheduler
         // attached -- probably not the semantic we want.
         //
-        if (_PScheduleGroup == NULL && _PScheduler == NULL)
+        if (_PScheduleGroup == nullptr && _PScheduler == nullptr)
         {
             ::Concurrency::details::_Scheduler _sched = ::Concurrency::details::_CurrentScheduler::_Get();
             _PScheduler = _sched._GetScheduler();
@@ -8531,9 +8531,9 @@ private:
         _M_pScheduler = _PScheduler;
         this->initialize_source(_PScheduler, _PScheduleGroup);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
-            link_target(_PTarget);
+            this->link_target(_PTarget);
         }
     }
 
@@ -8550,7 +8550,7 @@ private:
         // before reaching this point
 
         // Delete the message remaining in the output queue
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             delete _M_pMessage;
         }
@@ -8609,7 +8609,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment() :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target();
     }
@@ -8631,7 +8631,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment(filter_method const& _Filter) :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target();
         this->register_filter(_Filter);
@@ -8655,7 +8655,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment(Scheduler& _PScheduler) :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target(&_PScheduler);
     }
@@ -8680,7 +8680,7 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment(Scheduler& _PScheduler, filter_method const& _Filter) :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
         this->initialize_source_and_target(&_PScheduler);
         this->register_filter(_Filter);
@@ -8704,9 +8704,9 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment(ScheduleGroup& _PScheduleGroup) :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -8730,9 +8730,9 @@ public:
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
     single_assignment(ScheduleGroup& _PScheduleGroup, filter_method const& _Filter) :
-        _M_pMessage(NULL), _M_fIsInitialized(false)
+        _M_pMessage(nullptr), _M_fIsInitialized(false)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
         this->register_filter(_Filter);
     }
 #endif  /* _CRT_USE_WINAPI_FAMILY_DESKTOP_APP */
@@ -8759,7 +8759,7 @@ public:
     /**/
     bool has_value() const
     {
-        return (_M_pMessage != NULL);
+        return (_M_pMessage != nullptr);
     }
 
 
@@ -8775,11 +8775,11 @@ public:
     /**/
     _Type const & value()
     {
-        if (_M_pMessage == NULL)
+        if (_M_pMessage == nullptr)
         {
             ::Concurrency::receive<_Type>(this);
         }
-        _CONCRT_ASSERT(_M_pMessage != NULL);
+        _CONCRT_ASSERT(_M_pMessage != nullptr);
 
         return _M_pMessage->payload;
     }
@@ -8828,7 +8828,7 @@ protected:
                 _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
                 // Set initialized flag only if we have a message
-                if (_PMessage != NULL)
+                if (_PMessage != nullptr)
                 {
                     _M_fIsInitialized = true;
                 }
@@ -8888,7 +8888,7 @@ protected:
                 _PMessage = _PSource->accept(_PMessage->msg_id(), this);
 
                 // Set initialized flag only if we have a message
-                if (_PMessage != NULL)
+                if (_PMessage != nullptr)
                 {
                     _M_fIsInitialized = true;
                 }
@@ -8931,9 +8931,9 @@ protected:
     {
         // This check is to prevent spoofing and verify that the propagated message is
         // the one that is accepted at the end.
-        if (_M_pMessage == NULL || _MsgId != _M_pMessage->msg_id())
+        if (_M_pMessage == nullptr || _MsgId != _M_pMessage->msg_id())
         {
-            return NULL;
+            return nullptr;
         }
 
         //
@@ -8962,7 +8962,7 @@ protected:
     /**/
     virtual bool reserve_message(runtime_object_identity _MsgId)
     {
-        if (_M_pMessage == NULL)
+        if (_M_pMessage == nullptr)
         {
             return false;
         }
@@ -9007,7 +9007,7 @@ protected:
     {
         _CONCRT_ASSERT(_M_fIsInitialized);
 
-        if (_M_pMessage == NULL || _M_pMessage->msg_id() != _MsgId)
+        if (_M_pMessage == nullptr || _M_pMessage->msg_id() != _MsgId)
         {
             throw message_not_found();
         }
@@ -9034,7 +9034,7 @@ protected:
     {
         // If there is a message available already, propagate it.
 
-        if (_M_pMessage != NULL)
+        if (_M_pMessage != nullptr)
         {
             _PTarget->propagate(_M_pMessage, this);
         }
@@ -9054,10 +9054,10 @@ protected:
 
         // Move the message to the internal storage
 
-        _CONCRT_ASSERT(_M_pMessage == NULL);
+        _CONCRT_ASSERT(_M_pMessage == nullptr);
         _M_pMessage = _PMessage;
 
-        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             // Single assignment can propagate its message out
             // to any number of Targets
@@ -9161,7 +9161,7 @@ public:
     using typename ITarget<typename propagator_block<_TargetLinkRegistry, _SourceLinkRegistry>::_Source_type>::filter_method;
     using typename propagator_block<_TargetLinkRegistry, _SourceLinkRegistry>::source_iterator;
 
-    typedef typename std::vector<_Type> _OutputType;
+    typedef std::vector<_Type> _OutputType;
 
     /// <summary>
     ///     Constructs a <c>join</c> messaging block.
@@ -9294,7 +9294,7 @@ public:
         : _M_messageArray(_NumInputs),
           _M_savedMessageIdArray(_NumInputs)
     {
-        _Initialize(_NumInputs, NULL, &_PScheduleGroup);
+        _Initialize(_NumInputs, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -9324,7 +9324,7 @@ public:
         : _M_messageArray(_NumInputs),
           _M_savedMessageIdArray(_NumInputs)
     {
-        _Initialize(_NumInputs, NULL, &_PScheduleGroup);
+        _Initialize(_NumInputs, nullptr, &_PScheduleGroup);
         this->register_filter(_Filter);
     }
 #endif  /* _CRT_USE_WINAPI_FAMILY_DESKTOP_APP */
@@ -9377,7 +9377,7 @@ protected:
         //
         size_t _Slot = 0;
         bool _Found = false;
-        for (source_iterator _Iter = this->_M_connectedSources.begin(); *_Iter != NULL; ++_Iter)
+        for (source_iterator _Iter = this->_M_connectedSources.begin(); *_Iter != nullptr; ++_Iter)
         {
             if (*_Iter == _PSource)
             {
@@ -9406,7 +9406,7 @@ protected:
             //
             {
                 _NR_lock lockHolder(_M_propagationLock);
-                if (_M_messageArray._M_messages[_Slot] != NULL)
+                if (_M_messageArray._M_messages[_Slot] != nullptr)
                 {
                     _M_savedMessageIdArray._M_savedIds[_Slot] = _PMessage->msg_id();
                     _Ret_val = postponed;
@@ -9417,13 +9417,13 @@ protected:
             {
                 _M_messageArray._M_messages[_Slot] = _PSource->accept(_PMessage->msg_id(), this);
 
-                if (_M_messageArray._M_messages[_Slot] != NULL)
+                if (_M_messageArray._M_messages[_Slot] != nullptr)
                 {
                     if (_InterlockedDecrementSizeT(&_M_messagesRemaining) == 0)
                     {
                         // If messages have arrived on all links, start a propagation
                         // of the current message
-                        this->async_send(NULL);
+                        this->async_send(nullptr);
                     }
                 }
                 else
@@ -9444,7 +9444,7 @@ protected:
                 // the saved ID from -1 to a valid value.
                 if (_InterlockedDecrementSizeT(&_M_messagesRemaining) == 0)
                 {
-                    this->async_send(NULL);
+                    this->async_send(nullptr);
                 }
             }
 
@@ -9473,7 +9473,7 @@ protected:
         // Peek at the head message in the message buffer.  If the IDs match
         // dequeue and transfer ownership
         //
-        message<_OutputType> * _Msg = NULL;
+        message<_OutputType> * _Msg = nullptr;
 
         if (_M_messageBuffer._Is_head(_MsgId))
         {
@@ -9548,7 +9548,7 @@ protected:
         // If there are any messages in the buffer, propagate them out
         if (_M_messageBuffer._Count() > 0)
         {
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
     }
 
@@ -9563,7 +9563,7 @@ protected:
     {
         // If the message queue is blocked due to reservation
         // there is no need to do any message propagation
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
@@ -9579,7 +9579,7 @@ protected:
     /**/
     void propagate_to_any_targets(_Inout_opt_ message<_OutputType> *)
     {
-        message<_OutputType> * _Msg = NULL;
+        message<_OutputType> * _Msg = nullptr;
         // Create a new message from the input sources
         // If messagesRemaining == 0, we have a new message to create.  Otherwise, this is coming from
         // a consume or release from the target.  In that case we don't want to create a new message.
@@ -9590,7 +9590,7 @@ protected:
             _Msg = _Create_new_message();
         }
 
-        if (_Msg == NULL)
+        if (_Msg == nullptr)
         {
             // Create message failed.  This happens in non_greedy joins when the
             // reserve/consumption of a postponed message failed.
@@ -9621,13 +9621,13 @@ protected:
                     {
                         _NR_lock lockHolder(_M_propagationLock);
 
-                        _CONCRT_ASSERT(_M_messageArray._M_messages[i] != NULL);
+                        _CONCRT_ASSERT(_M_messageArray._M_messages[i] != nullptr);
 
                         _Saved_id = _M_savedMessageIdArray._M_savedIds[i];
 
                         if (_Saved_id == -1)
                         {
-                            _M_messageArray._M_messages[i] = NULL;
+                            _M_messageArray._M_messages[i] = nullptr;
                             break;
                         }
                         else
@@ -9641,7 +9641,7 @@ protected:
                         source_iterator _Iter = this->_M_connectedSources.begin();
 
                         ISource<_Type> * _PSource = _Iter[i];
-                        if ((_PSource != NULL) && _PSource->reserve(_Saved_id, this))
+                        if ((_PSource != nullptr) && _PSource->reserve(_Saved_id, this))
                         {
                             _M_messageArray._M_messages[i] = _PSource->consume(_Saved_id, this);
                             _InterlockedDecrementSizeT(&_M_messagesRemaining);
@@ -9655,7 +9655,7 @@ protected:
             // LWT up to create a new message
             if (_M_messagesRemaining == 0)
             {
-                this->async_send(NULL);
+                this->async_send(nullptr);
             }
         }
 
@@ -9690,17 +9690,17 @@ private:
         message<_Target_type> * _Msg = _MessageBuffer._Peek();
 
         // If someone has reserved the _Head message, don't propagate anymore
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
 
-        while (_Msg != NULL)
+        while (_Msg != nullptr)
         {
             message_status _Status = declined;
 
             // Always start from the first target that linked
-            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Target_type> * _PTarget = *_Iter;
                 _Status = _PTarget->propagate(_Msg, this);
@@ -9714,7 +9714,7 @@ private:
 
                 // If the target just propagated to reserved this message, stop
                 // propagating it to others
-                if (this->_M_pReservedFor != NULL)
+                if (this->_M_pReservedFor != nullptr)
                 {
                     break;
                 }
@@ -9753,11 +9753,11 @@ private:
             std::vector<ISource<_Type> *> _Sources;
             source_iterator _Iter = this->_M_connectedSources.begin();
 
-            while (*_Iter != NULL)
+            while (*_Iter != nullptr)
             {
                 ISource<_Type> * _PSource = *_Iter;
 
-                if (_PSource == NULL)
+                if (_PSource == nullptr)
                 {
                     break;
                 }
@@ -9769,7 +9769,7 @@ private:
             if (_Sources.size() != _M_messageArray._M_count)
             {
                 // Some of the sources were unlinked. The join is broken
-                return NULL;
+                return nullptr;
             }
 
             // First, try and reserve all the messages.  If a reservation fails,
@@ -9795,13 +9795,13 @@ private:
                         {
                             if (_InterlockedDecrementSizeT(&_M_messagesRemaining) == 0)
                             {
-                                this->async_send(NULL);
+                                this->async_send(nullptr);
                             }
                         }
                     }
 
                     // Return NULL to indicate that the create failed
-                    return NULL;
+                    return nullptr;
                 }
             }
 
@@ -9825,13 +9825,13 @@ private:
         std::vector<_Type> _OutputVector;
         for (size_t i = 0; i < _M_messageArray._M_count; i++)
         {
-            _CONCRT_ASSERT(_M_messageArray._M_messages[i] != NULL);
+            _CONCRT_ASSERT(_M_messageArray._M_messages[i] != nullptr);
             _OutputVector.push_back(_M_messageArray._M_messages[i]->payload);
 
             delete _M_messageArray._M_messages[i];
             if (fIsNonGreedy)
             {
-                _M_messageArray._M_messages[i] = NULL;
+                _M_messageArray._M_messages[i] = nullptr;
             }
         }
         return (new message<std::vector<_Type>>(_OutputVector));
@@ -9853,7 +9853,7 @@ private:
     ///     group of the scheduler's choosing.
     /// </param>
     /**/
-    void _Initialize(size_t _NumInputs, Scheduler * _PScheduler = NULL, ScheduleGroup * _PScheduleGroup = NULL)
+    void _Initialize(size_t _NumInputs, Scheduler * _PScheduler = nullptr, ScheduleGroup * _PScheduleGroup = nullptr)
     {
         this->initialize_source_and_target(_PScheduler, _PScheduleGroup);
 
@@ -9870,7 +9870,7 @@ private:
         }
         else
         {
-            _M_savedIdBuffer = NULL;
+            _M_savedIdBuffer = nullptr;
         }
     }
 
@@ -9890,7 +9890,7 @@ private:
         for (;;)
         {
             message<std::vector<_Type>> * _Msg = _M_messageBuffer._Dequeue();
-            if (_Msg == NULL)
+            if (_Msg == nullptr)
             {
                 break;
             }
@@ -9984,8 +9984,8 @@ public:
     /// </summary>
     /**/
     _Order_node_base() :
-        _M_pReceiveMessage(NULL),
-        _M_pSendMessage(NULL),
+        _M_pReceiveMessage(nullptr),
+        _M_pSendMessage(nullptr),
         _M_index(0)
     {
     }
@@ -10011,7 +10011,7 @@ public:
     /**/
     bool has_value() const
     {
-        return (_M_pReceiveMessage != NULL);
+        return (_M_pReceiveMessage != nullptr);
     }
 
     /// <summary>
@@ -10023,7 +10023,7 @@ public:
     /**/
     _Type const & value()
     {
-        _CONCRT_ASSERT(_M_pReceiveMessage != NULL);
+        _CONCRT_ASSERT(_M_pReceiveMessage != nullptr);
 
         return _M_pReceiveMessage->payload;
     }
@@ -10079,7 +10079,7 @@ public:
         // consume should never be called for this block.
         _CONCRT_ASSERT(false);
 
-        return NULL;
+        return nullptr;
     }
 
     /// <summary>
@@ -10117,9 +10117,9 @@ protected:
     /**/
     virtual void link_target_notification(_Inout_ ITarget<size_t> *)
     {
-        if (_M_pSendMessage != NULL)
+        if (_M_pSendMessage != nullptr)
         {
-            this->propagate_to_any_targets(NULL);
+            this->propagate_to_any_targets(nullptr);
         }
     }
 
@@ -10136,9 +10136,9 @@ protected:
     ///     Validate constructor arguments and fully connect this _Order_node_base.
     /// </summary>
     /**/
-    void _Initialize_order_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, Scheduler * _PScheduler = NULL, ScheduleGroup * _PScheduleGroup = NULL)
+    void _Initialize_order_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, Scheduler * _PScheduler = nullptr, ScheduleGroup * _PScheduleGroup = nullptr)
     {
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             throw std::invalid_argument("_PSource");
         }
@@ -10151,7 +10151,7 @@ protected:
         // cannot be unlinked and relinked.
         this->_M_connectedSources.set_bound(1);
 
-        if (_PTarget != NULL)
+        if (_PTarget != nullptr)
         {
             this->link_target(_PTarget);
         }
@@ -10217,10 +10217,10 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Reserving_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Reserving_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget);
     }
@@ -10245,7 +10245,7 @@ public:
     _Reserving_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
         this->_Initialize_order_node(_PSource, _Index, _PTarget);
@@ -10268,10 +10268,10 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Reserving_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Reserving_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget, &_PScheduler);
     }
@@ -10299,7 +10299,7 @@ public:
     _Reserving_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
         this->_Initialize_order_node(_PSource, _Index, _PTarget, &_PScheduler);
@@ -10322,12 +10322,12 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Reserving_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Reserving_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -10353,10 +10353,10 @@ public:
     _Reserving_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_fIsInitialized(false),
         _M_savedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -10365,9 +10365,9 @@ public:
     /**/
     ~_Reserving_node()
     {
-        if (_M_pReservedSource != NULL)
+        if (_M_pReservedSource != nullptr)
         {
-            _M_pReservedSource = NULL;
+            _M_pReservedSource = nullptr;
             this->_M_connectedSources.release();
         }
 
@@ -10434,7 +10434,7 @@ protected:
         if (_M_fIsInitialized)
         {
             _M_savedId = _PMessage->msg_id();
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
         else
         {
@@ -10458,24 +10458,24 @@ protected:
     {
         // This check is to prevent spoofing and verify that the propagated message is
         // the one that is accepted at the end.
-        if (this->_M_pSendMessage == NULL || _MsgId != this->_M_pSendMessage->msg_id())
+        if (this->_M_pSendMessage == nullptr || _MsgId != this->_M_pSendMessage->msg_id())
         {
-            return NULL;
+            return nullptr;
         }
 
         // If the source has disconnected then we can't allow for accept to succeed.
         source_iterator _Iter = this->_M_connectedSources.begin();
         ISource<_Type>* _PSource = *_Iter;
 
-        if (_PSource == NULL)
+        if (_PSource == nullptr)
         {
             // source was disconnected. Fail accept.
-            return NULL;
+            return nullptr;
         }
 
         this->_M_pReceiveMessage = _PSource->consume(_M_savedId, this);
 
-        _CONCRT_ASSERT(this->_M_pReceiveMessage != NULL);
+        _CONCRT_ASSERT(this->_M_pReceiveMessage != nullptr);
 
         //
         // Instead of returning the internal message, we return a copy of the
@@ -10499,12 +10499,12 @@ protected:
     /**/
     virtual void propagate_to_any_targets(_Inout_opt_ message<size_t> *)
     {
-        if (this->_M_pSendMessage == NULL)
+        if (this->_M_pSendMessage == nullptr)
         {
             this->_Create_send_message();
         }
 
-        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             ITarget<size_t> * _PTarget = *_Iter;
             _Propagate_to_target(_PTarget);
@@ -10530,7 +10530,7 @@ private:
                 source_iterator _Iter = this->_M_connectedSources.begin();
                 ISource<_Type> * _PSource = *_Iter;
 
-                if (_PSource != NULL)
+                if (_PSource != nullptr)
                 {
                     _PSource->release(_M_savedId, this);
                 }
@@ -10605,8 +10605,8 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL)
-        : _M_pGreedyMessage(NULL)
+    _Greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget);
@@ -10630,7 +10630,7 @@ public:
     /// </param>
     /**/
     _Greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter)
-        : _M_pGreedyMessage(NULL)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
         this->register_filter(_Filter);
@@ -10654,8 +10654,8 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL)
-        : _M_pGreedyMessage(NULL)
+    _Greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget, &_PScheduler);
@@ -10682,7 +10682,7 @@ public:
     /// </param>
     /**/
     _Greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter)
-        : _M_pGreedyMessage(NULL)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
         this->register_filter(_Filter);
@@ -10706,11 +10706,11 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL)
-        : _M_pGreedyMessage(NULL)
+    _Greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -10734,11 +10734,11 @@ public:
     /// </param>
     /**/
     _Greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter)
-        : _M_pGreedyMessage(NULL)
+        : _M_pGreedyMessage(nullptr)
         , _M_savedId(-1)
     {
         this->register_filter(_Filter);
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -10769,10 +10769,10 @@ public:
         _R_lock _Lock(_M_resetLock);
 
         delete this->_M_pReceiveMessage;
-        this->_M_pReceiveMessage = NULL;
+        this->_M_pReceiveMessage = nullptr;
 
         delete this->_M_pSendMessage;
-        this->_M_pSendMessage = NULL;
+        this->_M_pSendMessage = nullptr;
 
         //
         // For greedy type joins, look to see if any other messages have been
@@ -10793,7 +10793,7 @@ public:
 
                 if (_Saved_id == -1)
                 {
-                    _M_pGreedyMessage = NULL;
+                    _M_pGreedyMessage = nullptr;
                     break;
                 }
                 else
@@ -10807,10 +10807,10 @@ public:
                 source_iterator _Iter = this->_M_connectedSources.begin();
 
                 ISource<_Type> * _PSource = *_Iter;
-                if ((_PSource != NULL) && _PSource->reserve(_Saved_id, this))
+                if ((_PSource != nullptr) && _PSource->reserve(_Saved_id, this))
                 {
                     _M_pGreedyMessage = _PSource->consume(_Saved_id, this);
-                    this->async_send(NULL);
+                    this->async_send(nullptr);
                     break;
                 }
             }
@@ -10851,7 +10851,7 @@ protected:
 
         {
             _NR_lock lockHolder(_M_propagationLock);
-            if (_M_pGreedyMessage != NULL)
+            if (_M_pGreedyMessage != nullptr)
             {
                 _M_savedId = _PMessage->msg_id();
                 _Result = postponed;
@@ -10863,10 +10863,10 @@ protected:
         {
             _M_pGreedyMessage = _PSource->accept(_PMessage->msg_id(), this);
 
-            if (_M_pGreedyMessage != NULL)
+            if (_M_pGreedyMessage != nullptr)
             {
                 _Result = accepted;
-                this->async_send(NULL);
+                this->async_send(nullptr);
             }
             else
             {
@@ -10891,9 +10891,9 @@ protected:
     {
         // This check is to prevent spoofing and verify that the propagated message is
         // the one that is accepted at the end.
-        if (this->_M_pSendMessage == NULL || _MsgId != this->_M_pSendMessage->msg_id())
+        if (this->_M_pSendMessage == nullptr || _MsgId != this->_M_pSendMessage->msg_id())
         {
-            return NULL;
+            return nullptr;
         }
 
         //
@@ -10921,14 +10921,14 @@ protected:
     {
         _R_lock _Lock(_M_resetLock);
 
-        if (this->_M_pSendMessage == NULL)
+        if (this->_M_pSendMessage == nullptr)
         {
             // Save the incoming message so that it can be consumed in the accept function
             this->_M_pReceiveMessage = _M_pGreedyMessage;
             this->_Create_send_message();
         }
 
-        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             ITarget<size_t> * _PTarget = *_Iter;
             _PTarget->propagate(this->_M_pSendMessage, this);
@@ -10999,10 +10999,10 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Non_greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Non_greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget);
     }
@@ -11027,7 +11027,7 @@ public:
     _Non_greedy_node(ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
         this->_Initialize_order_node(_PSource, _Index, _PTarget);
@@ -11050,10 +11050,10 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Non_greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Non_greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->_Initialize_order_node(_PSource, _Index, _PTarget, &_PScheduler);
     }
@@ -11081,7 +11081,7 @@ public:
     _Non_greedy_node(Scheduler& _PScheduler, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
         this->_Initialize_order_node(_PSource, _Index, _PTarget, &_PScheduler);
@@ -11104,12 +11104,12 @@ public:
     ///     The target to which the node will signal about having received its input data
     /// </param>
     /**/
-    _Non_greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = NULL) :
+    _Non_greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget = nullptr) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -11135,10 +11135,10 @@ public:
     _Non_greedy_node(ScheduleGroup& _PScheduleGroup, ISource<_Type> * _PSource, size_t _Index, ITarget<size_t> * _PTarget, filter_method const& _Filter) :
         _M_savedId(-1),
         _M_reservedId(-1),
-        _M_pReservedSource(NULL)
+        _M_pReservedSource(nullptr)
     {
         this->register_filter(_Filter);
-        this->_Initialize_order_node(_PSource, _Index, _PTarget, NULL, &_PScheduleGroup);
+        this->_Initialize_order_node(_PSource, _Index, _PTarget, nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -11147,9 +11147,9 @@ public:
     /**/
     ~_Non_greedy_node()
     {
-        if (_M_pReservedSource != NULL)
+        if (_M_pReservedSource != nullptr)
         {
-            _M_pReservedSource = NULL;
+            _M_pReservedSource = nullptr;
             this->_M_connectedSources.release();
         }
 
@@ -11170,10 +11170,10 @@ public:
         _R_lock _Lock(_M_resetLock);
 
         delete this->_M_pReceiveMessage;
-        this->_M_pReceiveMessage = NULL;
+        this->_M_pReceiveMessage = nullptr;
 
         delete this->_M_pSendMessage;
-        this->_M_pSendMessage = NULL;
+        this->_M_pSendMessage = nullptr;
     }
 
     /// <summary>
@@ -11194,7 +11194,7 @@ public:
         source_iterator _Iter = this->_M_connectedSources.begin();
         ISource<_Type> * _PSource = *_Iter;
 
-        if (_PSource != NULL)
+        if (_PSource != nullptr)
         {
             // CAS out the current saved ID, in order to try and reserve it
             runtime_object_identity _SavedId = _InterlockedExchange((volatile long *) &_M_savedId, -1);
@@ -11228,18 +11228,17 @@ public:
     /**/
     void _Consume_received_message()
     {
-        if (_M_pReservedSource != NULL)
+        if (_M_pReservedSource != nullptr)
         {
             runtime_object_identity _SavedId = _M_reservedId;
             this->_M_pReceiveMessage = _M_pReservedSource->consume(_SavedId, this);
 
-            runtime_object_identity _OldId = NULL;
-            _OldId = _InterlockedExchange((volatile long *) &_M_reservedId, -1);
+            runtime_object_identity _OldId = _InterlockedExchange((volatile long *) &_M_reservedId, -1);
 
             _CONCRT_ASSERT(_OldId == _SavedId);
 
             // Release the reference on the source
-            _M_pReservedSource = NULL;
+            _M_pReservedSource = nullptr;
             this->_M_connectedSources.release();
         }
     }
@@ -11252,7 +11251,7 @@ public:
     {
         bool retVal = false;
 
-        if (_M_pReservedSource != NULL)
+        if (_M_pReservedSource != nullptr)
         {
             runtime_object_identity _SavedId = _M_reservedId;
             // If the _M_savedId is still -1, then swap the succeeded one back
@@ -11264,7 +11263,7 @@ public:
             }
 
             // Release the reference on the source
-            _M_pReservedSource = NULL;
+            _M_pReservedSource = nullptr;
             this->_M_connectedSources.release();
         }
 
@@ -11302,7 +11301,7 @@ protected:
         // Change the message ID.  If it was -1, that means an async-send needs to occur
         if (_InterlockedExchange((volatile long *) &_M_savedId, _PMessage->msg_id()) == -1)
         {
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
 
         // Always return postponed.  This message will be consumed
@@ -11325,9 +11324,9 @@ protected:
     {
         // This check is to prevent spoofing and verify that the propagated message is
         // the one that is accepted at the end.
-        if (this->_M_pSendMessage == NULL || _MsgId != this->_M_pSendMessage->msg_id())
+        if (this->_M_pSendMessage == nullptr || _MsgId != this->_M_pSendMessage->msg_id())
         {
-            return NULL;
+            return nullptr;
         }
 
         //
@@ -11354,12 +11353,12 @@ protected:
     {
         _R_lock _Lock(_M_resetLock);
 
-        if (this->_M_pSendMessage == NULL)
+        if (this->_M_pSendMessage == nullptr)
         {
             this->_Create_send_message();
         }
 
-        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+        for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
         {
             ITarget<size_t> * _PTarget = *_Iter;
             _PTarget->propagate(this->_M_pSendMessage, this);
@@ -11441,7 +11440,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    explicit choice(_Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(NULL), _M_pScheduleGroup(NULL)
+    explicit choice(_Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(nullptr), _M_pScheduleGroup(nullptr)
     {
         _M_pSingleAssignment = new single_assignment<size_t>();
         _Initialize_choices<0>();
@@ -11471,7 +11470,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    choice(Scheduler& _PScheduler, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(&_PScheduler), _M_pScheduleGroup(NULL)
+    choice(Scheduler& _PScheduler, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(&_PScheduler), _M_pScheduleGroup(nullptr)
     {
         _M_pSingleAssignment = new single_assignment<size_t>(_PScheduler);
         _Initialize_choices<0>();
@@ -11501,7 +11500,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    choice(ScheduleGroup& _PScheduleGroup, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(NULL), _M_pScheduleGroup(&_PScheduleGroup)
+    choice(ScheduleGroup& _PScheduleGroup, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(nullptr), _M_pScheduleGroup(&_PScheduleGroup)
     {
         _M_pSingleAssignment = new single_assignment<size_t>(_PScheduleGroup);
         _Initialize_choices<0>();
@@ -11538,7 +11537,7 @@ public:
         // Single assignment is heap allocated, so simply copy the pointer. If it already has
         // a value, it will be preserved.
         _M_pSingleAssignment = _Choice._M_pSingleAssignment;
-        _Choice._M_pSingleAssignment = NULL;
+        _Choice._M_pSingleAssignment = nullptr;
 
         // Invoke copy assignment for tuple to copy pointers to message blocks.
         _M_sourceTuple = _Choice._M_sourceTuple;
@@ -11779,13 +11778,13 @@ private:
     void _Initialize_choices()
     {
         std::tuple_element_t<_Index, _Type> _Item = std::get<_Index>(_M_sourceTuple);
-        _Reserving_node_source_type<_Index> * _Order_node_element = NULL;
+        _Reserving_node_source_type<_Index> * _Order_node_element = nullptr;
 
-        if (_M_pScheduleGroup != NULL)
+        if (_M_pScheduleGroup != nullptr)
         {
             _Order_node_element = new _Reserving_node_source_type<_Index>(*_M_pScheduleGroup, _Item, _Index);
         }
-        else if (_M_pScheduler != NULL)
+        else if (_M_pScheduler != nullptr)
         {
             _Order_node_element = new _Reserving_node_source_type<_Index>(*_M_pScheduler, _Item, _Index);
         }
@@ -11804,7 +11803,7 @@ private:
     ///     template expansion.
     /// </summary>
     /**/
-    template<> void _Initialize_choices<std::tuple_size<_Type>::value>()
+    template<> void _Initialize_choices<std::tuple_size_v<_Type>>()
     {
     }
 
@@ -11817,7 +11816,7 @@ private:
     void _Delete_choices()
     {
         delete static_cast<_Reserving_node_source_type<_Index> *>(_M_pSourceChoices[_Index]);
-        _M_pSourceChoices[_Index] = NULL;
+        _M_pSourceChoices[_Index] = nullptr;
         _Delete_choices<_Index + 1>();
     }
 
@@ -11826,12 +11825,12 @@ private:
     ///     template expansion.
     /// </summary>
     /**/
-    template<> void _Delete_choices<std::tuple_size<_Type>::value>()
+    template<> void _Delete_choices<std::tuple_size_v<_Type>>()
     {
     }
 
     // Array of pointers to _Reserving_node elements representing each source
-    void * _M_pSourceChoices[std::tuple_size<_Type>::value];
+    void * _M_pSourceChoices[std::tuple_size_v<_Type>];
 
     // Single assignment which chooses between source messaging blocks
     single_assignment<size_t> * _M_pSingleAssignment;
@@ -12019,7 +12018,7 @@ public:
     ///     group of the scheduler's choosing.
     /// </summary>
     /**/
-    _Join_node() : _M_counter(std::tuple_size<_Destination_type>::value)
+    _Join_node() : _M_counter(std::tuple_size_v<_Destination_type>)
     {
         this->initialize_source_and_target();
     }
@@ -12032,7 +12031,7 @@ public:
     ///     A reference to a scheduler instance.
     /// </param>
     /**/
-    _Join_node(Scheduler& _PScheduler) : _M_counter(std::tuple_size<_Destination_type>::value)
+    _Join_node(Scheduler& _PScheduler) : _M_counter(std::tuple_size_v<_Destination_type>)
     {
         this->initialize_source_and_target(&_PScheduler);
     }
@@ -12045,9 +12044,9 @@ public:
     ///     A reference to a schedule group.
     /// </param>
     /**/
-    _Join_node(ScheduleGroup& _PScheduleGroup) : _M_counter(std::tuple_size<_Destination_type>::value)
+    _Join_node(ScheduleGroup& _PScheduleGroup) : _M_counter(std::tuple_size_v<_Destination_type>)
     {
-        this->initialize_source_and_target(NULL, &_PScheduleGroup);
+        this->initialize_source_and_target(nullptr, &_PScheduleGroup);
     }
 
     /// <summary>
@@ -12092,7 +12091,7 @@ protected:
         // Source block created an int message only to notify join that the real
         // payload is available. There is no need to keep this message around.
         //
-        _CONCRT_ASSERT(_PMessage != NULL);
+        _CONCRT_ASSERT(_PMessage != nullptr);
         delete _PMessage;
 
         long _Ret_val = _InterlockedDecrement(&_M_counter);
@@ -12104,7 +12103,7 @@ protected:
             //
             // All source messages are now received so join can propagate them further
             //
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
 
         return accepted;
@@ -12126,7 +12125,7 @@ protected:
         // Peek at the head message in the message buffer.  If the IDs match
         // dequeue and transfer ownership
         //
-        message<_Destination_type> * _Msg = NULL;
+        message<_Destination_type> * _Msg = nullptr;
 
         if (_M_messageBuffer._Is_head(_MsgId))
         {
@@ -12201,7 +12200,7 @@ protected:
         // If there are any messages in the buffer, propagate them out
         if (_M_messageBuffer._Count() > 0)
         {
-            this->async_send(NULL);
+            this->async_send(nullptr);
         }
     }
 
@@ -12230,7 +12229,7 @@ protected:
     /**/
     virtual void propagate_to_any_targets(_Inout_opt_ message<_Destination_type> *)
     {
-        message<_Destination_type> * _Msg = NULL;
+        message<_Destination_type> * _Msg = nullptr;
 
         if (_M_counter == 0)
         {
@@ -12248,13 +12247,13 @@ protected:
             {
                 // Because a greedy join has captured all input, we can reset
                 // the counter to the total number of inputs
-                _InterlockedExchange(&_M_counter, std::tuple_size<_Destination_type>::value);
+                _InterlockedExchange(&_M_counter, std::tuple_size_v<_Destination_type>);
             }
 
             _Msg = _Create_send_message();
         }
 
-        if (_Msg != NULL)
+        if (_Msg != nullptr)
         {
             _M_messageBuffer._Enqueue(_Msg);
 
@@ -12306,7 +12305,7 @@ private:
                     // restoration
                     if (_InterlockedDecrement(&_M_counter) == 0)
                     {
-                        this->async_send(NULL);
+                        this->async_send(nullptr);
                     }
                 }
             }
@@ -12325,7 +12324,7 @@ private:
     ///     A bool indicating whether the consumption attempt worked.
     /// </returns>
     /**/
-    template<> bool _Try_consume_source_messages<std::tuple_size<_Type>::value>(_Destination_type &, ISource<size_t> **)
+    template<> bool _Try_consume_source_messages<std::tuple_size_v<_Type>>(_Destination_type &, ISource<size_t> **)
     {
         return true;
     }
@@ -12344,23 +12343,23 @@ private:
         _Destination_type _Destination_tuple;
 
         // Populate the sources buffer
-        ISource<size_t> * _Sources[std::tuple_size<_Type>::value];
+        ISource<size_t> * _Sources[std::tuple_size_v<_Type>];
         size_t _Index = 0;
 
         // Get an iterator which will keep a reference on the connected sources
         source_iterator _Iter = this->_M_connectedSources.begin();
 
-        while (*_Iter != NULL)
+        while (*_Iter != nullptr)
         {
             ISource<size_t> * _PSource = *_Iter;
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 // One of the sources disconnected
                 break;
             }
 
-            if (_Index >= std::tuple_size<_Type>::value)
+            if (_Index >= std::tuple_size_v<_Type>)
             {
                 // More sources that we expect
                 break;
@@ -12374,10 +12373,10 @@ private:
         // The order nodes should not have unlinked while the join node is
         // active.
 
-        if (_Index != std::tuple_size<_Type>::value)
+        if (_Index != std::tuple_size_v<_Type>)
         {
             // On debug build assert to help debugging
-            _CONCRT_ASSERT(_Index == std::tuple_size<_Type>::value);
+            _CONCRT_ASSERT(_Index == std::tuple_size_v<_Type>);
             return false;
         }
 
@@ -12398,17 +12397,17 @@ private:
         message<_Target_type> * _Msg = _MessageBuffer._Peek();
 
         // If someone has reserved the _Head message, don't propagate anymore
-        if (this->_M_pReservedFor != NULL)
+        if (this->_M_pReservedFor != nullptr)
         {
             return;
         }
 
-        while (_Msg != NULL)
+        while (_Msg != nullptr)
         {
             message_status _Status = declined;
 
             // Always start from the first target that linked
-            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != NULL; ++_Iter)
+            for (target_iterator _Iter = this->_M_connectedTargets.begin(); *_Iter != nullptr; ++_Iter)
             {
                 ITarget<_Target_type> * _PTarget = *_Iter;
                 _Status = _PTarget->propagate(_Msg, this);
@@ -12422,7 +12421,7 @@ private:
 
                 // If the target just propagated to reserved this message, stop
                 // propagating it to others
-                if (this->_M_pReservedFor != NULL)
+                if (this->_M_pReservedFor != nullptr)
                 {
                     break;
                 }
@@ -12451,24 +12450,24 @@ private:
         _Destination_type _Destination_tuple;
 
         // Populate the sources buffer
-        ISource<size_t> * _Sources[std::tuple_size<_Type>::value];
+        ISource<size_t> * _Sources[std::tuple_size_v<_Type>];
         size_t _Index = 0;
 
         // Get an iterator which will keep a reference on the connected sources
         source_iterator _Iter = this->_M_connectedSources.begin();
 
-        while (*_Iter != NULL)
+        while (*_Iter != nullptr)
         {
             ISource<size_t> * _PSource = *_Iter;
 
-            if (_PSource == NULL)
+            if (_PSource == nullptr)
             {
                 // One of the sources disconnected
                 break;
             }
 
             // Avoid buffer overrun
-            if (_Index >= std::tuple_size<_Type>::value)
+            if (_Index >= std::tuple_size_v<_Type>)
             {
                 // More sources that we expect
                 break;
@@ -12481,11 +12480,11 @@ private:
 
         // The order nodes should not have unlinked while the join node is
         // active.
-        if (_Index != std::tuple_size<_Type>::value)
+        if (_Index != std::tuple_size_v<_Type>)
         {
             // On debug build assert to help debugging
-            _CONCRT_ASSERT(_Index == std::tuple_size<_Type>::value);
-            return NULL;
+            _CONCRT_ASSERT(_Index == std::tuple_size_v<_Type>);
+            return nullptr;
         }
 
         _Populate_destination_tuple<0>(_Destination_tuple, _Sources);
@@ -12504,7 +12503,7 @@ private:
         for (;;)
         {
             message<_Destination_type> * _Msg = _M_messageBuffer._Dequeue();
-            if (_Msg == NULL)
+            if (_Msg == nullptr)
             {
                 break;
             }
@@ -12533,7 +12532,7 @@ private:
     ///     template expansion.
     /// </summary>
     /**/
-    template<> void _Populate_destination_tuple<std::tuple_size<_Type>::value>(_Destination_type &, ISource<size_t> **)
+    template<> void _Populate_destination_tuple<std::tuple_size_v<_Type>>(_Destination_type &, ISource<size_t> **)
     {
     }
 
@@ -12604,7 +12603,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    explicit multitype_join(_Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(NULL), _M_pScheduleGroup(NULL)
+    explicit multitype_join(_Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(nullptr), _M_pScheduleGroup(nullptr)
     {
         _M_pJoinNode = new _Join_node<_Type, _Destination_type, _Jtype>();
         _Initialize_joins<0>();
@@ -12634,7 +12633,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    multitype_join(Scheduler& _PScheduler, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(&_PScheduler), _M_pScheduleGroup(NULL)
+    multitype_join(Scheduler& _PScheduler, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(&_PScheduler), _M_pScheduleGroup(nullptr)
     {
         _M_pJoinNode = new _Join_node<_Type, _Destination_type, _Jtype>(_PScheduler);
         _Initialize_joins<0>();
@@ -12664,7 +12663,7 @@ public:
     /// <seealso cref="Scheduler Class"/>
     /// <seealso cref="ScheduleGroup Class"/>
     /**/
-    multitype_join(ScheduleGroup& _PScheduleGroup, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(NULL), _M_pScheduleGroup(&_PScheduleGroup)
+    multitype_join(ScheduleGroup& _PScheduleGroup, _Type _Tuple) : _M_sourceTuple(_Tuple), _M_pScheduler(nullptr), _M_pScheduleGroup(&_PScheduleGroup)
     {
         _M_pJoinNode = new _Join_node<_Type, _Destination_type, _Jtype>(_PScheduleGroup);
         _Initialize_joins<0>();
@@ -12701,7 +12700,7 @@ public:
         // Single assignment is heap allocated, so simply copy the pointer. If it already has
         // a value, it will be preserved.
         _M_pJoinNode = _Join._M_pJoinNode;
-        _Join._M_pJoinNode = NULL;
+        _Join._M_pJoinNode = nullptr;
 
         // Invoke copy assignment for tuple to copy pointers to message blocks.
         _M_sourceTuple = _Join._M_sourceTuple;
@@ -12894,17 +12893,17 @@ private:
     void _Initialize_joins()
     {
         std::tuple_element_t<_Index, _Type> _Item = std::get<_Index>(_M_sourceTuple);
-        _Order_node_base_source_type<_Index> * _Order_node_element = NULL;
+        _Order_node_base_source_type<_Index> * _Order_node_element = nullptr;
 
         if (_Jtype == non_greedy)
         {
             typedef _Non_greedy_node<_Source_type<_Index>> _Non_greedy_node_source_type;
 
-            if (_M_pScheduleGroup != NULL)
+            if (_M_pScheduleGroup != nullptr)
             {
                 _Order_node_element = new _Non_greedy_node_source_type(*_M_pScheduleGroup, _Item, _Index);
             }
-            else if (_M_pScheduler != NULL)
+            else if (_M_pScheduler != nullptr)
             {
                 _Order_node_element = new _Non_greedy_node_source_type(*_M_pScheduler, _Item, _Index);
             }
@@ -12917,11 +12916,11 @@ private:
         {
             typedef _Greedy_node<_Source_type<_Index>> _Greedy_node_source_type;
 
-            if (_M_pScheduleGroup != NULL)
+            if (_M_pScheduleGroup != nullptr)
             {
                 _Order_node_element = new _Greedy_node_source_type(*_M_pScheduleGroup, _Item, _Index);
             }
-            else if (_M_pScheduler != NULL)
+            else if (_M_pScheduler != nullptr)
             {
                 _Order_node_element = new _Greedy_node_source_type(*_M_pScheduler, _Item, _Index);
             }
@@ -12940,7 +12939,7 @@ private:
     ///     template expansion.
     /// </summary>
     /**/
-    template<> void _Initialize_joins<std::tuple_size<_Type>::value>()
+    template<> void _Initialize_joins<std::tuple_size_v<_Type>>()
     {
     }
 
@@ -12955,7 +12954,7 @@ private:
     void _Delete_joins()
     {
         delete static_cast<_Order_node_base_source_type<_Index> *>(_M_pSourceJoins[_Index]);
-        _M_pSourceJoins[_Index] = NULL;
+        _M_pSourceJoins[_Index] = nullptr;
         _Delete_joins<_Index + 1>();
     }
 
@@ -12964,12 +12963,12 @@ private:
     ///     template expansion.
     /// </summary>
     /**/
-    template<> void _Delete_joins<std::tuple_size<_Type>::value>()
+    template<> void _Delete_joins<std::tuple_size_v<_Type>>()
     {
     }
 
     // Array of pointers to _Order_node elements representing each source
-    void * _M_pSourceJoins[std::tuple_size<_Type>::value];
+    void * _M_pSourceJoins[std::tuple_size_v<_Type>];
 
     // Join node that collects source messaging block messages
     _Join_node<_Type, _Destination_type, _Jtype> * _M_pJoinNode;
@@ -13422,7 +13421,7 @@ public:
     /// <seealso cref="agent_status Enumeration"/>
     /**/
     _CONCRTIMP static void __cdecl wait_for_all(size_t _Count, _In_reads_(_Count) agent ** _PAgents,
-        _Out_writes_opt_(_Count) agent_status * _PStatus = NULL, unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE);
+        _Out_writes_opt_(_Count) agent_status * _PStatus = nullptr, unsigned int _Timeout = COOPERATIVE_TIMEOUT_INFINITE);
 
     /// <summary>
     ///     Waits for any one of the specified agents to complete its task.

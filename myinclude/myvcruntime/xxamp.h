@@ -923,7 +923,7 @@ namespace details
     {
         static _T2 func(const _T1 *_Multiplier, const _T2 *_Index) __GPU
         {
-            typename _T2 _Offset = _Index[_Rank - 1];
+            _T2 _Offset = _Index[_Rank - 1];
             for (int _I = 0; _I < (_Rank - 1); _I++)
             {
                 _Offset += (_Multiplier[_I] * _Index[_I]);

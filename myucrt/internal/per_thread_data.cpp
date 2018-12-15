@@ -93,7 +93,7 @@ static void __cdecl construct_ptd(
     // global per thread locale is set.
     ptd->_own_locale = _GLOBAL_LOCALE_BIT;
 
-//    ptd->_multibyte_info = &__acrt_initial_multibyte_data;
+    ptd->_multibyte_info = &__acrt_initial_multibyte_data;
 
     // Initialize _setloc_data. These are the only valuse that need to be
     // initialized.
@@ -158,9 +158,9 @@ static void __cdecl destroy_ptd(__acrt_ptd* const ptd) throw()
             return;
         }
 
-        //if (multibyte_data == &__acrt_initial_multibyte_data)
+        if (multibyte_data == &__acrt_initial_multibyte_data)
         {
-        //    return;
+            return;
         }
 
         _free_crt(multibyte_data);

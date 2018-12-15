@@ -2643,7 +2643,8 @@ enum _MFVideoTransferFunction
         MFVideoTransFunc_26	= 14,
         MFVideoTransFunc_2084	= 15,
         MFVideoTransFunc_HLG	= 16,
-        MFVideoTransFunc_Last	= ( MFVideoTransFunc_HLG + 1 ) ,
+        MFVideoTransFunc_10_rel	= 17,
+        MFVideoTransFunc_Last	= ( MFVideoTransFunc_10_rel + 1 ) ,
         MFVideoTransFunc_ForceDWORD	= 0x7fffffff
     } 	MFVideoTransferFunction;
 
@@ -6145,7 +6146,7 @@ enum _MF_STREAM_STATE
 #endif // (WINVER >= _WIN32_WINNT_WIN7) 
 #pragma region Desktop Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#if (WINVER >= _WIN32_WINNT_WIN10_RS2)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 
 
 extern RPC_IF_HANDLE __MIDL_itf_mfobjects_0000_0024_v0_0_c_ifspec;

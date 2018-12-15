@@ -1,5 +1,4 @@
  
- 
 // begin_1_0
 /********************************************************************************
 *                                                                               *
@@ -20,37 +19,17 @@
 #include <apisetcconv.h>
 #include <minwindef.h>
 
-/* APISET_NAME: api-ms-win-core-interlocked-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_INTERLOCKED_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_INTERLOCKED_VER 0x0200
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_INTERLOCKED_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Application Family or OneCore Family
 
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 #ifndef NOWINBASEINTERLOCK
 
 #ifndef _NTOS_
-
 
 
 #if defined(_SLIST_HEADER_) && !defined(_NTOSP_)
@@ -80,8 +59,7 @@ InterlockedPushEntrySList(
     );
 
 
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_INTERLOCKED_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 #define InterlockedPushListSList InterlockedPushListSListEx
 
@@ -96,7 +74,7 @@ InterlockedPushListSListEx(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_INTERLOCKED_VER > 0x0100)
+#endif // (NTDDI_VERSION >= NTDDI_WIN8)
 
 WINBASEAPI
 PSLIST_ENTRY

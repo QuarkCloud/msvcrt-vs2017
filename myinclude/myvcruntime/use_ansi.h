@@ -63,6 +63,6 @@
 
 #endif /* !defined(_M_CEE_PURE) && !defined(MRTDLL) */
 
-#endif  /* _CRT_NOPRAGMA_LIBS */
+#endif /* _CRT_NOPRAGMA_LIBS */
 
-#endif	/* _USE_ANSI_CPP */
+#endif /* _USE_ANSI_CPP */

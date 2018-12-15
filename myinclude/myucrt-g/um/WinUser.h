@@ -254,6 +254,7 @@ typedef DESKTOPENUMPROCA    DESKTOPENUMPROC;
 #define CREATEPROCESS_MANIFEST_RESOURCE_ID  1
 #define ISOLATIONAWARE_MANIFEST_RESOURCE_ID 2
 #define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID 3
+#define ISOLATIONPOLICY_MANIFEST_RESOURCE_ID 4
 #define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID 1   /* inclusive */
 #define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID 16  /* inclusive */
 #else  /* RC_INVOKED */
@@ -261,6 +262,7 @@ typedef DESKTOPENUMPROCA    DESKTOPENUMPROC;
 #define CREATEPROCESS_MANIFEST_RESOURCE_ID MAKEINTRESOURCE( 1)
 #define ISOLATIONAWARE_MANIFEST_RESOURCE_ID MAKEINTRESOURCE(2)
 #define ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID MAKEINTRESOURCE(3)
+#define ISOLATIONPOLICY_MANIFEST_RESOURCE_ID MAKEINTRESOURCE(4)
 #define MINIMUM_RESERVED_MANIFEST_RESOURCE_ID MAKEINTRESOURCE( 1 /*inclusive*/)
 #define MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID MAKEINTRESOURCE(16 /*inclusive*/)
 #endif /* RC_INVOKED */
@@ -3480,6 +3482,8 @@ PeekMessageW(
 #define PM_NOREMOVE         0x0000
 #define PM_REMOVE           0x0001
 #define PM_NOYIELD          0x0002
+
+
 #if(WINVER >= 0x0500)
 #define PM_QS_INPUT         (QS_INPUT << 16)
 #define PM_QS_POSTMESSAGE   ((QS_POSTMESSAGE | QS_HOTKEY | QS_TIMER) << 16)
@@ -4517,15 +4521,15 @@ SetLayeredWindowAttributes(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 
-#define LWA_COLORKEY            0x00000001
-#define LWA_ALPHA               0x00000002
+#define LWA_COLORKEY          0x00000001
+#define LWA_ALPHA             0x00000002
 
 
-#define ULW_COLORKEY            0x00000001
-#define ULW_ALPHA               0x00000002
-#define ULW_OPAQUE              0x00000004
+#define ULW_COLORKEY           0x00000001
+#define ULW_ALPHA              0x00000002
+#define ULW_OPAQUE             0x00000004
 
-#define ULW_EX_NORESIZE         0x00000008
+#define ULW_EX_NORESIZE        0x00000008
 
 #endif /* _WIN32_WINNT >= 0x0500 */
 
@@ -6292,6 +6296,12 @@ typedef struct tagPOINTER_PEN_INFO {
 #define TOUCH_FEEDBACK_INDIRECT 0x2
 #define TOUCH_FEEDBACK_NONE 0x3
 
+typedef enum {
+    POINTER_FEEDBACK_DEFAULT = 1,   // The injected pointer input feedback may get suppressed by the end-user settings in the Pen and Touch control panel.
+    POINTER_FEEDBACK_INDIRECT = 2,  // The injected pointer input feedback overrides the end-user settings in the Pen and Touch control panel.
+    POINTER_FEEDBACK_NONE = 3,      // No touch visualizations.
+} POINTER_FEEDBACK_MODE;
+
 #pragma region Desktop Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
@@ -6481,6 +6491,31 @@ WINAPI
 UnregisterPointerInputTargetEx(
     _In_ HWND hwnd,
     _In_ POINTER_INPUT_TYPE pointerType);
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+DECLARE_HANDLE(HSYNTHETICPOINTERDEVICE);
+WINUSERAPI
+HSYNTHETICPOINTERDEVICE
+WINAPI
+CreateSyntheticPointerDevice(
+    _In_ POINTER_INPUT_TYPE pointerType,
+    _In_ ULONG maxCount,
+    _In_ POINTER_FEEDBACK_MODE mode);
+
+WINUSERAPI
+BOOL
+WINAPI
+InjectSyntheticPointerInput(
+    _In_ HSYNTHETICPOINTERDEVICE device,
+    _In_reads_(count) CONST POINTER_TYPE_INFO* pointerInfo,
+    _In_ UINT32 count);
+
+WINUSERAPI
+VOID
+WINAPI
+DestroySyntheticPointerDevice(
+    _In_ HSYNTHETICPOINTERDEVICE device);
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS5
 
 
 WINUSERAPI
@@ -8607,6 +8642,7 @@ EnableScrollBar(
 
 #endif  /* !NOSCROLL */
 
+
 WINUSERAPI
 BOOL
 WINAPI
@@ -9922,6 +9958,7 @@ WINAPI
 GetWindowThreadProcessId(
     _In_ HWND hWnd,
     _Out_opt_ LPDWORD lpdwProcessId);
+
 
 #if(_WIN32_WINNT >= 0x0501)
 WINUSERAPI
@@ -12386,10 +12423,10 @@ typedef struct tagTouchPredictionParameters
 #define SPI_GETMOUSEWHEELROUTING            0x201C
 #define SPI_SETMOUSEWHEELROUTING            0x201D
 
-    #define MOUSEWHEEL_ROUTING_FOCUS                  0
-    #define MOUSEWHEEL_ROUTING_HYBRID                 1
+#define MOUSEWHEEL_ROUTING_FOCUS                  0
+#define MOUSEWHEEL_ROUTING_HYBRID                 1
 #if(WINVER >= 0x0603)
-    #define MOUSEWHEEL_ROUTING_MOUSE_POS              2
+#define MOUSEWHEEL_ROUTING_MOUSE_POS              2
 #endif /* WINVER >= 0x0603 */
 #endif /* WINVER >= 0x0602 */
 
@@ -12417,6 +12454,15 @@ typedef struct tagTouchPredictionParameters
 #define SPI_GETCARETTIMEOUT                      0x2022
 #define SPI_SETCARETTIMEOUT                      0x2023
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define SPI_GETHANDEDNESS                        0x2024
+#define SPI_SETHANDEDNESS                        0x2025
+typedef enum tagHANDEDNESS {
+    HANDEDNESS_LEFT = 0,
+    HANDEDNESS_RIGHT
+} HANDEDNESS, *PHANDEDNESS;
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
 
 #endif /* WINVER >= 0x0500 */
 
@@ -14066,6 +14112,12 @@ GetAwarenessFromDpiAwarenessContext(
     _In_ DPI_AWARENESS_CONTEXT value);
 
 WINUSERAPI
+UINT
+WINAPI
+GetDpiFromDpiAwarenessContext(
+    _In_ DPI_AWARENESS_CONTEXT value);
+
+WINUSERAPI
 BOOL
 WINAPI
 AreDpiAwarenessContextsEqual(
@@ -14091,6 +14143,12 @@ GetDpiForSystem(
     VOID);
 
 WINUSERAPI
+UINT
+WINAPI
+GetSystemDpiForProcess(
+    _In_ HANDLE hProcess);
+
+WINUSERAPI
 BOOL
 WINAPI
 EnableNonClientDpiScaling(
@@ -14113,6 +14171,27 @@ SetProcessDpiAwarenessContext(
     _In_ DPI_AWARENESS_CONTEXT value);
 
 #endif /* WINVER >= 0x0605 */
+
+#if(WINVER >= 0x0606)
+
+WINUSERAPI
+DPI_HOSTING_BEHAVIOR
+WINAPI
+SetThreadDpiHostingBehavior(
+    _In_ DPI_HOSTING_BEHAVIOR value);
+
+WINUSERAPI
+DPI_HOSTING_BEHAVIOR
+WINAPI
+GetThreadDpiHostingBehavior();
+
+WINUSERAPI
+DPI_HOSTING_BEHAVIOR
+WINAPI
+GetWindowDpiHostingBehavior(
+    _In_ HWND hwnd);
+
+#endif /* WINVER >= 0x0606 */
 
 
 WINUSERAPI

@@ -20,6 +20,14 @@ Abstract:
 #pragma region Desktop Family or OneCore Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
+#ifndef RtlCopyMemory
+#define RtlCopyMemory(Destination,Source,Length) memcpy((Destination),(Source),(Length))
+#endif
+
+#ifndef RtlZeroMemory
+#define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
+#endif
+
 //
 // Interface GUIDs
 //
@@ -250,6 +258,8 @@ extern "C" {
 #define IOCTL_STORAGE_MANAGE_DATA_SET_ATTRIBUTES    CTL_CODE(IOCTL_STORAGE_BASE, 0x0501, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 #define IOCTL_STORAGE_GET_LB_PROVISIONING_MAP_RESOURCES  CTL_CODE(IOCTL_STORAGE_BASE, 0x0502, METHOD_BUFFERED, FILE_READ_ACCESS)
 
+#define IOCTL_STORAGE_SET_PROPERTY                  CTL_CODE(IOCTL_STORAGE_BASE, 0x0503, METHOD_BUFFERED, FILE_WRITE_ACCESS)
+
 //
 // IOCTLs 0x0503 to 0x0580 reserved for Enhanced Storage devices.
 //
@@ -361,6 +371,7 @@ extern "C" {
 // IOCTL_STORAGE_REMOVE_ELEMENT_AND_TRUNCATE IOCTL to remove and truncate element from device.
 //
 #define IOCTL_STORAGE_REMOVE_ELEMENT_AND_TRUNCATE    CTL_CODE(IOCTL_STORAGE_BASE, 0x0730, METHOD_BUFFERED, FILE_ANY_ACCESS)
+
 
 //
 // Note: Function code values of less than 0x800 are reserved for Microsoft. Values of 0x800 and higher can be used by vendors.
@@ -1960,9 +1971,23 @@ typedef enum _STORAGE_PROTOCOL_TYPE {
 
 typedef enum _STORAGE_PROTOCOL_NVME_DATA_TYPE {
     NVMeDataTypeUnknown = 0,
+
     NVMeDataTypeIdentify,       // Retrieved by command - IDENTIFY CONTROLLER or IDENTIFY NAMESPACE
+                                // Corresponding values in STORAGE_PROTOCOL_SPECIFIC_DATA,
+                                //      ProtocolDataRequestValue - Defined in NVME_IDENTIFY_CNS_CODES
+                                //      ProtocolDataRequestSubValue - For NVME_IDENTIFY_CNS_SPECIFIC_NAMESPACE, 
+                                //                                    specifies namespace Id
+
     NVMeDataTypeLogPage,        // Retrieved by command - GET LOG PAGE
+                                // Corresponding values in STORAGE_PROTOCOL_SPECIFIC_DATA,
+                                //      ProtocolDataRequestValue - Log page id
+                                //      ProtocolDataRequestSubValue - Lower 32-bit offset value
+                                //      ProtocolDataRequestSubValue2 - Upper 32-bit offset value
+
     NVMeDataTypeFeature,        // Retrieved by command - GET FEATURES
+                                // Corresponding values in STORAGE_PROTOCOL_SPECIFIC_DATA,
+                                //      ProtocolDataRequestValue - Defined in NVME_FEATURES
+                                //      ProtocolDataRequestSubValue - Defined in NVME_CDW11_FEATURES
 } STORAGE_PROTOCOL_NVME_DATA_TYPE, *PSTORAGE_PROTOCOL_NVME_DATA_TYPE;
 
 typedef enum _STORAGE_PROTOCOL_ATA_DATA_TYPE {
@@ -1985,17 +2010,18 @@ typedef enum _STORAGE_PROTOCOL_UFS_DATA_TYPE {
 typedef struct _STORAGE_PROTOCOL_SPECIFIC_DATA {
 
     STORAGE_PROTOCOL_TYPE ProtocolType;
-    ULONG   DataType;                   // The value will be protocol specific, as defined in STORAGE_PROTOCOL_NVME_DATA_TYPE or STORAGE_PROTOCOL_ATA_DATA_TYPE.
+    ULONG   DataType;                     // The value will be protocol specific, as defined in STORAGE_PROTOCOL_NVME_DATA_TYPE or STORAGE_PROTOCOL_ATA_DATA_TYPE.
 
     ULONG   ProtocolDataRequestValue;
-    ULONG   ProtocolDataRequestSubValue;
+    ULONG   ProtocolDataRequestSubValue;  // Data sub request value
 
-    ULONG   ProtocolDataOffset;         // The offset of data buffer is from beginning of this data structure.
+    ULONG   ProtocolDataOffset;           // The offset of data buffer is from beginning of this data structure.
     ULONG   ProtocolDataLength;
 
-    ULONG   FixedProtocolReturnData;    // This is returned data, especially from NVMe feature data that doesn't need separate device data transfer.
-    ULONG   Reserved[3];
+    ULONG   FixedProtocolReturnData;
+    ULONG   ProtocolDataRequestSubValue2; // Additional data sub request value
 
+    ULONG   Reserved[2];
 } STORAGE_PROTOCOL_SPECIFIC_DATA, *PSTORAGE_PROTOCOL_SPECIFIC_DATA;
 
 //
@@ -2684,224 +2710,292 @@ typedef struct _STORAGE_DEVICE_UNSAFE_SHUTDOWN_COUNT {
     ULONG UnsafeShutdownCount;
 } STORAGE_DEVICE_UNSAFE_SHUTDOWN_COUNT, *PSTORAGE_DEVICE_UNSAFE_SHUTDOWN_COUNT;
 
+
+////////////////////////////////////////////////////////////////////////////////
 //
 // IOCTL_STORAGE_MANAGE_DATA_SET_ATTRIBUTES
 //
 // Input Buffer:
-//     Structure of type DEVICE_MANAGE_DATA_SET_ATTRIBUTES
+//     Structure of type DEVICE_DSM_INPUT
 //
 // Output Buffer:
-//      If a particular action uses an output buffer, it will be a structure
-//      of type DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT optionally followed
-//      by a structure specific to that action.
-//
-//      Actions that use an output buffer are listed below, along with their
-//      corresponding structure:
-//
-//      - DeviceDsmAction_OffloadRead:          STORAGE_OFFLOAD_READ_OUTPUT
-//      - DeviceDsmAction_OffloadWrite:         STORAGE_OFFLOAD_WRITE_OUTPUT
-//      - DeviceDsmAction_Allocation:           DEVICE_DATA_SET_LB_PROVISIONING_STATE
-//      - DeviceDsmAction_Scrub:                DEVICE_DATA_SET_SCRUB_OUTPUT
-//      - DeviceDsmAction_GetPhysicalAddresses: DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT
-//      - DeviceDsmAction_ReportZones:          STORAGE_DEVICE_ZONE_INFORMATION
-//      - DeviceDsmAction_GetRangeErrorInfo:    DEVICE_DSM_RANGE_ERROR_INFO
+//     Structure of type DEVICE_DSM_OUTPUT
 //
 
 //
-//  This flag, when OR'd into an action indicates that the given action is
-//  non-destructive.  If this flag is set then storage stack components which
-//  do not understand the action should forward the given request
+// DEVICE_DSM_INPUT.Action
 //
 
-#define DeviceDsmActionFlag_NonDestructive  0x80000000
-
-#define IsDsmActionNonDestructive(_Action) ((BOOLEAN)((_Action & DeviceDsmActionFlag_NonDestructive) != 0))
+typedef ULONG DEVICE_DATA_MANAGEMENT_SET_ACTION, DEVICE_DSM_ACTION;
 
 //
-//  Defines the various actions
+// This indicates that the action is
+// non-destructive and a driver that
+// does not understand it may safely
+// forward the IOCTL
 //
 
-typedef ULONG DEVICE_DATA_MANAGEMENT_SET_ACTION;
+#define DeviceDsmActionFlag_NonDestructive      (0x80000000)
+#define IsDsmActionNonDestructive(_Action)      ((BOOLEAN)((_Action & DeviceDsmActionFlag_NonDestructive) != 0))
 
-    #define DeviceDsmAction_None                0
-    #define DeviceDsmAction_Trim                1
-    #define DeviceDsmAction_Notification      ( 2  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_OffloadRead       ( 3  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_OffloadWrite        4
-    #define DeviceDsmAction_Allocation        ( 5  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_Repair            ( 6  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_Scrub             ( 7  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_DrtQuery          ( 8  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_DrtClear          ( 9  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_DrtDisable        (10  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_TieringQuery      (11  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_Map               (12  | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_RegenerateParity  (13  | DeviceDsmActionFlag_NonDestructive)
-
-    #define DeviceDsmAction_NvCache_Change_Priority (14 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_NvCache_Evict           (15 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_TopologyIdQuery         (16 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_GetPhysicalAddresses    (17 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_ScopeRegen              (18 | DeviceDsmActionFlag_NonDestructive)
-
-    #define DeviceDsmAction_ReportZones         (19 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_OpenZone            (20 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_FinishZone          (21 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_CloseZone           (22 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_ResetWritePointer   (23)
-
-    #define DeviceDsmAction_GetRangeErrorInfo       (24 | DeviceDsmActionFlag_NonDestructive)
-    #define DeviceDsmAction_WriteZeroes             (25)
-
-//
-//  Flags that are global across all actions
-//  These are in the low 16bits of the flags fields
-//
-
-#define DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE   0x00000001  // If set, the DataSetRanges fields should be 0
-
+#define DeviceDsmAction_None                    (0x00000000u)
+#define DeviceDsmAction_Trim                    (0x00000001u)
+#define DeviceDsmAction_Notification            (0x00000002u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_OffloadRead             (0x00000003u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_OffloadWrite            (0x00000004u)
+#define DeviceDsmAction_Allocation              (0x00000005u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_Repair                  (0x00000006u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_Scrub                   (0x00000007u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_DrtQuery                (0x00000008u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_DrtClear                (0x00000009u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_DrtDisable              (0x0000000Au | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_TieringQuery            (0x0000000Bu | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_Map                     (0x0000000Cu | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_RegenerateParity        (0x0000000Du | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_NvCache_Change_Priority (0x0000000Eu | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_NvCache_Evict           (0x0000000Fu | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_TopologyIdQuery         (0x00000010u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_GetPhysicalAddresses    (0x00000011u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_ScopeRegen              (0x00000012u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_ReportZones             (0x00000013u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_OpenZone                (0x00000014u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_FinishZone              (0x00000015u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_CloseZone               (0x00000016u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_ResetWritePointer       (0x00000017u)
+#define DeviceDsmAction_GetRangeErrorInfo       (0x00000018u | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_WriteZeroes             (0x00000019u)
+#define DeviceDsmAction_LostQuery               (0x0000001Au | DeviceDsmActionFlag_NonDestructive)
+#define DeviceDsmAction_GetFreeSpace            (0x0000001Bu | DeviceDsmActionFlag_NonDestructive)
 
 //
-//  Flags that are specific to a given verb.
-//  These are in the high 16bits of the flags field
+// DEVICE_DSM_INPUT.Flags
+//
+// Flags that are not specific to an
+// action are in the lower 16-bits
+//
+// Action-specific flags  are in the
+// higher 16-bits
 //
 
 //
-//  DeviceDsmAction_Trim specific flags
+// When specified, the DataSetRanges
+// fields should be 0
 //
 
-#define DEVICE_DSM_FLAG_TRIM_NOT_FS_ALLOCATED   0x80000000  // If SET, the described ranges are not allocated by a file system
-
-//
-// DeviceDsmAction_Allocation specific flags
-//
-
-//
-// If set, the device should only return slabs that are eligible for consolidation.
-//
-#define DEVICE_DSM_FLAG_ALLOCATION_CONSOLIDATEABLE_ONLY   0x40000000
-
-//
-//  DeviceDsmAction_Scrub specific flags
-//
-
-#define DEVICE_DSM_FLAG_SCRUB_SKIP_IN_SYNC           0x10000000
-#define DEVICE_DSM_FLAG_SCRUB_OUTPUT_PARITY_EXTENT   0x20000000
-
-//
-//  DeviceDsmAction_Repair specific flags
-//
-
-#define DEVICE_DSM_FLAG_REPAIR_OUTPUT_PARITY_EXTENT  0x20000000
-
-//
-//  If set, 128-bit Topology ID is present in the next 8-byte aligned offset
-//  after RepairCopies field of DEVICE_DATA_SET_REPAIR_PARAMETERS
-//
-
-#define DEVICE_DSM_FLAG_REPAIR_INPUT_TOPOLOGY_ID_PRESENT 0x40000000
-
-
-//
-//  DeviceDsmAction_GetPhysicalAddresses specific flags
-//
-
-//
-//  If set, the device will always return 0 in the TotalNumberOfRanges field.
-//  A caller that doesn't need to know the total number of ranges should set
-//  this flag as a performance optimization, because the device might
-//  incur some cost calculating the total number of ranges.
-//
-#define DEVICE_DSM_FLAG_PHYSICAL_ADDRESSES_OMIT_TOTAL_RANGES 0x10000000
-
-//
-//  Structure used to describe the list of ranges to process
-//
+#define DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE   0x00000001
 
 typedef struct _DEVICE_DATA_SET_RANGE {
-    LONGLONG    StartingOffset;        //in bytes,  must allign to sector
-    ULONGLONG   LengthInBytes;         // multiple of sector size.
-} DEVICE_DATA_SET_RANGE, *PDEVICE_DATA_SET_RANGE;
 
-//
-// input structure for IOCTL_STORAGE_MANAGE_DATA_SET_ATTRIBUTES
-// 1. Value ofParameterBlockOffset or ParameterBlockLength is 0 indicates that Parameter Block does not exist.
-// 2. Value of DataSetRangesOffset or DataSetRangesLength is 0 indicates that DataSetRanges Block does not exist.
-//     If DataSetRanges Block exists, it contains contiguous DEVICE_DATA_SET_RANGE structures.
-// 3. The total size of buffer should be at least:
-//      sizeof (DEVICE_MANAGE_DATA_SET_ATTRIBUTES) + ParameterBlockLength + DataSetRangesLength
-//
+    //
+    // Must be a  multiple of sector
+    // size, in bytes
+    //
+
+    LONGLONG StartingOffset;
+    ULONGLONG LengthInBytes;
+
+} DEVICE_DATA_SET_RANGE, *PDEVICE_DATA_SET_RANGE,
+  DEVICE_DSM_RANGE, *PDEVICE_DSM_RANGE;
+
 typedef struct _DEVICE_MANAGE_DATA_SET_ATTRIBUTES {
-    ULONG                               Size;                   // Size of structure DEVICE_MANAGE_DATA_SET_ATTRIBUTES
-    DEVICE_DATA_MANAGEMENT_SET_ACTION   Action;
 
-    ULONG                               Flags;                  // Global flags across all actions
+    //
+    // Size of this structure serves
+    // as the version
+    //
 
-    ULONG                               ParameterBlockOffset;   // must be alligned to corresponding structure allignment
-    ULONG                               ParameterBlockLength;   // 0 means Parameter Block does not exist.
+    ULONG Size;
 
-    ULONG                               DataSetRangesOffset;    // must be alligned to DEVICE_DATA_SET_RANGE structure allignment.
-    ULONG                               DataSetRangesLength;    // 0 means DataSetRanges Block does not exist.
+    DEVICE_DSM_ACTION Action;
+    ULONG Flags;
 
-} DEVICE_MANAGE_DATA_SET_ATTRIBUTES, *PDEVICE_MANAGE_DATA_SET_ATTRIBUTES;
+    //
+    // Must be aligned to __alignof(action-specific struct)
+    //
+
+    ULONG ParameterBlockOffset;
+    ULONG ParameterBlockLength;
+
+    //
+    // Must be aligned to __alignof(DEVICE_DSM_RANGE)
+    //
+
+    ULONG DataSetRangesOffset;
+    ULONG DataSetRangesLength;
+
+} DEVICE_MANAGE_DATA_SET_ATTRIBUTES, *PDEVICE_MANAGE_DATA_SET_ATTRIBUTES,
+  DEVICE_DSM_INPUT, *PDEVICE_DSM_INPUT;
+
+typedef struct _DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT {
+
+    //
+    // Size of this structure serves
+    // as the version
+    //
+
+    ULONG Size;
+
+    DEVICE_DSM_ACTION Action;
+    ULONG Flags;
+
+    ULONG OperationStatus;
+    ULONG ExtendedError;
+    ULONG TargetDetailedError;
+    ULONG ReservedStatus;
+
+    //
+    // Must be aligned to __alignof(corresponding struct)
+    //
+
+    ULONG OutputBlockOffset;
+    ULONG OutputBlockLength;
+
+} DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT, *PDEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT,
+  DEVICE_DSM_OUTPUT, *PDEVICE_DSM_OUTPUT;
+
+typedef struct _DEVICE_DSM_DEFINITION {
+
+    DEVICE_DSM_ACTION Action;
+
+    BOOLEAN SingleRange;
+
+    ULONG ParameterBlockAlignment;
+    ULONG ParameterBlockLength;
+
+    BOOLEAN HasOutput;
+
+    ULONG OutputBlockAlignment;
+    ULONG OutputBlockLength;
+
+} DEVICE_DSM_DEFINITION, *PDEVICE_DSM_DEFINITION;
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_None
+//
 
 //
-//  This defines the parameter block for the DeviceDsmAction_Notification
-//  action
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
 //
+
+#define DeviceDsmDefinition_None {DeviceDsmAction_None, \
+                                  FALSE,                \
+                                  0,                    \
+                                  0,                    \
+                                  FALSE,                \
+                                  0,                    \
+                                  0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_Trim
+//
+
+//
+// DEVICE_DSM_INPUT.Flags
+//
+
+//
+// Indicates that the ranges are not
+// part of any file
+//
+
+#define DEVICE_DSM_FLAG_TRIM_NOT_FS_ALLOCATED   0x80000000
+
+//
+// Indicates that RZAT is not needed
+// RZAT only applies to ranges  that
+// are part of a file that  need the
+// additional protection
+//
+
+#define DEVICE_DSM_FLAG_TRIM_BYPASS_RZAT        0x40000000
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_Trim {DeviceDsmAction_Trim, \
+                                  FALSE,                \
+                                  0,                    \
+                                  0,                    \
+                                  FALSE,                \
+                                  0,                    \
+                                  0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_Notification
+//
+
+//
+// DEVICE_DSM_NOTIFICATION_PARAMETERS.Flags
+//
+
+//
+// The  ranges are now in use by the
+// file type identifier
+//
+
+#define DEVICE_DSM_NOTIFY_FLAG_BEGIN    0x00000001
+
+//
+// The  ranges are no longer  in use
+// by the file type identifier
+//
+
+#define DEVICE_DSM_NOTIFY_FLAG_END      0x00000002
 
 typedef struct _DEVICE_DSM_NOTIFICATION_PARAMETERS {
 
-    ULONG                               Size;                   // Size of this structure
+    ULONG Size;
 
-    ULONG                               Flags;                  // Flags specific to the notify operation
+    ULONG Flags;
 
-    ULONG                               NumFileTypeIDs;         // Count of how many file type ID's are given
-
-    GUID                                FileTypeID[1];          // Identifier for the type of file being notified
+    ULONG NumFileTypeIDs;
+    GUID  FileTypeID[ANYSIZE_ARRAY];
 
 } DEVICE_DSM_NOTIFICATION_PARAMETERS, *PDEVICE_DSM_NOTIFICATION_PARAMETERS;
 
 //
-//  DEVICE_DSM_NOTIFICATION_PARAMETERS flag definitions
+// SingleRange    - No
+// ParameterBlock - Yes
+// Output         - No
+// OutputBlock    - No
 //
 
-#define DEVICE_DSM_NOTIFY_FLAG_BEGIN            0x00000001  // The given LBA range is being used as defined by the FileID
-#define DEVICE_DSM_NOTIFY_FLAG_END              0x00000002  // The given LBA range is no longer being used as defined by the FileID
-
-//
-// Parameter Block for the DeviceDsmAction_NvCache_Change_Priority action.
-//
-typedef struct _DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS {
-    ULONG       Size;                   // Size of this structure
-
-    UCHAR       TargetPriority;         // Target priority
-
-    UCHAR       Reserved[3];
-} DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS, *PDEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS;
+#define DeviceDsmDefinition_Notification {DeviceDsmAction_Notification,                  \
+                                          FALSE,                                         \
+                                          __alignof(DEVICE_DSM_NOTIFICATION_PARAMETERS), \
+                                          sizeof(DEVICE_DSM_NOTIFICATION_PARAMETERS),    \
+                                          FALSE,                                         \
+                                          0,                                             \
+                                          0}
 
 
+////////////////////////////////////////////////////////////////////////////////
 //
-// Parameter structure definitions for copy offload actions
+// DeviceDsmAction_OffloadRead
 //
 
-//
-// Offload copy interface operates in 2 steps : offload read and offload write.
-//
-// Input for OffloadRead action is set of extends in DSM structure
-//   Output parameter of an OffloadRead is a token, returned by the target which will  uniquely identify a "point in time" snapshot of extends taken by the target.
-//   Format of the token is opaque to Windows and is specific to the target.
-//
-//   Note: we arbitrarily limit token length to 512. SCSI interface to OffloadCopy will (may) enable negotiable size. If/when we want to have variable size
-//         tokens we will need to create a new action
-//
-#define STORAGE_OFFLOAD_MAX_TOKEN_LENGTH                        512        // Keep as ULONG multiple
-#define STORAGE_OFFLOAD_TOKEN_ID_LENGTH                         0x1F8
-#define STORAGE_OFFLOAD_TOKEN_TYPE_ZERO_DATA                    0xFFFF0001
+#define STORAGE_OFFLOAD_MAX_TOKEN_LENGTH        512        // Keep as ULONG multiple
+#define STORAGE_OFFLOAD_TOKEN_ID_LENGTH         0x1F8
+#define STORAGE_OFFLOAD_TOKEN_TYPE_ZERO_DATA    0xFFFF0001
 
 #pragma warning(push)
 #pragma warning(disable:4201) // nameless struct/unions
+
 typedef struct _STORAGE_OFFLOAD_TOKEN {
+
     UCHAR TokenType[4];
     UCHAR Reserved[2];
     UCHAR TokenIdLength[2];
@@ -2911,483 +3005,1625 @@ typedef struct _STORAGE_OFFLOAD_TOKEN {
         } StorageOffloadZeroDataToken;
         UCHAR Token[STORAGE_OFFLOAD_TOKEN_ID_LENGTH];
     } DUMMYUNIONNAME;
+
 } STORAGE_OFFLOAD_TOKEN, *PSTORAGE_OFFLOAD_TOKEN;
+
 #pragma warning(pop)
 
-#define MAKE_ZERO_TOKEN(T) (                                                   \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[0] = 0xFF,                          \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[1] = 0xFF,                          \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[2] = 0x00,                          \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[3] = 0x01,                          \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[0] = 0x01,                      \
-    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[1] = 0xF8                       \
+#define MAKE_ZERO_TOKEN(T) (                                  \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[0] = 0xFF,         \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[1] = 0xFF,         \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[2] = 0x00,         \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[3] = 0x01,         \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[0] = 0x01,     \
+    ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[1] = 0xF8      \
 )
 
-#define IS_ZERO_TOKEN(T) (                                                     \
-    (((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[0] == 0xFF     &&                  \
-     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[1] == 0xFF     &&                  \
-     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[2] == 0x00     &&                  \
-     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[3] == 0x01     &&                  \
-     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[0] == 0x01 &&                  \
-     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[1] == 0xF8)                    \
+#define IS_ZERO_TOKEN(T) (                                    \
+    (((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[0] == 0xFF     && \
+     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[1] == 0xFF     && \
+     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[2] == 0x00     && \
+     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenType[3] == 0x01     && \
+     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[0] == 0x01 && \
+     ((PSTORAGE_OFFLOAD_TOKEN)T)->TokenIdLength[1] == 0xF8)   \
 )
 
 typedef struct _DEVICE_DSM_OFFLOAD_READ_PARAMETERS {
-    ULONG       Flags;                                          // no flags defined yet
-    ULONG       TimeToLive;                                     // token TTL in milli-seconds as requested by initiator (TODO: Do we need it exposed to interface caller?)
-    ULONG       Reserved[2];                                    // reserved for future use
+
+    //
+    // Reserved for future use
+    //
+
+    ULONG Flags;
+
+    //
+    // Token TTL in milli-seconds as
+    // requested by the initiator
+    //
+
+    ULONG TimeToLive; 
+
+    ULONG Reserved[2];
+
 } DEVICE_DSM_OFFLOAD_READ_PARAMETERS, *PDEVICE_DSM_OFFLOAD_READ_PARAMETERS;
 
-typedef struct _DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS {
-    ULONG Flags;                                                // no flags defined yet
-    ULONG Reserved;                                             // reserved for future usage
-    ULONGLONG TokenOffset;                                      // The starting offset to copy from "snapshot" bound to the token
-    STORAGE_OFFLOAD_TOKEN Token;                                // the token
-} DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS, *PDEVICE_DSM_OFFLOAD_WRITE_PARAMETERS;
-
 //
-// DSM parameters block structure for DeviceDsmAction_Repair
+// STORAGE_OFFLOAD_READ_OUTPUT.OffloadReadFlags
 //
 
-#define GET_REPAIR_TOPOLOGY_ID(R) \
-    RtlOffsetToPointer( R, \
-                        ALIGN_UP_BY( FIELD_OFFSET( DEVICE_DATA_SET_REPAIR_PARAMETERS, RepairCopies ) + \
-                                     sizeof( ULONG ) * R->NumberOfRepairCopies, \
-                                     8 ) )
-
-typedef struct _DEVICE_DATA_SET_REPAIR_PARAMETERS {
-
-    ULONG NumberOfRepairCopies;                 // The number of copies that will be repaired.
-    ULONG SourceCopy;                           // The copy number of the source copy.
-    ULONG RepairCopies[ANYSIZE_ARRAY];          // The copy numbers of all the copies that will be repaired.
-
-    // UCHAR TopologyId[16];                    // 128-bit topology ID when DEVICE_DSM_FLAG_REPAIR_INPUT_TOPOLOGY_ID_PRESENT
-                                                // in 8-byte aligned offset from the start of the DEVICE_DSM_FLAG_REPAIR_INPUT_TOPOLOGY_ID_PRESENT structure
-
-} DEVICE_DATA_SET_REPAIR_PARAMETERS, *PDEVICE_DATA_SET_REPAIR_PARAMETERS;
-
-#if (NTDDI_VERSION >= NTDDI_WINBLUE)
+#define STORAGE_OFFLOAD_READ_RANGE_TRUNCATED    0x00000001
 
 //
-// Parameters block for DeviceDsmAction_Allocation
+// The token  returned by the target
+// uniquely  identifies  a "point in
+// time" snapshot of ranges taken by
+// the target.  Its format is opaque
 //
-typedef struct _DEVICE_DATA_SET_LBP_STATE_PARAMETERS {
-    ULONG   Version;        // Version of this structure.
-    ULONG   Size;           // Size of this structure.
-    ULONG   Flags;          // No flags defined yet.
-
-    //
-    // Version of DEVICE_DATA_SET_LB_PROVISIONING_STATE to return, one of:
-    //  - DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V1
-    //  - DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V2
-    //
-    ULONG   OutputVersion;
-} DEVICE_DATA_SET_LBP_STATE_PARAMETERS, *PDEVICE_DATA_SET_LBP_STATE_PARAMETERS;
-
-#define DEVICE_DATA_SET_LBP_STATE_PARAMETERS_VERSION_V1 1
-
-#endif
-
+// We  arbitrarily limit token length to 512. The SCSI interface will/may enable
+// negotiable size. If we want to add support, we'll need to create a new action
 //
-// DSM output structure for bi-directional actions.
-//
-// Output parameter block is located in resultant buffer at the offset contained in OutputBlockOffset field. Offset is calculated from the beginning of the buffer,
-// and callee will align it according to the requirement of the action specific structure template.
-// Thus future extended bi-directional actions won't require revision of ntddstor.h
-//
-//   Example: for OffloadRead action in order to get a pointer to the output structure caller shall do
-//
-//   PSTORAGE_OFFLOAD_READ_OUTPUT pReadOut = (PSTORAGE_OFFLOAD_READ_OUTPUT) ((UCHAR *)pOutputBuffer + ((PDEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT)pOutputBuffer)->OutputBlockOffset)
-//
-
-typedef struct _DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT {
-
-    ULONG Size;                                                 // Size of the structure
-
-    DEVICE_DATA_MANAGEMENT_SET_ACTION Action;                   // Action requested and performed
-
-    ULONG       Flags;                                          // Common output flags for DSM actions
-    ULONG       OperationStatus;                                // Operation status , used for offload actions (placeholder for richer semantic, like PENDING)
-    ULONG       ExtendedError;                                  // Extended error information (Windows or driver extended error)
-    ULONG       TargetDetailedError;                            // Target specific error , used for offload actions (SCSI sense code)
-    ULONG       ReservedStatus;                                 // Reserved field
-
-    ULONG       OutputBlockOffset;                              // Action specific must be alligned to corresponding structure allignment.
-    ULONG       OutputBlockLength;                              // 0 means Output Parameter Block does not exist.
-
-} DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT, *PDEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT;
-
-//
-// DSM output structure for DeviceDsmAction_Allocation
-//
-
-typedef struct _DEVICE_DATA_SET_LB_PROVISIONING_STATE {
-
-    ULONG     Size;                                 // The size of this structure, including the bitmap, in bytes.
-    ULONG     Version;                              // The version of this structure.
-    ULONGLONG SlabSizeInBytes;                      // The byte size of a slab
-    ULONG     SlabOffsetDeltaInBytes;               // The delta from the given offset in bytes.
-    ULONG     SlabAllocationBitMapBitCount;         // The number of relevant bits in the bitmap.
-    ULONG     SlabAllocationBitMapLength;           // The number of ULONGS in the bitmap array.
-    ULONG     SlabAllocationBitMap[ANYSIZE_ARRAY];  // Slab allocation bitmap, 1 = mapped, 0 = unmapped.
-
-} DEVICE_DATA_SET_LB_PROVISIONING_STATE, *PDEVICE_DATA_SET_LB_PROVISIONING_STATE;
-
-#define DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V1 (sizeof(DEVICE_DATA_SET_LB_PROVISIONING_STATE))
-
-#if (NTDDI_VERSION >= NTDDI_WINBLUE)
-
-typedef struct _DEVICE_DATA_SET_LB_PROVISIONING_STATE_V2 {
-
-    ULONG     Size;                                 // The size of this structure, including the bitmap, in bytes.
-    ULONG     Version;                              // The version of this structure.
-    ULONGLONG SlabSizeInBytes;                      // The byte size of a slab
-    ULONGLONG SlabOffsetDeltaInBytes;               // The delta from the given offset in bytes.
-    ULONG     SlabAllocationBitMapBitCount;         // The number of relevant bits in the bitmap.
-    ULONG     SlabAllocationBitMapLength;           // The number of ULONGS in the bitmap array.
-    ULONG     SlabAllocationBitMap[ANYSIZE_ARRAY];  // Slab allocation bitmap, 1 = mapped, 0 = unmapped.
-
-} DEVICE_DATA_SET_LB_PROVISIONING_STATE_V2, *PDEVICE_DATA_SET_LB_PROVISIONING_STATE_V2;
-
-#define DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V2 (sizeof(DEVICE_DATA_SET_LB_PROVISIONING_STATE_V2))
-
-#endif
 
 typedef struct _STORAGE_OFFLOAD_READ_OUTPUT {
 
-    ULONG       OffloadReadFlags;                               // Outbound flags
-    ULONG       Reserved;
-    ULONGLONG   LengthProtected;                                // The length of the snapshot by token. Must be from the lowest StartingOffset
-    ULONG       TokenLength;                                    // Length of the token in bytes.
-    STORAGE_OFFLOAD_TOKEN Token;                                // The token created on success.
+    ULONG OffloadReadFlags;
+    ULONG Reserved;
+
+    //
+    // Length of the "snapshot" that
+    // is bound to  the token.  Must
+    // be from the lowest range
+    //
+
+    ULONGLONG LengthProtected;
+
+    ULONG TokenLength;
+    STORAGE_OFFLOAD_TOKEN Token;
 
 } STORAGE_OFFLOAD_READ_OUTPUT, *PSTORAGE_OFFLOAD_READ_OUTPUT;
 
 //
-// STORAGE_OFFLOAD_READ_OUTPUT flag definitions
+// SingleRange    - No
+// ParameterBlock - Yes
+// Output         - No
+// OutputBlock    - Yes
 //
 
-#define STORAGE_OFFLOAD_READ_RANGE_TRUNCATED (0x0001)
+#define DeviceDsmDefinition_OffloadRead {DeviceDsmAction_OffloadRead,                   \
+                                         FALSE,                                         \
+                                         __alignof(DEVICE_DSM_OFFLOAD_READ_PARAMETERS), \
+                                         sizeof(DEVICE_DSM_OFFLOAD_READ_PARAMETERS),    \
+                                         FALSE,                                         \
+                                         __alignof(STORAGE_OFFLOAD_READ_OUTPUT),        \
+                                         sizeof(STORAGE_OFFLOAD_READ_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_OffloadWrite
+//
+
+typedef struct _DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS {
+
+    //
+    // Reserved for future use
+    //
+
+    ULONG Flags;
+    ULONG Reserved;
+
+    //
+    // Starting  offset to copy from
+    // "snapshot" bound to the token
+    //
+
+    ULONGLONG TokenOffset;
+
+    STORAGE_OFFLOAD_TOKEN Token;
+
+} DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS, *PDEVICE_DSM_OFFLOAD_WRITE_PARAMETERS;
+
+//
+// STORAGE_OFFLOAD_WRITE_OUTPUT.OffloadWriteFlags
+//
+
+#define STORAGE_OFFLOAD_WRITE_RANGE_TRUNCATED   0x0001
+#define STORAGE_OFFLOAD_TOKEN_INVALID           0x0002
 
 typedef struct _STORAGE_OFFLOAD_WRITE_OUTPUT {
 
-    ULONG       OffloadWriteFlags;                               // Out flags
-    ULONG       Reserved;                                        // reserved for future usage
-    ULONGLONG   LengthCopied;                                    // Out parameter : The length of content copied from the "snapshot" from the start
+    ULONG OffloadWriteFlags;
+    ULONG Reserved;
+
+    //
+    // Length of content copied from
+    // the "snapshot" from the start
+    //
+
+    ULONGLONG LengthCopied;
 
 } STORAGE_OFFLOAD_WRITE_OUTPUT, *PSTORAGE_OFFLOAD_WRITE_OUTPUT;
 
 //
-// STORAGE_OFFLOAD_WRITE_OUTPUT flag definitions - used in OffloadWriteFlags mask
+// SingleRange    - No
+// ParameterBlock - Yes
+// Output         - No
+// OutputBlock    - Yes
 //
 
-#define STORAGE_OFFLOAD_WRITE_RANGE_TRUNCATED (0x0001)          // Write performed, but on a truncated range
-#define STORAGE_OFFLOAD_TOKEN_INVALID         (0x0002)          // Token specified in offload write operation is invalid.
+#define DeviceDsmDefinition_OffloadWrite {DeviceDsmAction_OffloadWrite,                   \
+                                          FALSE,                                          \
+                                          __alignof(DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS), \
+                                          sizeof(DEVICE_DSM_OFFLOAD_WRITE_PARAMETERS),    \
+                                          FALSE,                                          \
+                                          __alignof(STORAGE_OFFLOAD_WRITE_OUTPUT),        \
+                                          sizeof(STORAGE_OFFLOAD_WRITE_OUTPUT)}
 
+
+////////////////////////////////////////////////////////////////////////////////
 //
-// DSM output structure for DeviceDsmAction_Scrub
-//
-
-typedef struct _DEVICE_DATA_SET_SCRUB_OUTPUT {
-
-    ULONGLONG BytesProcessed;                                   // Number of bytes that were actually processed
-    ULONGLONG BytesRepaired;                                    // Number of bytes that were out of sync and fixed
-    ULONGLONG BytesFailed;                                      // Number of bytes that could not be read or fixed
-
-} DEVICE_DATA_SET_SCRUB_OUTPUT, *PDEVICE_DATA_SET_SCRUB_OUTPUT;
-
-//
-// DSM output structure for DeviceDsmAction_Scrub
-//
-// ParityExtent is valid only if DEVICE_DSM_FLAG_SCRUB_OUTPUT_PARITY_EXTENT is set
-// in DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT Flags
+// DeviceDsmAction_Allocation
 //
 
-typedef struct _DEVICE_DATA_SET_SCRUB_EX_OUTPUT {
+//
+// DEVICE_DSM_INPUT.Flags
+//
 
-    ULONGLONG BytesProcessed;                                   // Number of bytes that were actually processed
-    ULONGLONG BytesRepaired;                                    // Number of bytes that were out of sync and fixed
-    ULONGLONG BytesFailed;                                      // Number of bytes that could not be read or fixed
+#define DEVICE_DSM_FLAG_ALLOCATION_CONSOLIDATEABLE_ONLY 0x40000000
 
-    DEVICE_DATA_SET_RANGE ParityExtent;         // Parity extent for stripe regeneration
+typedef struct _DEVICE_DATA_SET_LBP_STATE_PARAMETERS {
 
-} DEVICE_DATA_SET_SCRUB_EX_OUTPUT, *PDEVICE_DATA_SET_SCRUB_EX_OUTPUT;
+    ULONG Version;
+    ULONG Size;
+
+    //
+    // Reserved for future use
+    //
+
+    ULONG Flags;
+
+    //
+    // DEVICE_DSM_ALLOCATION_OUTPUT_V1 or
+    // DEVICE_DSM_ALLOCATION_OUTPUT_V2
+    //
+
+    ULONG OutputVersion;
+
+} DEVICE_DATA_SET_LBP_STATE_PARAMETERS, *PDEVICE_DATA_SET_LBP_STATE_PARAMETERS,
+  DEVICE_DSM_ALLOCATION_PARAMETERS, *PDEVICE_DSM_ALLOCATION_PARAMETERS;
+
+#define DEVICE_DSM_PARAMETERS_V1                        1
+#define DEVICE_DATA_SET_LBP_STATE_PARAMETERS_VERSION_V1 DEVICE_DSM_PARAMETERS_V1
+
+typedef struct _DEVICE_DATA_SET_LB_PROVISIONING_STATE {
+
+    ULONG Size;
+    ULONG Version;
+
+    ULONGLONG SlabSizeInBytes;
+
+    //
+    // Delta  from the  start offset
+    // if the requested range is not
+    // aligned to a slab boundary
+    //
+
+    ULONG SlabOffsetDeltaInBytes;
+
+    //
+    // Number of bits that are valid
+    //
+
+    ULONG SlabAllocationBitMapBitCount;
+
+    //
+    // Count of ULONGs in the bitmap
+    //
+
+    ULONG SlabAllocationBitMapLength;
+
+    //
+    // 1 = mapped, 0 = unmapped
+    //
+
+    ULONG SlabAllocationBitMap[ANYSIZE_ARRAY];
+
+} DEVICE_DATA_SET_LB_PROVISIONING_STATE, *PDEVICE_DATA_SET_LB_PROVISIONING_STATE,
+  DEVICE_DSM_ALLOCATION_OUTPUT, *PDEVICE_DSM_ALLOCATION_OUTPUT;
+
+#define DEVICE_DSM_ALLOCATION_OUTPUT_V1                  (sizeof(DEVICE_DSM_ALLOCATION_OUTPUT))
+#define DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V1 DEVICE_DSM_ALLOCATION_OUTPUT_V1
+
+typedef struct _DEVICE_DATA_SET_LB_PROVISIONING_STATE_V2 {
+
+    ULONG Size;
+    ULONG Version;
+
+    ULONGLONG SlabSizeInBytes;
+
+    //
+    // Delta  from the  start offset
+    // if the requested range is not
+    // aligned to a slab boundary
+    //
+
+    ULONGLONG SlabOffsetDeltaInBytes;
+
+    //
+    // Number of bits that are valid
+    //
+
+    ULONG SlabAllocationBitMapBitCount;
+
+    //
+    // Count of ULONGs in the bitmap
+    //
+
+    ULONG SlabAllocationBitMapLength;
+
+    //
+    // 1 = mapped, 0 = unmapped
+    //
+
+    ULONG SlabAllocationBitMap[ANYSIZE_ARRAY];
+
+} DEVICE_DATA_SET_LB_PROVISIONING_STATE_V2, *PDEVICE_DATA_SET_LB_PROVISIONING_STATE_V2,
+  DEVICE_DSM_ALLOCATION_OUTPUT2, *PDEVICE_DSM_ALLOCATION_OUTPUT2;
+
+#define DEVICE_DSM_ALLOCATION_OUTPUT_V2                  (sizeof(DEVICE_DSM_ALLOCATION_OUTPUT2))
+#define DEVICE_DATA_SET_LB_PROVISIONING_STATE_VERSION_V2 DEVICE_DSM_ALLOCATION_OUTPUT_V2
 
 //
-// DSM output structure for DeviceDsmAction_Repair
+// SingleRange    - Yes
+// ParameterBlock - Yes
+// Output         - Yes
+// OutputBlock    - Yes
 //
-// ParityExtent is valid only if DEVICE_DSM_FLAG_REPAIR_OUTPUT_PARITY_EXTENT is set
-// in DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT Flags
+
+#define DeviceDsmDefinition_Allocation {DeviceDsmAction_Allocation,                  \
+                                        TRUE,                                        \
+                                        __alignof(DEVICE_DSM_ALLOCATION_PARAMETERS), \
+                                        sizeof(DEVICE_DSM_ALLOCATION_PARAMETERS),    \
+                                        TRUE,                                        \
+                                        __alignof(DEVICE_DSM_ALLOCATION_OUTPUT2),    \
+                                        sizeof(DEVICE_DSM_ALLOCATION_OUTPUT2)}
+
+
+////////////////////////////////////////////////////////////////////////////////
 //
+// DeviceDsmAction_Repair
+//
+
+//
+// DEVICE_DSM_INPUT.Flags
+//
+
+#define DEVICE_DSM_FLAG_REPAIR_INPUT_TOPOLOGY_ID_PRESENT    0x40000000
+
+typedef struct _DEVICE_DATA_SET_REPAIR_PARAMETERS {
+
+    ULONG NumberOfRepairCopies;
+    ULONG SourceCopy;
+    ULONG RepairCopies[ANYSIZE_ARRAY];
+
+    //
+    // Valid iff DEVICE_DSM_FLAG_REPAIR_INPUT_TOPOLOGY_ID_PRESENT is set
+    //
+    // To access this field, use the
+    // below macro
+    //
+
+    // UCHAR TopologyId[16];
+
+} DEVICE_DATA_SET_REPAIR_PARAMETERS, *PDEVICE_DATA_SET_REPAIR_PARAMETERS,
+  DEVICE_DSM_REPAIR_PARAMETERS, *PDEVICE_DSM_REPAIR_PARAMETERS;
+
+#define GET_REPAIR_TOPOLOGY_ID(R)                                                                  \
+    RtlOffsetToPointer(R,                                                                          \
+                       ALIGN_UP_BY(FIELD_OFFSET(DEVICE_DATA_SET_REPAIR_PARAMETERS, RepairCopies) + \
+                       sizeof(ULONG) * R->NumberOfRepairCopies,                                    \
+                       8))
+
+//
+// DEVICE_DSM_OUTPUT.Flags
+//
+
+#define DEVICE_DSM_FLAG_REPAIR_OUTPUT_PARITY_EXTENT         0x20000000
 
 typedef struct _DEVICE_DATA_SET_REPAIR_OUTPUT {
 
-    DEVICE_DATA_SET_RANGE ParityExtent;         // Parity extent for stripe regeneration
+    //
+    // Valid iff DEVICE_DSM_FLAG_REPAIR_OUTPUT_PARITY_EXTENT is set
+    //
 
-} DEVICE_DATA_SET_REPAIR_OUTPUT, *PDEVICE_DATA_SET_REPAIR_OUTPUT;
+    DEVICE_DSM_RANGE ParityExtent;
+
+} DEVICE_DATA_SET_REPAIR_OUTPUT, *PDEVICE_DATA_SET_REPAIR_OUTPUT,
+  DEVICE_DSM_REPAIR_OUTPUT, *PDEVICE_DSM_REPAIR_OUTPUT;
 
 //
-// DSM input structure for DeviceDsmAction_TieringQuery.
+// SingleRange    - Yes
+// ParameterBlock - Yes
+// Output         - Yes
+// OutputBlock    - Yes
 //
-// This IOCTL returns the storage tier regions from the storage
-// stack for a particular LUN or volume.
+
+#define DeviceDsmDefinition_Repair {DeviceDsmAction_Repair,                  \
+                                    TRUE,                                    \
+                                    __alignof(DEVICE_DSM_REPAIR_PARAMETERS), \
+                                    sizeof(DEVICE_DSM_REPAIR_PARAMETERS),    \
+                                    TRUE,                                    \
+                                    __alignof(DEVICE_DSM_REPAIR_OUTPUT),     \
+                                    sizeof(DEVICE_DSM_REPAIR_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_Scrub
+//
+
+//
+// DEVICE_DSM_INPUT.Flags
+//
+
+#define DEVICE_DSM_FLAG_SCRUB_SKIP_IN_SYNC           0x10000000
+
+typedef struct _DEVICE_DATA_SET_SCRUB_OUTPUT {
+
+    ULONGLONG BytesProcessed;
+    ULONGLONG BytesRepaired;
+    ULONGLONG BytesFailed;
+
+} DEVICE_DATA_SET_SCRUB_OUTPUT, *PDEVICE_DATA_SET_SCRUB_OUTPUT,
+  DEVICE_DSM_SCRUB_OUTPUT, *PDEVICE_DSM_SCRUB_OUTPUT;
+
+//
+// DEVICE_DSM_OUTPUT.Flags
+//
+
+#define DEVICE_DSM_FLAG_SCRUB_OUTPUT_PARITY_EXTENT   0x20000000
+
+typedef struct _DEVICE_DATA_SET_SCRUB_EX_OUTPUT {
+
+    ULONGLONG BytesProcessed;
+    ULONGLONG BytesRepaired;
+    ULONGLONG BytesFailed;
+
+    //
+    // Valid iff DEVICE_DSM_FLAG_SCRUB_OUTPUT_PARITY_EXTENT is set
+    //
+
+    DEVICE_DSM_RANGE ParityExtent;
+
+} DEVICE_DATA_SET_SCRUB_EX_OUTPUT, *PDEVICE_DATA_SET_SCRUB_EX_OUTPUT,
+  DEVICE_DSM_SCRUB_OUTPUT2, *PDEVICE_DSM_SCRUB_OUTPUT2;
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - Yes
+//
+
+#define DeviceDsmDefinition_Scrub {DeviceDsmAction_Scrub,               \
+                                   FALSE,                               \
+                                   0,                                   \
+                                   0,                                   \
+                                   TRUE,                                \
+                                   __alignof(DEVICE_DSM_SCRUB_OUTPUT2), \
+                                   sizeof(DEVICE_DSM_SCRUB_OUTPUT2)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_DrtQuery
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_DrtQuery {DeviceDsmAction_DrtQuery, \
+                                      FALSE,                    \
+                                      0,                        \
+                                      0,                        \
+                                      TRUE,                     \
+                                      0,                        \
+                                      0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_DrtClear
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_DrtClear {DeviceDsmAction_DrtClear, \
+                                      FALSE,                    \
+                                      0,                        \
+                                      0,                        \
+                                      FALSE,                    \
+                                      0,                        \
+                                      0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_DrtDisable
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_DrtDisable {DeviceDsmAction_DrtDisable, \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0,                          \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_TieringQuery
 //
 
 typedef struct _DEVICE_DSM_TIERING_QUERY_INPUT {
 
-    ULONG     Version;                      // The version of this structure.
-    ULONG     Size;                         // The size of this structure in bytes.
+    ULONG Version;
+    ULONG Size;
 
-    ULONG     Flags;                        // Reserved for future use.
+    //
+    // Reserved for future use
+    //
 
-    ULONG     NumberOfTierIds;              // Number of entries in TierIds, 0 for all for volume
-    GUID      TierIds[ANYSIZE_ARRAY];       // Storage tiers to return information for
+    ULONG Flags;
 
-} DEVICE_DSM_TIERING_QUERY_INPUT, *PDEVICE_DSM_TIERING_QUERY_INPUT;
+    ULONG NumberOfTierIds;
+    GUID  TierIds[ANYSIZE_ARRAY];
 
-//
-// DSM output structures for DeviceDsmAction_TieringQuery.
-//
+} DEVICE_DSM_TIERING_QUERY_INPUT, *PDEVICE_DSM_TIERING_QUERY_INPUT,
+  DEVICE_DSM_TIERING_QUERY_PARAMETERS, *PDEVICE_DSM_TIERING_QUERY_PARAMETERS;
 
 typedef struct _STORAGE_TIER_REGION {
 
-    GUID        TierId;     // Tier ID
+    GUID TierId;
 
-    ULONGLONG   Offset;     // offset of region in bytes
-    ULONGLONG   Length;     // length of region in bytes
+    ULONGLONG Offset;
+    ULONGLONG Length;
 
 } STORAGE_TIER_REGION, *PSTORAGE_TIER_REGION;
 
-//
-//  The DeviceDsmAction_TieringQuery DSM response returns a single one of these that include
-//  multiple STORAGE_TIER_REGION records, one for each region.
-//
-
 typedef struct _DEVICE_DSM_TIERING_QUERY_OUTPUT {
 
-    ULONG     Version;                          // The version of this structure.
-    ULONG     Size;                             // The size of this structure in bytes.
+    ULONG Version;
+    ULONG Size;
 
-    ULONG     Flags;                            // Reserved for future use.
-    ULONG     Reserved;                         // Reserved for future use.
+    //
+    // Reserved for future use
+    //
 
-    ULONGLONG Alignment;                        // in bytes, must align to slab boundary.
+    ULONG Flags;
+    ULONG Reserved;
 
-    ULONG     TotalNumberOfRegions;             // Total number of available regions.
-    ULONG     NumberOfRegionsReturned;          // Number of regions that fit in the output.
+    //
+    // Delta  from the  start offset
+    // if the requested range is not
+    // aligned to a  region boundary
+    //
 
-    _Field_size_(NumberOfRegionsReturned) STORAGE_TIER_REGION Regions[ANYSIZE_ARRAY]; // Detailed info on the regions.
+    ULONGLONG Alignment;
+
+    //
+    // Total  number of regions that
+    // are in the specified range
+    //
+
+    ULONG TotalNumberOfRegions;
+
+    ULONG NumberOfRegionsReturned;
+    _Field_size_(NumberOfRegionsReturned) STORAGE_TIER_REGION Regions[ANYSIZE_ARRAY];
 
 } DEVICE_DSM_TIERING_QUERY_OUTPUT, *PDEVICE_DSM_TIERING_QUERY_OUTPUT;
+
+//
+// SingleRange    - Yes
+// ParameterBlock - Yes
+// Output         - Yes
+// OutputBlock    - Yes
+//
+
+#define DeviceDsmDefinition_TieringQuery {DeviceDsmAction_TieringQuery,                   \
+                                          TRUE,                                           \
+                                          __alignof(DEVICE_DSM_TIERING_QUERY_PARAMETERS), \
+                                          sizeof(DEVICE_DSM_TIERING_QUERY_PARAMETERS),    \
+                                          TRUE,                                           \
+                                          __alignof(DEVICE_DSM_TIERING_QUERY_OUTPUT),     \
+                                          sizeof(DEVICE_DSM_TIERING_QUERY_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_Map
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_Map {DeviceDsmAction_Map, \
+                                 FALSE,               \
+                                 0,                   \
+                                 0,                   \
+                                 FALSE,               \
+                                 0,                   \
+                                 0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_RegenerateParity
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_RegenerateParity {DeviceDsmAction_RegenerateParity, \
+                                              FALSE,                            \
+                                              0,                                \
+                                              0,                                \
+                                              FALSE,                            \
+                                              0,                                \
+                                              0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_NvCache_Change_Priority
+//
+
+typedef struct _DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS {
+
+    ULONG Size;
+
+    UCHAR TargetPriority;
+    UCHAR Reserved[3];
+
+} DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS, *PDEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS;
+
+//
+// SingleRange    - No
+// ParameterBlock - Yes
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_NvCache_Change_Priority {DeviceDsmAction_NvCache_Change_Priority,                  \
+                                                     FALSE,                                                    \
+                                                     __alignof(DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS), \
+                                                     sizeof(DEVICE_DSM_NVCACHE_CHANGE_PRIORITY_PARAMETERS),    \
+                                                     FALSE,                                                    \
+                                                     0,                                                        \
+                                                     0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_NvCache_Evict
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_NvCache_Evict {DeviceDsmAction_NvCache_Evict, \
+                                           FALSE,                         \
+                                           0,                             \
+                                           0,                             \
+                                           FALSE,                         \
+                                           0,                             \
+                                           0}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_TopologyIdQuery
+//
 
 typedef struct _DEVICE_DATA_SET_TOPOLOGY_ID_QUERY_OUTPUT {
 
     //
-    //  Number of bytes that TopologyId describes from the start of an input range
+    // Number of bytes that topology
+    // id describes  relative to the
+    // start of an input range
     //
 
     ULONGLONG TopologyRangeBytes;
 
     //
-    //  First topology ID described by the TopologyRangeBytes
+    // The corresponding topology id
     //
 
     UCHAR TopologyId[16];
 
-} DEVICE_DATA_SET_TOPOLOGY_ID_QUERY_OUTPUT, *PDEVICE_DATA_SET_TOPOLOGY_ID_QUERY_OUTPUT;
-
-
-//
-// DSM output structure for DeviceDsmAction_GetPhysicalAddresses
-//
+} DEVICE_DATA_SET_TOPOLOGY_ID_QUERY_OUTPUT, *PDEVICE_DATA_SET_TOPOLOGY_ID_QUERY_OUTPUT,
+  DEVICE_DSM_TOPOLOGY_ID_QUERY_OUTPUT, *PDEVICE_DSM_TOPOLOGY_ID_QUERY_OUTPUT;
 
 //
-// Structure used to describe a range corresponding to a Byte Addressable
-// Storage device.
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - Yes
 //
+
+#define DeviceDsmDefinition_TopologyIdQuery {DeviceDsmAction_TopologyIdQuery,                \
+                                             FALSE,                                          \
+                                             0,                                              \
+                                             0,                                              \
+                                             TRUE,                                           \
+                                             __alignof(DEVICE_DSM_TOPOLOGY_ID_QUERY_OUTPUT), \
+                                             sizeof(DEVICE_DSM_TOPOLOGY_ID_QUERY_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_GetPhysicalAddresses
+//
+
+//
+// DEVICE_DSM_INPUT.Flags
+//
+
+//
+// If set, TotalNumberOfRanges field will be 0.
+// A caller that doesn't need to know the total
+// number of ranges  should set this flag  as a
+// performance optimization, because the device
+// might incur some cost  calculating the total
+// number of ranges.
+//
+
+#define DEVICE_DSM_FLAG_PHYSICAL_ADDRESSES_OMIT_TOTAL_RANGES 0x10000000
 
 typedef struct _DEVICE_STORAGE_ADDRESS_RANGE {
-    LONGLONG    StartAddress;      // Starting system physical address
-    ULONGLONG   LengthInBytes;     // Size of the range
-} DEVICE_STORAGE_ADDRESS_RANGE, *PDEVICE_STORAGE_ADDRESS_RANGE;
 
-#define DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT_VERSION_V1 1
+    LONGLONG    StartAddress;
+    ULONGLONG   LengthInBytes;
+
+} DEVICE_STORAGE_ADDRESS_RANGE, *PDEVICE_STORAGE_ADDRESS_RANGE;
 
 typedef struct _DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT {
 
-    ULONG                      Version;                    // The version of this structure.
+    ULONG Version;
 
-    ULONG                      Flags;                      // Additional information about the output.
+    //
+    // Reserved for future use
+    //
 
-    ULONG                      TotalNumberOfRanges;        // The number of ranges that would be necessary to fulfill the request.
-                                                           // By looking at this field, the caller can know how big the output
-                                                           // buffer needs to be. The device always sets this field to 0 if
-                                                           // the DEVICE_DSM_FLAG_PHYSICAL_ADDRESSES_OMIT_TOTAL_RANGES flag is set
-                                                           // in the input buffer.
+    ULONG Flags;
 
-    ULONG                      NumberOfRangesReturned;     // Number of entries in Ranges. If the buffer provided by the caller
-                                                           // isn't large enough to hold all the requested ranges, the device
-                                                           // returns STATUS_BUFFER_OVERFLOW in IoStatus.Status.
+    //
+    // Total number of ranges within
+    // the specified ranges. Callers
+    // may use it to  determine  the
+    // correct  size of  this output
+    // buffer
+    //
 
+    ULONG TotalNumberOfRanges;
+
+    //
+    // If the buffer provided by the
+    // caller is not large enough to
+    // hold all the requested ranges
+    // a STATUS_BUFFER_OVERFLOW will
+    // be returned
+    //
+
+    ULONG NumberOfRangesReturned;
     DEVICE_STORAGE_ADDRESS_RANGE Ranges[ANYSIZE_ARRAY];
 
 } DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT, *PDEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT;
 
+#define DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT_V1         1
+#define DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT_VERSION_V1 DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT_V1
+
 //
-// Parameter Block for the DeviceDsmAction_ReportZones action.
-//
-// Input parameter is with data structure DEVICE_MANAGE_DATA_SET_ATTRIBUTES,
-// following in memory by a DEVICE_DSM_REPORT_ZONES_PARAMETERS.
-// If DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE flag is not set, a single range DEVICE_DATA_SET_RANGE should also follow
-// with StartingOffset aligned at the zone boundary.
-// If DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE is specified, it indicates that caller wants zones information for whole disk.
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - Yes
 //
 
-typedef enum _STORAGE_ZONE_CONDITION {
+#define DeviceDsmDefinition_GetPhysicalAddresses {DeviceDsmAction_GetPhysicalAddresses,            \
+                                                  FALSE,                                           \
+                                                  0,                                               \
+                                                  0,                                               \
+                                                  TRUE,                                            \
+                                                  __alignof(DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT), \
+                                                  sizeof(DEVICE_DSM_PHYSICAL_ADDRESSES_OUTPUT)}
 
-    ZoneConditionConventional                   = 0x00,
-    ZoneConditionEmpty                          = 0x01,
-    ZoneConditionImplicitlyOpened               = 0x02,
-    ZoneConditionExplicitlyOpened               = 0x03,
-    ZoneConditionClosed                         = 0x04,
 
-    ZoneConditionReadOnly                       = 0x0D,
-    ZoneConditionFull                           = 0x0E,
-    ZoneConditionOffline                        = 0x0F,
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_ScopeRegen
+//
 
-} STORAGE_ZONE_CONDITION, *PSTORAGE_ZONE_CONDITION;
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_ScopeRegen {DeviceDsmAction_ScopeRegen, \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0,                          \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_ReportZones
+//
 
 typedef struct _DEVICE_DSM_REPORT_ZONES_PARAMETERS {
-    ULONG       Size;                                  // Size of this structure
 
-    UCHAR       ReportOption;                          // Report Zone options
-    UCHAR       Partial;                               // Partial bit effects calculation of Zone List Length
+    ULONG Size;
 
-    UCHAR       Reserved[2];
+    UCHAR ReportOption;
+
+    //
+    // This  bit affects calculation
+    // of the zone list length
+    //
+
+    UCHAR Partial;
+
+    UCHAR Reserved[2];
+
 } DEVICE_DSM_REPORT_ZONES_PARAMETERS, *PDEVICE_DSM_REPORT_ZONES_PARAMETERS;
-
-//
-// Output buffer for the DeviceDsmAction_ReportZones action.
-//  output buffer consists of data structure DEVICE_MANAGE_DATA_SET_ATTRIBUTES_OUTPUT,
-//  following with DEVICE_DSM_REPORT_ZONES_DATA.
-//
 
 typedef enum _STORAGE_ZONES_ATTRIBUTES {
 
-    ZonesAttributeTypeAndLengthMayDifferent = 0,
-    ZonesAttributeTypeSameLengthSame = 1,
+    ZonesAttributeTypeAndLengthMayDifferent       = 0,
+    ZonesAttributeTypeSameLengthSame              = 1,
     ZonesAttributeTypeSameLastZoneLengthDifferent = 2,
-    ZonesAttributeTypeMayDifferentLengthSame = 3,
+    ZonesAttributeTypeMayDifferentLengthSame      = 3,
 
 } STORAGE_ZONES_ATTRIBUTES, *PSTORAGE_ZONES_ATTRIBUTES;
 
+typedef enum _STORAGE_ZONE_CONDITION {
+
+    ZoneConditionConventional     = 0x00,
+    ZoneConditionEmpty            = 0x01,
+    ZoneConditionImplicitlyOpened = 0x02,
+    ZoneConditionExplicitlyOpened = 0x03,
+    ZoneConditionClosed           = 0x04,
+
+    ZoneConditionReadOnly         = 0x0D,
+    ZoneConditionFull             = 0x0E,
+    ZoneConditionOffline          = 0x0F,
+
+} STORAGE_ZONE_CONDITION, *PSTORAGE_ZONE_CONDITION;
+
 typedef struct _STORAGE_ZONE_DESCRIPTOR {
 
-    ULONG       Size;       // size of this structure.
+    ULONG Size;
 
-    STORAGE_ZONE_TYPES      ZoneType;
-    STORAGE_ZONE_CONDITION  ZoneCondition;
+    STORAGE_ZONE_TYPES ZoneType;
+    STORAGE_ZONE_CONDITION ZoneCondition;
 
-    BOOLEAN     ResetWritePointerRecommend;
-    UCHAR       Reserved0[3];
+    BOOLEAN ResetWritePointerRecommend;
+    UCHAR Reserved0[3];
 
-    ULONGLONG   ZoneSize;               // in bytes
-    ULONGLONG   WritePointerOffset;     // write pointer offset, in bytes, from the beginning of the zone
+    //
+    // In bytes
+    //
+
+    ULONGLONG ZoneSize;
+    ULONGLONG WritePointerOffset;
 
 } STORAGE_ZONE_DESCRIPTOR, *PSTORAGE_ZONE_DESCRIPTOR;
 
 typedef struct _DEVICE_DSM_REPORT_ZONES_DATA {
 
-    ULONG       Size;                       // Size of this structure
+    ULONG Size;
 
-    ULONG       ZoneCount;
-    STORAGE_ZONES_ATTRIBUTES    Attributes;
+    ULONG ZoneCount;
+    STORAGE_ZONES_ATTRIBUTES Attributes;
 
-    ULONG       Reserved0;
+    ULONG Reserved0;
 
     _Field_size_(ZoneCount) STORAGE_ZONE_DESCRIPTOR ZoneDescriptors[ANYSIZE_ARRAY];
 
-} DEVICE_DSM_REPORT_ZONES_DATA, *PDEVICE_DSM_REPORT_ZONES_DATA;
+} DEVICE_DSM_REPORT_ZONES_DATA, *PDEVICE_DSM_REPORT_ZONES_DATA,
+  DEVICE_DSM_REPORT_ZONES_OUTPUT, *PDEVICE_DSM_REPORT_ZONES_OUTPUT;
 
 //
-// Parameters for DeviceDsmAction_OpenZones, DeviceDsmAction_FinishZones and DeviceDsmAction_CloseZones action.
+// SingleRange    - No
+// ParameterBlock - Yes
+// Output         - Yes
+// OutputBlock    - Yes
 //
-//  Input parameter is with data structure DEVICE_MANAGE_DATA_SET_ATTRIBUTES, following by DEVICE_DATA_SET_RANGE(s).
-//    DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE can be used to indicate operation applies to all applicable zones.
-//  Output parameter: None.
+
+#define DeviceDsmDefinition_ReportZones  {DeviceDsmAction_ReportZones,                   \
+                                          FALSE,                                         \
+                                          __alignof(DEVICE_DSM_REPORT_ZONES_PARAMETERS), \
+                                          sizeof(DEVICE_DSM_REPORT_ZONES_PARAMETERS),    \
+                                          TRUE,                                          \
+                                          __alignof(DEVICE_DSM_REPORT_ZONES_OUTPUT),     \
+                                          sizeof(DEVICE_DSM_REPORT_ZONES_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_OpenZone
 //
 
 //
-// Parameters for DeviceDsmAction_ResetWritePointer action.
-//
-//  Input parameter is with data structure DEVICE_MANAGE_DATA_SET_ATTRIBUTES, optionally following by DEVICE_DATA_SET_RANGE(s).
-//    DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE can be used to indicate reseting writer pointer for all opened/closed/full zones.
-//  Output parameter: None.
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
 //
 
+#define DeviceDsmDefinition_OpenZone {DeviceDsmAction_OpenZone, \
+                                      FALSE,                    \
+                                      0,                        \
+                                      0,                        \
+                                      FALSE,                    \
+                                      0,                        \
+                                      0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_FinishZone
+//
 
 //
-// DSM output structure for DeviceDsmAction_GetRangeErrorInfo
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
 //
+
+#define DeviceDsmDefinition_FinishZone {DeviceDsmAction_FinishZone, \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0,                          \
+                                        FALSE,                      \
+                                        0,                          \
+                                        0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_CloseZone
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_CloseZone {DeviceDsmAction_CloseZone, \
+                                       FALSE,                     \
+                                       0,                         \
+                                       0,                         \
+                                       FALSE,                     \
+                                       0,                         \
+                                       0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_ResetWritePointer
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_ResetWritePointer {DeviceDsmAction_ResetWritePointer, \
+                                               FALSE,                             \
+                                               0,                                 \
+                                               0,                                 \
+                                               FALSE,                             \
+                                               0,                                 \
+                                               0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_GetRangeErrorInfo
+//
+
 #pragma warning(push)
 #pragma warning(disable:4201) // nameless struct/unions
 #pragma warning(disable:4214) // bit fields other than int
 
-//
-// This structure describes a range of a disk which can be either good or bad. Bad
-// ranges should not be accessed.
-//
 typedef struct _DEVICE_STORAGE_RANGE_ATTRIBUTES {
-    ULONGLONG   LengthInBytes; // Size of the range, in bytes. This is a multiple of the sector size.
+
+    //
+    // Must be a  multiple of sector
+    // size, in bytes
+    //
+
+    ULONGLONG LengthInBytes;
 
     union {
+
         ULONG AllFlags;
 
         struct {
-            ULONG IsRangeBad : 1; // If 1, the range is bad. Otherwise, the range is good.
+
+            //
+            // 1 = bad, 0 = good
+            //
+
+            ULONG IsRangeBad : 1;
         };
     };
 
-    ULONG Reserved;             // Reserved for future use.
+    ULONG Reserved;
 
 } DEVICE_STORAGE_RANGE_ATTRIBUTES, *PDEVICE_STORAGE_RANGE_ATTRIBUTES;
 
 #pragma warning(pop)
 
-#define DEVICE_DSM_RANGE_ERROR_INFO_VERSION_V1 1
-
 //
-// Flags for DEVICE_DSM_RANGE_ERROR_INFO.
+// DEVICE_DSM_RANGE_ERROR_OUTPUT.Flags
 //
 
-//
-// When this flag is set, there are no errors in any of the input ranges.
-//
-#define DEVICE_STORAGE_NO_ERRORS 0x1
+#define DEVICE_STORAGE_NO_ERRORS                0x1
 
 typedef struct _DEVICE_DSM_RANGE_ERROR_INFO {
 
-    ULONG                      Version;                 // The version of this structure.
+    ULONG Version;
 
-    ULONG                      Flags;                   // Additional information about the output.
+    ULONG Flags;
 
-    ULONG                      TotalNumberOfRanges;     // The number of ranges that would be necessary to fulfill the request.
-                                                        // By looking at this field, the caller can know how big the output
-                                                        // buffer needs to be.
+    //
+    // Total number of ranges within
+    // the specified ranges. Callers
+    // may use it to  determine  the
+    // correct  size of  this output
+    // buffer
+    //
 
-    ULONG                      NumberOfRangesReturned;  // Number of entries in Ranges. If the buffer provided by the caller
-                                                        // isn't large enough to hold all the requested ranges, the device
-                                                        // returns STATUS_BUFFER_OVERFLOW in IoStatus.Status.
+    ULONG TotalNumberOfRanges;
 
-    DEVICE_STORAGE_RANGE_ATTRIBUTES   Ranges[ANYSIZE_ARRAY]; // The output ranges, which inform the caller about which regions of the requested
-                                                             // ranges are good or bad. The elements of this array are sorted so that their order
-                                                             // corresponds to the order of the input ranges. For example, if the first input
-                                                             // range was broken into 3 output ranges, those will be the first 3 ranges in the array.
-                                                             // The caller can learn which output ranges correspond to an input range by keeping track
-                                                             // of the length of the output ranges.
+    //
+    // If the buffer provided by the
+    // caller is not large enough to
+    // hold all the requested ranges
+    // a STATUS_BUFFER_OVERFLOW will
+    // be returned
+    //
+    // The output ranges, which inform the caller about which regions of the requested
+    // ranges are good or bad. The elements of this array are sorted so that their order
+    // corresponds to the order of the input ranges. For example, if the first input
+    // range was broken into 3 output ranges, those will be the first 3 ranges in the array.
+    // The caller can learn which output ranges correspond to an input range by keeping track
+    // of the length of the output ranges.
+    //
+
+    ULONG NumberOfRangesReturned;
+    DEVICE_STORAGE_RANGE_ATTRIBUTES Ranges[ANYSIZE_ARRAY];
+
+} DEVICE_DSM_RANGE_ERROR_INFO, *PDEVICE_DSM_RANGE_ERROR_INFO,
+  DEVICE_DSM_RANGE_ERROR_OUTPUT, *PDEVICE_DSM_RANGE_ERROR_OUTPUT;
+
+#define DEVICE_DSM_RANGE_ERROR_OUTPUT_V1        1
+#define DEVICE_DSM_RANGE_ERROR_INFO_VERSION_V1  DEVICE_DSM_RANGE_ERROR_OUTPUT_V1
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - Yes
+//
+
+#define DeviceDsmDefinition_GetRangeErrorInfo {DeviceDsmAction_GetRangeErrorInfo,        \
+                                               FALSE,                                    \
+                                               0,                                        \
+                                               0,                                        \
+                                               TRUE,                                     \
+                                               __alignof(DEVICE_DSM_RANGE_ERROR_OUTPUT), \
+                                               sizeof(DEVICE_DSM_RANGE_ERROR_OUTPUT)}
 
 
-} DEVICE_DSM_RANGE_ERROR_INFO, *PDEVICE_DSM_RANGE_ERROR_INFO;
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_WriteZeroes
+//
+// ParameterBlock - No
+// Output         - No
+//
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - No
+// OutputBlock    - No
+//
+
+#define DeviceDsmDefinition_WriteZeroes {DeviceDsmAction_WriteZeroes, \
+                                         FALSE,                       \
+                                         0,                           \
+                                         0,                           \
+                                         FALSE,                       \
+                                         0,                           \
+                                         0}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_LostQuery
+//
+
+typedef struct _DEVICE_DSM_LOST_QUERY_PARAMETERS {
+
+    //
+    // Size of this structure serves
+    // as the version
+    //
+
+    ULONG Version;
+
+    ULONGLONG Granularity;
+
+} DEVICE_DSM_LOST_QUERY_PARAMETERS, *PDEVICE_DSM_LOST_QUERY_PARAMETERS;
+
+typedef struct _DEVICE_DSM_LOST_QUERY_OUTPUT {
+
+    //
+    // Size of this structure serves
+    // as the version
+    //
+
+    ULONG Version;
+
+    //
+    // Size of  this structure  plus
+    // all the variable sized fields
+    // needed for  the  entire range
+    //
+
+    ULONG Size;
+
+    //
+    // Delta  from the  start offset
+    // if the requested range is not
+    // granularity aligned
+    //
+
+    ULONGLONG Alignment;
+
+    //
+    // 1 = lost, 0 = readable
+    //
+
+    ULONG NumberOfBits;
+    ULONG BitMap[ANYSIZE_ARRAY];
+
+} DEVICE_DSM_LOST_QUERY_OUTPUT, *PDEVICE_DSM_LOST_QUERY_OUTPUT;
+
+//
+// SingleRange    - Yes
+// ParameterBlock - Yes
+// Output         - Yes
+// OutputBlock    - Yes
+//
+
+#define DeviceDsmDefinition_LostQuery {DeviceDsmAction_LostQuery,                   \
+                                       TRUE,                                        \
+                                       __alignof(DEVICE_DSM_LOST_QUERY_PARAMETERS), \
+                                       sizeof(DEVICE_DSM_LOST_QUERY_PARAMETERS),    \
+                                       TRUE,                                        \
+                                       __alignof(DEVICE_DSM_LOST_QUERY_OUTPUT),     \
+                                       sizeof(DEVICE_DSM_LOST_QUERY_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// DeviceDsmAction_GetFreeSpace
+//
+
+typedef struct _DEVICE_DSM_FREE_SPACE_OUTPUT {
+
+    //
+    // Size of this structure serves
+    // as the version
+    //
+
+    ULONG Version;
+
+    //
+    // Shared free space available
+    //
+
+    ULONGLONG FreeSpace;
+
+} DEVICE_DSM_FREE_SPACE_OUTPUT, *PDEVICE_DSM_FREE_SPACE_OUTPUT;
+
+//
+// SingleRange    - No
+// ParameterBlock - No
+// Output         - Yes
+// OutputBlock    - Yes
+//
+
+#define DeviceDsmDefinition_GetFreeSpace {DeviceDsmAction_GetFreeSpace,            \
+                                          FALSE,                                   \
+                                          0,                                       \
+                                          0,                                       \
+                                          TRUE,                                    \
+                                          __alignof(DEVICE_DSM_FREE_SPACE_OUTPUT), \
+                                          sizeof(DEVICE_DSM_FREE_SPACE_OUTPUT)}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Dsm helper routines
+//
+
+#define DEVICE_DSM_ROUND_UP(_a, _b)             (((_a) + ((_b) - 1)) / (_b) * (_b))
+#define DEVICE_DSM_ROUND_DN(_a, _b)             (((_a)             ) / (_b) * (_b))
+
+
+FORCEINLINE
+PVOID
+DeviceDsmParameterBlock (
+    _In_ PDEVICE_DSM_INPUT Input
+    )
+{
+    return (PVOID)
+           ((ULONG_PTR)Input +
+                       Input->ParameterBlockOffset);
+}
+
+
+FORCEINLINE
+PDEVICE_DSM_RANGE
+DeviceDsmDataSetRanges (
+    _In_ PDEVICE_DSM_INPUT Input
+    )
+{
+    return (PDEVICE_DSM_RANGE)
+           ((ULONG_PTR)Input +
+                       Input->DataSetRangesOffset);
+}
+
+
+FORCEINLINE
+ULONG
+DeviceDsmNumberOfDataSetRanges (
+    _In_ PDEVICE_DSM_INPUT Input
+    )
+{
+    return Input->DataSetRangesLength /
+           sizeof(DEVICE_DSM_RANGE);
+}
+
+
+FORCEINLINE
+ULONG
+DeviceDsmGetInputLength (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_ ULONG ParameterBlockLength,
+    _In_ ULONG NumberOfDataSetRanges
+    )
+{
+    ULONG Bytes = sizeof(DEVICE_DSM_INPUT);
+
+    if (ParameterBlockLength != 0) {
+
+        Bytes  = DEVICE_DSM_ROUND_UP(Bytes, Definition->ParameterBlockAlignment);
+        Bytes += ParameterBlockLength;
+    }
+
+    if (NumberOfDataSetRanges != 0) {
+
+        Bytes  = DEVICE_DSM_ROUND_UP(Bytes, __alignof(DEVICE_DSM_RANGE));
+        Bytes += sizeof(DEVICE_DSM_RANGE) * NumberOfDataSetRanges;
+    }
+
+    return Bytes;
+}
+
+
+FORCEINLINE
+ULONG
+DeviceDsmGetNumberOfDataSetRanges (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_ ULONG InputLength,
+    _In_ ULONG ParameterBlockLength
+    )
+{
+    ULONG Bytes = sizeof(DEVICE_DSM_INPUT);
+
+    if (ParameterBlockLength != 0) {
+
+        Bytes  = DEVICE_DSM_ROUND_UP(Bytes, Definition->ParameterBlockAlignment);
+        Bytes += ParameterBlockLength;
+    }
+
+    Bytes = DEVICE_DSM_ROUND_UP(Bytes, __alignof(DEVICE_DSM_RANGE));
+    Bytes = InputLength - Bytes;
+
+    return Bytes / sizeof(DEVICE_DSM_RANGE);
+}
+
+
+FORCEINLINE
+VOID
+DeviceDsmInitializeInput (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _Out_writes_bytes_(InputLength) PDEVICE_DSM_INPUT Input,
+    _In_ ULONG InputLength,
+    _In_ ULONG Flags,
+    _In_reads_bytes_opt_(ParameterBlockLength) PVOID Parameters,
+    _In_ ULONG ParameterBlockLength
+    )
+{
+    ULONG Bytes = sizeof(DEVICE_DSM_INPUT);
+
+    RtlZeroMemory(Input, InputLength);
+
+    Input->Size   = Bytes;
+    Input->Action = Definition->Action;
+    Input->Flags  = Flags;
+
+    if (ParameterBlockLength == 0) {
+        goto Cleanup;
+    }
+
+    Bytes = DEVICE_DSM_ROUND_UP(Bytes, Definition->ParameterBlockAlignment);
+
+    Input->ParameterBlockOffset = Bytes;
+    Input->ParameterBlockLength = ParameterBlockLength;
+
+    if (!Parameters) {
+        goto Cleanup;
+    }
+
+    RtlCopyMemory(DeviceDsmParameterBlock(Input),
+                  Parameters,
+                  Input->ParameterBlockLength);
+
+Cleanup:
+
+    return;
+}
+
+
+FORCEINLINE
+BOOLEAN
+DeviceDsmAddDataSetRange (
+    _Inout_updates_bytes_(InputLength) PDEVICE_DSM_INPUT Input,
+    _In_ ULONG InputLength,
+    _In_ LONGLONG Offset,
+    _In_ ULONGLONG Length
+    )
+{
+    ULONG             Bytes  = 0;
+    ULONG             Index  = 0;
+    PDEVICE_DSM_RANGE Ranges = NULL;
+    BOOLEAN           Return = FALSE;
+
+    if (Input->Flags & DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE) {
+        goto Cleanup;
+    }
+
+    if (Input->DataSetRangesLength == 0) {
+
+        if (Input->ParameterBlockLength == 0) {
+
+            Bytes = sizeof(DEVICE_DSM_INPUT);
+
+        } else {
+
+            Bytes = Input->ParameterBlockOffset +
+                    Input->ParameterBlockLength;
+        }
+
+        Bytes = DEVICE_DSM_ROUND_UP(Bytes, __alignof(DEVICE_DSM_RANGE));
+
+    } else {
+
+        Bytes = Input->DataSetRangesOffset +
+                Input->DataSetRangesLength;
+    }
+
+    if ((InputLength - Bytes) < sizeof(DEVICE_DSM_RANGE)) {
+        goto Cleanup;
+    }
+
+    if (Input->DataSetRangesOffset == 0) {
+        Input->DataSetRangesOffset  = Bytes;
+    }
+
+    Ranges = DeviceDsmDataSetRanges(Input);
+    Index  = DeviceDsmNumberOfDataSetRanges(Input);
+
+    Ranges[Index].StartingOffset = Offset;
+    Ranges[Index].LengthInBytes  = Length;
+
+    Input->DataSetRangesLength += sizeof(DEVICE_DSM_RANGE);
+
+    Return = TRUE;
+
+Cleanup:
+
+    return Return;
+}
+
+
+FORCEINLINE
+BOOLEAN
+DeviceDsmValidateInput (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_reads_bytes_(InputLength) PDEVICE_DSM_INPUT Input,
+    _In_ _Pre_satisfies_(InputLength >= sizeof(DEVICE_DSM_INPUT)) ULONG InputLength
+    )
+{
+    ULONG   Max   = 0;
+    ULONG   Min   = 0;
+    BOOLEAN Valid = FALSE;
+
+    if (Definition->Action != Input->Action) {
+        goto Cleanup;
+    }
+
+    if (Definition->ParameterBlockLength != 0) {
+
+        Min = sizeof(*Input);
+        Max = InputLength;
+
+        if (Input->ParameterBlockOffset < Min ||
+            Input->ParameterBlockOffset > Max ||
+            Input->ParameterBlockOffset % Definition->ParameterBlockAlignment) {
+            goto Cleanup;
+        }
+
+        Min = Definition->ParameterBlockLength;
+        Max = InputLength - Input->ParameterBlockOffset;
+
+        if (Input->ParameterBlockLength < Min ||
+            Input->ParameterBlockLength > Max) {
+            goto Cleanup;
+        }
+    }
+
+    if (!(Input->Flags & DEVICE_DSM_FLAG_ENTIRE_DATA_SET_RANGE)) {
+
+        Min = sizeof(*Input);
+        Max = InputLength;
+
+        if (Input->DataSetRangesOffset < Min ||
+            Input->DataSetRangesOffset > Max ||
+            Input->DataSetRangesOffset % __alignof(DEVICE_DSM_RANGE)) {
+            goto Cleanup;
+        }
+
+        Min = sizeof(DEVICE_DSM_RANGE);
+        Max = InputLength - Input->DataSetRangesOffset;
+
+        if (Input->DataSetRangesLength < Min ||
+            Input->DataSetRangesLength > Max ||
+            Input->DataSetRangesLength % Min) {
+            goto Cleanup;
+        }
+
+        if (Definition->SingleRange &&
+            Input->DataSetRangesLength != Min) {
+            goto Cleanup;
+        }
+
+    } else {
+
+        if (Input->DataSetRangesOffset != 0 ||
+            Input->DataSetRangesLength != 0) {
+            goto Cleanup;
+        }
+    }
+
+    if (Input->ParameterBlockOffset < Input->DataSetRangesOffset &&
+        Input->ParameterBlockOffset +
+        Input->ParameterBlockLength > Input->DataSetRangesOffset) {
+        goto Cleanup;
+    }
+
+    if (Input->DataSetRangesOffset < Input->ParameterBlockOffset &&
+        Input->DataSetRangesOffset +
+        Input->DataSetRangesLength > Input->ParameterBlockOffset) {
+        goto Cleanup;
+    }
+
+    Valid = TRUE;
+
+Cleanup:
+
+    return Valid;
+}
+
+
+FORCEINLINE
+PVOID
+DeviceDsmOutputBlock (
+    _In_ PDEVICE_DSM_OUTPUT Output
+    )
+{
+    return (PVOID)
+           ((ULONG_PTR)Output + Output->OutputBlockOffset);
+}
+
+
+FORCEINLINE
+ULONG
+DeviceDsmGetOutputLength (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_ ULONG OutputBlockLength
+    )
+{
+    ULONG Bytes = sizeof(DEVICE_DSM_OUTPUT);
+
+    if (OutputBlockLength == 0) {
+        goto Cleanup;
+    }
+
+    Bytes  = DEVICE_DSM_ROUND_UP(Bytes, Definition->OutputBlockAlignment);
+    Bytes += OutputBlockLength;
+
+Cleanup:
+
+    return Bytes;
+}
+
+
+FORCEINLINE
+ULONG
+DeviceDsmGetOutputBlockLength (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_ ULONG OutputLength
+    )
+{
+    ULONG Bytes = 0;
+
+    if (Definition->OutputBlockLength == 0) {
+        goto Cleanup;
+    }
+
+    Bytes = sizeof(DEVICE_DSM_OUTPUT);
+    Bytes = DEVICE_DSM_ROUND_UP(Bytes, Definition->OutputBlockAlignment);
+    Bytes = OutputLength - Bytes;
+
+Cleanup:
+
+    return Bytes;
+}
+
+
+FORCEINLINE
+VOID
+DeviceDsmInitializeOutput (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _Out_writes_bytes_(OutputLength) PDEVICE_DSM_OUTPUT Output,
+    _In_ ULONG OutputLength,
+    _In_ ULONG Flags
+    )
+{
+    ULONG Bytes = sizeof(DEVICE_DSM_OUTPUT);
+
+    RtlZeroMemory(Output, OutputLength);
+
+    Output->Size   = Bytes;
+    Output->Action = Definition->Action;
+    Output->Flags  = Flags;
+
+    if (Definition->OutputBlockLength != 0) {
+
+        Bytes = DEVICE_DSM_ROUND_UP(Bytes, Definition->OutputBlockAlignment);
+
+        Output->OutputBlockOffset = Bytes;
+        Output->OutputBlockLength = OutputLength - Bytes;
+    }
+
+    return;
+}
+
+
+FORCEINLINE
+BOOLEAN
+DeviceDsmValidateOutput (
+    _In_ PDEVICE_DSM_DEFINITION Definition,
+    _In_reads_bytes_(OutputLength) PDEVICE_DSM_OUTPUT Output,
+    _In_ _Pre_satisfies_(OutputLength >= sizeof(DEVICE_DSM_OUTPUT)) ULONG OutputLength
+    )
+{
+    ULONG   Max   = 0;
+    ULONG   Min   = 0;
+    BOOLEAN Valid = FALSE;
+
+    if (Definition->Action != Output->Action) {
+        goto Cleanup;
+    }
+
+    if (!Definition->HasOutput) {
+        goto Cleanup;
+    }
+
+    if (Definition->OutputBlockLength != 0) {
+
+        Min = sizeof(*Output);
+        Max = OutputLength;
+
+        if (Output->OutputBlockOffset < Min ||
+            Output->OutputBlockOffset > Max ||
+            Output->OutputBlockOffset % Definition->OutputBlockAlignment) {
+            goto Cleanup;
+        }
+
+        Min = Definition->OutputBlockLength;
+        Max = OutputLength - Output->OutputBlockOffset;
+
+        if (Output->OutputBlockLength < Min ||
+            Output->OutputBlockLength > Max) {
+            goto Cleanup;
+        }
+
+    } else {
+
+        if (Output->OutputBlockOffset != 0 ||
+            Output->OutputBlockLength != 0) {
+            goto Cleanup;
+        }
+    }
+
+    Valid = TRUE;
+
+Cleanup:
+
+    return Valid;
+}
+
+//
+// end IOCTL_STORAGE_MANAGE_DATA_SET_ATTRIBUTES
+//
+////////////////////////////////////////////////////////////////////////////////
 
 
 //

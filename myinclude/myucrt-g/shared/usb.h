@@ -479,7 +479,9 @@ typedef struct _USBD_ENDPOINT_OFFLOAD_INFORMATION {
     ULONG UsbDeviceAddress:8;
     ULONG SlotId:8;
     ULONG MultiTT:1;
-    ULONG Reserved0:15;
+
+    ULONG LSOrFSDeviceConnectedToTTHub:1;
+    ULONG Reserved0:14;
 
     //
     // Transfer ring information

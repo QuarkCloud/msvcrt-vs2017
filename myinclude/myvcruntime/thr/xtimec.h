@@ -9,12 +9,11 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
-#ifdef __cplusplus
-extern "C" {	// C linkage
-#endif /* __cplusplus */
+_EXTERN_C
 
 typedef struct xtime
 	{	/* store time with nanosecond resolution */
@@ -28,19 +27,19 @@ _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime *);
 _CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime*, const xtime *);
 _CRTIMP2_PURE long long __cdecl _Xtime_get_ticks(void);
 #define _XTIME_NSECS_PER_TICK	100
-#define _XTIME_TICKS_PER_TIME_T	(long long)10000000
+#define _XTIME_TICKS_PER_TIME_T	10000000LL
 
 _CRTIMP2_PURE long long __cdecl _Query_perf_counter(void);
 _CRTIMP2_PURE long long __cdecl _Query_perf_frequency(void);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+_END_EXTERN_C
+
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */
-#endif	/* _THR_XTIMEC_H */
+#endif /* _THR_XTIMEC_H */
 
 /*
  * This file is derived from software bearing the following

@@ -13,6 +13,7 @@
 
 #include "wtypes.h"
 #include "sac.h"
+#include "mswmdm.h"
 
 class CSecureChannelClient
 {

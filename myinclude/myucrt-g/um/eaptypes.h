@@ -302,6 +302,7 @@ enum _EAP_ATTRIBUTE_TYPE
                                    // by certain password based eap methods
                                    // to authenticate a user.
     eatQuarantineSoH     = 8150, // Value field is a pointer
+    eatCertificateThumbprint = 8250, // Value field is a pointer
     eatPeerId                 = 9000,  // Value field is a pointer
     eatServerId,                          // Value field is a pointer
     eatMethodId,                          // Value field is a pointer

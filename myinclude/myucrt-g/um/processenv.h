@@ -1,6 +1,3 @@
- 
-// begin_1_0
-// begin2_0
 /********************************************************************************
 *                                                                               *
 * ProcessEnv.h -- ApiSet Contract for api-ms-win-core-processenvironment-l1     *
@@ -22,36 +19,12 @@
 
 #include <minwindef.h>
 
-/* APISET_NAME: api-ms-win-core-processenvironment-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_PROCESSENV_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_PROCESSENV_VER 0x0200
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_PROCESSENV_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// end_1_0
-// end2_0
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-// begin_1_0
 
 WINBASEAPI
 BOOL
@@ -64,16 +37,11 @@ SetEnvironmentStringsW(
 #define SetEnvironmentStrings  SetEnvironmentStringsW
 #endif
 
-// end_1_0
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
 #pragma region PC Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP | WINAPI_PARTITION_SYSTEM)
-
-// begin_1_0
 
 WINBASEAPI
 HANDLE
@@ -92,7 +60,6 @@ SetStdHandle(
     );
 
 
-
 #if (_WIN32_WINNT >= 0x0600)
 
 WINBASEAPI
@@ -107,16 +74,11 @@ SetStdHandleEx(
 
 #endif // _WIN32_WINNT >= 0x0600
 
-// end_1_0
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
-// begin_1_0
 
 WINBASEAPI
 LPSTR
@@ -188,7 +150,7 @@ DWORD
 WINAPI
 GetEnvironmentVariableA(
     _In_opt_ LPCSTR lpName,
-    _Out_writes_to_opt_(nSize, return + 1) LPSTR lpBuffer,
+    _Out_writes_to_opt_(nSize,return + 1) LPSTR lpBuffer,
     _In_ DWORD nSize
     );
 
@@ -198,7 +160,7 @@ DWORD
 WINAPI
 GetEnvironmentVariableW(
     _In_opt_ LPCWSTR lpName,
-    _Out_writes_to_opt_(nSize, return + 1) LPWSTR lpBuffer,
+    _Out_writes_to_opt_(nSize,return + 1) LPWSTR lpBuffer,
     _In_ DWORD nSize
     );
 
@@ -236,7 +198,7 @@ DWORD
 WINAPI
 ExpandEnvironmentStringsA(
     _In_ LPCSTR lpSrc,
-    _Out_writes_to_opt_(nSize, return) LPSTR lpDst,
+    _Out_writes_to_opt_(nSize,return) LPSTR lpDst,
     _In_ DWORD nSize
     );
 
@@ -246,7 +208,7 @@ DWORD
 WINAPI
 ExpandEnvironmentStringsW(
     _In_ LPCWSTR lpSrc,
-    _Out_writes_to_opt_(nSize, return) LPWSTR lpDst,
+    _Out_writes_to_opt_(nSize,return) LPWSTR lpDst,
     _In_ DWORD nSize
     );
 
@@ -276,14 +238,13 @@ SetCurrentDirectoryW(
 #define SetCurrentDirectory  SetCurrentDirectoryA
 #endif // !UNICODE
 
-
 WINBASEAPI
 _Success_(return != 0 && return < nBufferLength)
 DWORD
 WINAPI
 GetCurrentDirectoryA(
     _In_ DWORD nBufferLength,
-    _Out_writes_to_opt_(nBufferLength, return + 1) LPSTR lpBuffer
+    _Out_writes_to_opt_(nBufferLength,return + 1) LPSTR lpBuffer
     );
 
 WINBASEAPI
@@ -292,7 +253,7 @@ DWORD
 WINAPI
 GetCurrentDirectoryW(
     _In_ DWORD nBufferLength,
-    _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer
+    _Out_writes_to_opt_(nBufferLength,return + 1) LPWSTR lpBuffer
     );
 
 #ifdef UNICODE
@@ -301,16 +262,11 @@ GetCurrentDirectoryW(
 #define GetCurrentDirectory  GetCurrentDirectoryA
 #endif // !UNICODE
 
-// end_1_0
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-// begin_1_0
 
 WINBASEAPI
 DWORD
@@ -320,8 +276,8 @@ SearchPathW(
     _In_ LPCWSTR lpFileName,
     _In_opt_ LPCWSTR lpExtension,
     _In_ DWORD nBufferLength,
-    _Out_writes_to_opt_(nBufferLength, return + 1) LPWSTR lpBuffer,
-    _Out_opt_ LPWSTR * lpFilePart
+    _Out_writes_to_opt_(nBufferLength,return + 1) LPWSTR lpBuffer,
+    _Out_opt_ LPWSTR* lpFilePart
     );
 
 
@@ -331,13 +287,6 @@ SearchPathW(
 #define SearchPath  SearchPathA
 #endif // !UNICODE
 
-// end_1_0
-
-// begin2_0
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_PROCESSENV_VER >= 0x0200)
-
 WINBASEAPI
 DWORD
 APIENTRY
@@ -346,10 +295,9 @@ SearchPathA(
     _In_ LPCSTR lpFileName,
     _In_opt_ LPCSTR lpExtension,
     _In_ DWORD nBufferLength,
-    _Out_writes_to_opt_(nBufferLength, return + 1) LPSTR lpBuffer,
-    _Out_opt_ LPSTR * lpFilePart
+    _Out_writes_to_opt_(nBufferLength,return + 1) LPSTR lpBuffer,
+    _Out_opt_ LPSTR* lpFilePart
     );
-
 
 
 #if _WIN32_WINNT >= 0x0502
@@ -376,20 +324,11 @@ NeedCurrentDirectoryForExePathW(
 
 #endif // _WIN32_WINNT >= 0x0502
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_PROCESSENV_VER >= 0x0200)
-
-// end2_0
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
-
-// begin_1_0
-// begin2_0
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // _PROCESSENV_
-// end_1_0
-// end2_0

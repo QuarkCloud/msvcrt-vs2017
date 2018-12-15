@@ -13,7 +13,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#include <suppress.h>
 
 #undef NDEBUG
 #define _ASSERT_OK
@@ -151,14 +150,12 @@ static void __cdecl common_assert_to_stderr_direct(
         return;
     }
 
-	/**
     DWORD const assert_buffer_length = static_cast<DWORD>(wcslen(assert_buffer));
     DWORD characters_written = 0;
     if (WriteConsoleW(stderr_handle, assert_buffer, assert_buffer_length, &characters_written, nullptr) == 0)
     {
         return;
     }
-	*/
 
     abort();
 }
@@ -170,7 +167,6 @@ __declspec(noreturn) static void __cdecl common_assert_to_stderr(
     unsigned         const line_number
     ) throw()
 {
-	/**
     using traits = __crt_char_traits<Character>;
 
     // Try to write directly to the console.  This is only supported for wide
@@ -187,7 +183,6 @@ __declspec(noreturn) static void __cdecl common_assert_to_stderr(
 
     traits::ftprintf(stderr, get_assert_format(Character()), expression, file_name, line_number);
     fflush(stderr);
-	*/
     abort();
 }
 

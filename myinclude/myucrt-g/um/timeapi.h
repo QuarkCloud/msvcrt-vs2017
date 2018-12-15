@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * timerapi.h -- ApiSet Contract for api-ms-win-mm-time-l1-1-0                   *  
@@ -20,28 +19,11 @@
 
 #include <mmsyscom.h>
 
-/* APISET_NAME: api-ms-win-mm-time-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_TIMER_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_TIMER_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 #ifndef MMNOTIMER  

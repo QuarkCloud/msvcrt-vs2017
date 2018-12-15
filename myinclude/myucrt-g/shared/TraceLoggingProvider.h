@@ -39,6 +39,13 @@ int main(int argc, char* argv[]) // or DriverEntry for kernel-mode.
     return 0;
 }
 
+Usage note:
+
+Symbols starting with TLG or Tlg are part of the public interface of this
+header. Symbols starting with _TLG or _Tlg are private internal implementation
+details that are not supported for use outside this header and may change in
+future versions of this header.
+
 Compatibility note:
 
 Depending on its configuration, TraceLoggingProvider.h can be
@@ -75,12 +82,7 @@ For additional details, see TLG_HAVE_EVENT_SET_INFORMATION.
 extern "C" {
 #endif // __cplusplus
 
-// Enum declaration may be missing from older evntprov.h:
-enum _EVENT_INFO_CLASS
-#if !defined(__INTELLISENSE__) && defined(__cplusplus) && (_MSC_VER >= 1700)
-    : int // base type for enum forward declaration
-#endif
-    ;
+#pragma region Configuration macros and typedefs
 
 #ifdef _ETW_KM_
 typedef PETWENABLECALLBACK     TLG_PENABLECALLBACK;
@@ -98,12 +100,56 @@ Determine whether TraceLoggingWriteEx should be defined.
 - Otherwise, TraceLoggingWriteEx will not be defined by this header.
 */
 #ifdef TLG_EVENT_WRITE_EX
-#define _TLG_ENABLE_TraceLoggingWriteEx 1
+  #define _TLG_ENABLE_TraceLoggingWriteEx 1
 #elif defined(_ETW_KM_)
-#define _TLG_ENABLE_TraceLoggingWriteEx NTDDI_VERSION >= 0x06010000
+  #define _TLG_ENABLE_TraceLoggingWriteEx NTDDI_VERSION >= 0x06010000
 #else
-#define _TLG_ENABLE_TraceLoggingWriteEx WINVER >= 0x0601
+  #define _TLG_ENABLE_TraceLoggingWriteEx WINVER >= 0x0601
 #endif
+
+#ifndef TLG_INLINE
+  #ifndef __cplusplus
+    #define TLG_INLINE __inline
+  #else
+    #define TLG_INLINE inline
+  #endif // __cplusplus
+#endif
+
+#ifndef TLG_RAISEASSERTIONFAILURE
+  #if defined(__clang__) || defined(_M_CEE)
+    #define TLG_RAISEASSERTIONFAILURE() __debugbreak()
+  #else
+    #define TLG_RAISEASSERTIONFAILURE() DbgRaiseAssertionFailure()
+  #endif
+#endif // TLG_RAISEASSERTIONFAILURE
+
+#ifndef TLG_PFORCEINLINE
+  #if defined(PFORCEINLINE)
+    #define TLG_PFORCEINLINE PFORCEINLINE
+  #elif defined(FORCEINLINE)
+    #define TLG_PFORCEINLINE FORCEINLINE
+  #else
+    #define TLG_PFORCEINLINE __forceinline
+  #endif
+#endif // TLG_PFORCEINLINE
+
+#ifndef TLG_NOEXCEPT
+  #ifndef __cplusplus
+    #define TLG_NOEXCEPT
+  #elif _MSC_VER < 1900
+    #define TLG_NOEXCEPT throw()
+  #else
+    #define TLG_NOEXCEPT noexcept
+  #endif // __cplusplus
+#endif // TLG_NOEXCEPT
+
+#ifndef __cplusplus
+  #define _TLG_EXTERN_C extern
+#else
+  #define _TLG_EXTERN_C extern "C"
+#endif // __cplusplus
+
+#pragma endregion
 
 #pragma region Public interface
 
@@ -153,7 +199,7 @@ An invocation of
 can be thought of as expanding to something like this:
 
     static struct _TlgProvider_t uniqueVarName = { ... }; // stores provider state
-    extern const TraceLoggingHProvider g_hMyProvider = &uniqueVarName; // defines a handle
+    extern "C" const TraceLoggingHProvider g_hMyProvider = &uniqueVarName; // defines a handle
 
 The providerId specifies the ETW provider GUID. The providerId parameter must
 be a parenthesized list of 11 integers e.g. (n1, n2, n3, ... n11).
@@ -181,7 +227,7 @@ data_seg (for uniqueVarName) and/or the const segment via #pragma const_seg
 #define TRACELOGGING_DEFINE_PROVIDER(handleVariable, providerName, providerId, ...) \
     _TlgDefineProvider_annotation(handleVariable, _Tlg##handleVariable##Prov, 1, providerName); \
     _TlgProviderStorage_imp(_Tlg##handleVariable##Prov, providerName, providerId, 1, __VA_ARGS__); \
-    extern const TraceLoggingHProvider handleVariable = &_Tlg##handleVariable##Prov
+    _TLG_EXTERN_C const TraceLoggingHProvider handleVariable = &_Tlg##handleVariable##Prov
 
 /*
 Macro TRACELOGGING_DEFINE_PROVIDER_STORAGE(storageVariable, "ProviderName", providerId, [option]):
@@ -228,25 +274,13 @@ An invocation of
 
 can be thought of as expanding to something like this:
 
-    extern const TraceLoggingHProvider g_hMyProvider;
+    extern "C" const TraceLoggingHProvider g_hMyProvider;
 
 A variable declared by TRACELOGGING_DECLARE_PROVIDER must later be defined
 using the TRACELOGGING_DEFINE_PROVIDER macro.
-
-Note that if your header is used in both C and C++ code, you will need to
-enclose the use of TRACELOGGING_DECLARE_PROVIDER in an extern "C" region so
-that the provider handle variable is declared as C-compatible. For example:
-
-    #ifdef __cplusplus
-    extern "C" {
-    #endif
-    TRACELOGGING_DECLARE_PROVIDER(g_hMyProvider);
-    #ifdef __cplusplus
-    } // extern "C"
-    #endif
 */
 #define TRACELOGGING_DECLARE_PROVIDER(handleVariable) \
-    extern const TraceLoggingHProvider handleVariable
+    _TLG_EXTERN_C const TraceLoggingHProvider handleVariable
 
 /*
 Function TraceLoggingUnregister(hProvider):
@@ -285,8 +319,9 @@ has been uninitialized and then reinitialized. You should not register and
 unregister a provider each time you need to write a few events.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline void TraceLoggingUnregister(
-    TraceLoggingHProvider _Inout_ hProvider);
+TLG_INLINE void TraceLoggingUnregister(
+    TraceLoggingHProvider _Inout_ hProvider)
+    TLG_NOEXCEPT;
 
 /*
 Function TraceLoggingRegister(hProvider):
@@ -302,8 +337,9 @@ Note that it is ok to ignore failure - if TraceLoggingRegisterEx fails,
 TraceLoggingWrite and TraceLoggingUnregister will be no-ops.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingRegister(
-    TraceLoggingHProvider _Inout_ hProvider);
+TLG_INLINE TLG_STATUS TraceLoggingRegister(
+    TraceLoggingHProvider _Inout_ hProvider)
+    TLG_NOEXCEPT;
 
 /*
 Function TraceLoggingRegisterEx(hProvider, pEnableCallback, pCallbackContext):
@@ -318,10 +354,11 @@ Note that it is ok to ignore failure - if TraceLoggingRegisterEx fails,
 TraceLoggingWrite and TraceLoggingUnregister will be no-ops.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingRegisterEx(
+TLG_INLINE TLG_STATUS TraceLoggingRegisterEx(
     TraceLoggingHProvider _Inout_ hProvider,
     _In_opt_ TLG_PENABLECALLBACK pEnableCallback,
-    _In_opt_ PVOID pCallbackContext);
+    _In_opt_ PVOID pCallbackContext)
+    TLG_NOEXCEPT;
 
 /*
 Function TraceLoggingSetInformation(hProvider, informationClass, pvInformation, cbInformation):
@@ -334,11 +371,12 @@ value of WINVER (user-mode) or NTDDI_VERSION (kernel-mode). Use the
 TLG_HAVE_EVENT_SET_INFORMATION macro to override the default behavior.
 */
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingSetInformation(
+TLG_INLINE TLG_STATUS TraceLoggingSetInformation(
     TraceLoggingHProvider _Inout_ hProvider,
-    _In_ enum _EVENT_INFO_CLASS informationClass,
+    _In_ EVENT_INFO_CLASS informationClass,
     _In_reads_bytes_opt_(cbInformation) PVOID pvInformation,
-    _In_ ULONG cbInformation);
+    _In_ ULONG cbInformation)
+    TLG_NOEXCEPT;
 
 /*
 Function TraceLoggingProviderEnabled(hProvider, eventLevel, eventKeyword):
@@ -348,10 +386,11 @@ whether the provider is enabled for any level. Use 0 for eventKeyword to
 determine whether the provider is enabled for any keyword.
 */
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline BOOLEAN TraceLoggingProviderEnabled(
+TLG_INLINE BOOLEAN TraceLoggingProviderEnabled(
     TraceLoggingHProvider _In_ hProvider,
     UCHAR eventLevel,
-    ULONGLONG eventKeyword);
+    ULONGLONG eventKeyword)
+    TLG_NOEXCEPT;
 
 /*
 Function TraceLoggingProviderId(hProvider):
@@ -359,8 +398,9 @@ Returns the provider ID (GUID) that was specified in
 TRACELOGGING_DEFINE_PROVIDER.
 */
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline GUID TraceLoggingProviderId(
-    TraceLoggingHProvider _In_ hProvider);
+TLG_INLINE GUID TraceLoggingProviderId(
+    TraceLoggingHProvider _In_ hProvider)
+    TLG_NOEXCEPT;
 
 /*
 Macro TraceLoggingWrite(hProvider, "EventName", args...):
@@ -1303,7 +1343,7 @@ structures not otherwise possible. Possible scenarios include:
         TraceLoggingInt32(otherData1),
         TraceLoggingPackedData(&cRectangles, sizeof(UINT16)), // Data for the array count
         TraceLoggingPackedData(pRectangles, cRectangles * sizeof(RECT)), // Data for the array content
-        TraceLoggingPackedStructArray(4, "RectangleArrayFieldName"), // Structure with 4 fields 
+        TraceLoggingPackedStructArray(4, "RectangleArrayFieldName"), // Structure with 4 fields
             TraceLoggingPackedMetadata(TlgInINT32, "left"),
             TraceLoggingPackedMetadata(TlgInINT32, "top"),
             TraceLoggingPackedMetadata(TlgInINT32, "right"),
@@ -1330,9 +1370,14 @@ Notes on serializing data:
 - TlgInANSISTRING means "nul-terminated MBCS char string".
 - TlgInCOUNTEDSTRING means "size-prefixed UTF-16 wchar_t string".
 - TlgInCOUNTEDANSISTRING means "size-prefixed MBCS char string".
-- TlgInBINARY means "size-prefixed binary data".
-- TlgInBINARY, TlgInCOUNTEDSTRING, and TlgInCOUNTEDANSISTRING are encoded as
-  a little-endian UINT16 byte-count (not a char-count) followed by the data.
+- TlgInBINARY and TlgInCOUNTEDBINARY mean "size-prefixed binary data". Both
+  types are encoded identically, but they go through different decoding paths.
+  TlgInBINARY cannot be used for arrays and results in an implicit Length
+  property. TlgInCOUNTEDBINARY can be used for arrays but is a newer InType
+  that may not be supported by all decoding tools.
+- TlgInBINARY, TlgInCOUNTEDBINARY, TlgInCOUNTEDSTRING, and
+  TlgInCOUNTEDANSISTRING are encoded as a little-endian UINT16 byte-count (not
+  a char-count) followed by the data.
 - Form an array by adding the TlgInVcount flag to the inType. For example,
   an inType of TlgInANSISTRING will result in a field that stores a single
   string, but an inType of TlgInANSISTRING|TlgInVcount will result in a field
@@ -1344,7 +1389,10 @@ Notes on serializing data:
   BYTE a[] = { '\3', '\0', 'A', 'B', 'C', '\0', 'D', 'E', '\0', 'F', '\0' };
 - Array of TlgInBINARY should not be used because TDH cannot decode it.
   As an alternative, you can create an array of structures and put a field of
-  type TlgInBINARY inside it.
+  type TlgInBINARY inside it, or if your decoding tool supports the
+  TDH_INTYPE_MANIFEST_COUNTEDBINARY type, you can use TlgInCOUNTEDBINARY.
+- All simple data types other than those used with TlgOutPORT and TlgOutIPV4
+  are encoded as little-endian.
 */
 #define TraceLoggingPackedField(pbData, cbData, inType, ...)            _TlgArg(, inType, 0,       0, _TlgPF, pbData, cbData, __VA_ARGS__)
 #define TraceLoggingPackedFieldEx(pbData, cbData, inType, outType, ...) _TlgArg(, inType, outType, 1, _TlgPF, pbData, cbData, __VA_ARGS__)
@@ -1483,7 +1531,7 @@ memory.
 
 #ifndef _TLG_ASSERT
   #if _TLG_DEBUG
-    #define _TLG_ASSERT(exp, str) ((void)(!(exp) ? (__annotation(L"Debug", L"AssertFail", L"TraceLogging: " L## #exp L" : " L##str), DbgRaiseAssertionFailure(), 0) : 0))
+    #define _TLG_ASSERT(exp, str) ((void)(!(exp) ? (__annotation(L"Debug", L"AssertFail", L"TraceLogging: " L## #exp L" : " L##str), TLG_RAISEASSERTIONFAILURE(), 0) : 0))
   #else // _TLG_DEBUG
     #define _TLG_ASSERT(exp, str) ((void)0)
   #endif // _TLG_DEBUG
@@ -1552,110 +1600,106 @@ memory.
 #define _TLG_NARGS_imp(is_empty, args) _TLG_PASTE(_TLG_NARGS_imp, is_empty) args
 #define _TLG_NARGS(...) _TLG_NARGS_imp(_TLG_IS_EMPTY(__VA_ARGS__), (__VA_ARGS__))
 
-#define _TLG_FOR_imp0( fn)
-#define _TLG_FOR_imp1( fn, arg, ...) _TLG_FOR_impN( 0, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp2( fn, arg, ...) _TLG_FOR_impN( 1, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp3( fn, arg, ...) _TLG_FOR_impN( 2, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp4( fn, arg, ...) _TLG_FOR_impN( 3, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp5( fn, arg, ...) _TLG_FOR_impN( 4, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp6( fn, arg, ...) _TLG_FOR_impN( 5, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp7( fn, arg, ...) _TLG_FOR_impN( 6, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp8( fn, arg, ...) _TLG_FOR_impN( 7, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp9( fn, arg, ...) _TLG_FOR_impN( 8, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp10(fn, arg, ...) _TLG_FOR_impN( 9, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp11(fn, arg, ...) _TLG_FOR_impN(10, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp12(fn, arg, ...) _TLG_FOR_impN(11, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp13(fn, arg, ...) _TLG_FOR_impN(12, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp14(fn, arg, ...) _TLG_FOR_impN(13, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp15(fn, arg, ...) _TLG_FOR_impN(14, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp16(fn, arg, ...) _TLG_FOR_impN(15, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp17(fn, arg, ...) _TLG_FOR_impN(16, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp18(fn, arg, ...) _TLG_FOR_impN(17, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp19(fn, arg, ...) _TLG_FOR_impN(18, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp20(fn, arg, ...) _TLG_FOR_impN(19, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp21(fn, arg, ...) _TLG_FOR_impN(20, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp22(fn, arg, ...) _TLG_FOR_impN(21, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp23(fn, arg, ...) _TLG_FOR_impN(22, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp24(fn, arg, ...) _TLG_FOR_impN(23, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp25(fn, arg, ...) _TLG_FOR_impN(24, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp26(fn, arg, ...) _TLG_FOR_impN(25, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp27(fn, arg, ...) _TLG_FOR_impN(26, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp28(fn, arg, ...) _TLG_FOR_impN(27, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp29(fn, arg, ...) _TLG_FOR_impN(28, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp30(fn, arg, ...) _TLG_FOR_impN(29, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp31(fn, arg, ...) _TLG_FOR_impN(30, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp32(fn, arg, ...) _TLG_FOR_impN(31, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp33(fn, arg, ...) _TLG_FOR_impN(32, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp34(fn, arg, ...) _TLG_FOR_impN(33, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp35(fn, arg, ...) _TLG_FOR_impN(34, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp36(fn, arg, ...) _TLG_FOR_impN(35, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp37(fn, arg, ...) _TLG_FOR_impN(36, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp38(fn, arg, ...) _TLG_FOR_impN(37, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp39(fn, arg, ...) _TLG_FOR_impN(38, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp40(fn, arg, ...) _TLG_FOR_impN(39, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp41(fn, arg, ...) _TLG_FOR_impN(40, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp42(fn, arg, ...) _TLG_FOR_impN(41, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp43(fn, arg, ...) _TLG_FOR_impN(42, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp44(fn, arg, ...) _TLG_FOR_impN(43, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp45(fn, arg, ...) _TLG_FOR_impN(44, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp46(fn, arg, ...) _TLG_FOR_impN(45, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp47(fn, arg, ...) _TLG_FOR_impN(46, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp48(fn, arg, ...) _TLG_FOR_impN(47, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp49(fn, arg, ...) _TLG_FOR_impN(48, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp50(fn, arg, ...) _TLG_FOR_impN(49, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp51(fn, arg, ...) _TLG_FOR_impN(50, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp52(fn, arg, ...) _TLG_FOR_impN(51, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp53(fn, arg, ...) _TLG_FOR_impN(52, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp54(fn, arg, ...) _TLG_FOR_impN(53, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp55(fn, arg, ...) _TLG_FOR_impN(54, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp56(fn, arg, ...) _TLG_FOR_impN(55, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp57(fn, arg, ...) _TLG_FOR_impN(56, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp58(fn, arg, ...) _TLG_FOR_impN(57, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp59(fn, arg, ...) _TLG_FOR_impN(58, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp60(fn, arg, ...) _TLG_FOR_impN(59, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp61(fn, arg, ...) _TLG_FOR_impN(60, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp62(fn, arg, ...) _TLG_FOR_impN(61, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp63(fn, arg, ...) _TLG_FOR_impN(62, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp64(fn, arg, ...) _TLG_FOR_impN(63, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp65(fn, arg, ...) _TLG_FOR_impN(64, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp66(fn, arg, ...) _TLG_FOR_impN(65, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp67(fn, arg, ...) _TLG_FOR_impN(66, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp68(fn, arg, ...) _TLG_FOR_impN(67, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp69(fn, arg, ...) _TLG_FOR_impN(68, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp70(fn, arg, ...) _TLG_FOR_impN(69, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp71(fn, arg, ...) _TLG_FOR_impN(70, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp72(fn, arg, ...) _TLG_FOR_impN(71, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp73(fn, arg, ...) _TLG_FOR_impN(72, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp74(fn, arg, ...) _TLG_FOR_impN(73, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp75(fn, arg, ...) _TLG_FOR_impN(74, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp76(fn, arg, ...) _TLG_FOR_impN(75, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp77(fn, arg, ...) _TLG_FOR_impN(76, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp78(fn, arg, ...) _TLG_FOR_impN(77, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp79(fn, arg, ...) _TLG_FOR_impN(78, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp80(fn, arg, ...) _TLG_FOR_impN(79, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp81(fn, arg, ...) _TLG_FOR_impN(80, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp82(fn, arg, ...) _TLG_FOR_impN(81, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp83(fn, arg, ...) _TLG_FOR_impN(82, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp84(fn, arg, ...) _TLG_FOR_impN(83, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp85(fn, arg, ...) _TLG_FOR_impN(84, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp86(fn, arg, ...) _TLG_FOR_impN(85, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp87(fn, arg, ...) _TLG_FOR_impN(86, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp88(fn, arg, ...) _TLG_FOR_impN(87, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp89(fn, arg, ...) _TLG_FOR_impN(88, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp90(fn, arg, ...) _TLG_FOR_impN(89, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp91(fn, arg, ...) _TLG_FOR_impN(90, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp92(fn, arg, ...) _TLG_FOR_impN(91, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp93(fn, arg, ...) _TLG_FOR_impN(92, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp94(fn, arg, ...) _TLG_FOR_impN(93, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp95(fn, arg, ...) _TLG_FOR_impN(94, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp96(fn, arg, ...) _TLG_FOR_impN(95, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp97(fn, arg, ...) _TLG_FOR_impN(96, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp98(fn, arg, ...) _TLG_FOR_impN(97, fn, arg, fn, __VA_ARGS__)
-#define _TLG_FOR_imp99(fn, arg, ...) _TLG_FOR_impN(98, fn, arg, fn, __VA_ARGS__)
-
-#define _TLG_FOR_impN(n, fn, arg, ...) \
-    fn(n, arg) \
-    _TLG_PASTE(_TLG_FOR_imp, n) _TLG_FLATTEN((__VA_ARGS__))
+#define _TLG_FOR_imp0( f)
+#define _TLG_FOR_imp1( f,a0) f(0,a0)
+#define _TLG_FOR_imp2( f,a0,a1) f(0,a0) f(1,a1)
+#define _TLG_FOR_imp3( f,a0,a1,a2) f(0,a0) f(1,a1) f(2,a2)
+#define _TLG_FOR_imp4( f,a0,a1,a2,a3) f(0,a0) f(1,a1) f(2,a2) f(3,a3)
+#define _TLG_FOR_imp5( f,a0,a1,a2,a3,a4) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4)
+#define _TLG_FOR_imp6( f,a0,a1,a2,a3,a4,a5) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5)
+#define _TLG_FOR_imp7( f,a0,a1,a2,a3,a4,a5,a6) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6)
+#define _TLG_FOR_imp8( f,a0,a1,a2,a3,a4,a5,a6,a7) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7)
+#define _TLG_FOR_imp9( f,a0,a1,a2,a3,a4,a5,a6,a7,a8) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8)
+#define _TLG_FOR_imp10(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9)
+#define _TLG_FOR_imp11(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10)
+#define _TLG_FOR_imp12(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11)
+#define _TLG_FOR_imp13(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12)
+#define _TLG_FOR_imp14(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13)
+#define _TLG_FOR_imp15(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14)
+#define _TLG_FOR_imp16(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15)
+#define _TLG_FOR_imp17(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16)
+#define _TLG_FOR_imp18(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17)
+#define _TLG_FOR_imp19(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18)
+#define _TLG_FOR_imp20(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19)
+#define _TLG_FOR_imp21(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20)
+#define _TLG_FOR_imp22(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21)
+#define _TLG_FOR_imp23(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22)
+#define _TLG_FOR_imp24(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23)
+#define _TLG_FOR_imp25(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24)
+#define _TLG_FOR_imp26(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25)
+#define _TLG_FOR_imp27(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26)
+#define _TLG_FOR_imp28(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27)
+#define _TLG_FOR_imp29(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28)
+#define _TLG_FOR_imp30(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29)
+#define _TLG_FOR_imp31(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30)
+#define _TLG_FOR_imp32(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31)
+#define _TLG_FOR_imp33(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32)
+#define _TLG_FOR_imp34(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33)
+#define _TLG_FOR_imp35(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34)
+#define _TLG_FOR_imp36(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35)
+#define _TLG_FOR_imp37(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36)
+#define _TLG_FOR_imp38(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37)
+#define _TLG_FOR_imp39(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38)
+#define _TLG_FOR_imp40(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39)
+#define _TLG_FOR_imp41(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40)
+#define _TLG_FOR_imp42(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41)
+#define _TLG_FOR_imp43(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42)
+#define _TLG_FOR_imp44(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43)
+#define _TLG_FOR_imp45(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44)
+#define _TLG_FOR_imp46(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45)
+#define _TLG_FOR_imp47(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46)
+#define _TLG_FOR_imp48(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47)
+#define _TLG_FOR_imp49(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48)
+#define _TLG_FOR_imp50(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49)
+#define _TLG_FOR_imp51(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50)
+#define _TLG_FOR_imp52(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51)
+#define _TLG_FOR_imp53(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52)
+#define _TLG_FOR_imp54(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53)
+#define _TLG_FOR_imp55(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54)
+#define _TLG_FOR_imp56(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55)
+#define _TLG_FOR_imp57(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56)
+#define _TLG_FOR_imp58(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57)
+#define _TLG_FOR_imp59(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58)
+#define _TLG_FOR_imp60(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59)
+#define _TLG_FOR_imp61(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60)
+#define _TLG_FOR_imp62(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61)
+#define _TLG_FOR_imp63(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62)
+#define _TLG_FOR_imp64(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63)
+#define _TLG_FOR_imp65(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64)
+#define _TLG_FOR_imp66(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65)
+#define _TLG_FOR_imp67(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66)
+#define _TLG_FOR_imp68(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67)
+#define _TLG_FOR_imp69(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68)
+#define _TLG_FOR_imp70(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69)
+#define _TLG_FOR_imp71(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70)
+#define _TLG_FOR_imp72(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71)
+#define _TLG_FOR_imp73(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72)
+#define _TLG_FOR_imp74(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73)
+#define _TLG_FOR_imp75(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74)
+#define _TLG_FOR_imp76(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75)
+#define _TLG_FOR_imp77(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76)
+#define _TLG_FOR_imp78(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77)
+#define _TLG_FOR_imp79(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78)
+#define _TLG_FOR_imp80(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79)
+#define _TLG_FOR_imp81(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80)
+#define _TLG_FOR_imp82(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81)
+#define _TLG_FOR_imp83(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82)
+#define _TLG_FOR_imp84(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83)
+#define _TLG_FOR_imp85(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84)
+#define _TLG_FOR_imp86(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85)
+#define _TLG_FOR_imp87(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86)
+#define _TLG_FOR_imp88(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87)
+#define _TLG_FOR_imp89(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88)
+#define _TLG_FOR_imp90(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89)
+#define _TLG_FOR_imp91(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90)
+#define _TLG_FOR_imp92(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91)
+#define _TLG_FOR_imp93(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92)
+#define _TLG_FOR_imp94(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93)
+#define _TLG_FOR_imp95(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93,a94) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93) f(94,a94)
+#define _TLG_FOR_imp96(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93,a94,a95) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93) f(94,a94) f(95,a95)
+#define _TLG_FOR_imp97(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93,a94,a95,a96) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93) f(94,a94) f(95,a95) f(96,a96)
+#define _TLG_FOR_imp98(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93,a94,a95,a96,a97) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93) f(94,a94) f(95,a95) f(96,a96) f(97,a97)
+#define _TLG_FOR_imp99(f,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45,a46,a47,a48,a49,a50,a51,a52,a53,a54,a55,a56,a57,a58,a59,a60,a61,a62,a63,a64,a65,a66,a67,a68,a69,a70,a71,a72,a73,a74,a75,a76,a77,a78,a79,a80,a81,a82,a83,a84,a85,a86,a87,a88,a89,a90,a91,a92,a93,a94,a95,a96,a97,a98) f(0,a0) f(1,a1) f(2,a2) f(3,a3) f(4,a4) f(5,a5) f(6,a6) f(7,a7) f(8,a8) f(9,a9) f(10,a10) f(11,a11) f(12,a12) f(13,a13) f(14,a14) f(15,a15) f(16,a16) f(17,a17) f(18,a18) f(19,a19) f(20,a20) f(21,a21) f(22,a22) f(23,a23) f(24,a24) f(25,a25) f(26,a26) f(27,a27) f(28,a28) f(29,a29) f(30,a30) f(31,a31) f(32,a32) f(33,a33) f(34,a34) f(35,a35) f(36,a36) f(37,a37) f(38,a38) f(39,a39) f(40,a40) f(41,a41) f(42,a42) f(43,a43) f(44,a44) f(45,a45) f(46,a46) f(47,a47) f(48,a48) f(49,a49) f(50,a50) f(51,a51) f(52,a52) f(53,a53) f(54,a54) f(55,a55) f(56,a56) f(57,a57) f(58,a58) f(59,a59) f(60,a60) f(61,a61) f(62,a62) f(63,a63) f(64,a64) f(65,a65) f(66,a66) f(67,a67) f(68,a68) f(69,a69) f(70,a70) f(71,a71) f(72,a72) f(73,a73) f(74,a74) f(75,a75) f(76,a76) f(77,a77) f(78,a78) f(79,a79) f(80,a80) f(81,a81) f(82,a82) f(83,a83) f(84,a84) f(85,a85) f(86,a86) f(87,a87) f(88,a88) f(89,a89) f(90,a90) f(91,a91) f(92,a92) f(93,a93) f(94,a94) f(95,a95) f(96,a96) f(97,a97) f(98,a98)
 
 #define _TLG_FOR_imp(n, fnAndArgs)  _TLG_PASTE(_TLG_FOR_imp, n) fnAndArgs
 #define _TLG_FOREACH(fn, ...) _TLG_FOR_imp(_TLG_NARGS(__VA_ARGS__), (fn, __VA_ARGS__))
@@ -1691,16 +1735,10 @@ enum TlgIn_t
     TlgInSID,
     TlgInHEXINT32,
     TlgInHEXINT64,
-
-    // Note: TlgInCOUNTEDSTRING != TDH_INTYPE_COUNTEDSTRING.
-    // Semantics are the same, but enum value is different.
-    TlgInCOUNTEDSTRING,
-
-    // Note: TlgInCOUNTEDANSISTRING != TDH_INTYPE_COUNTEDANSISTRING.
-    // Semantics are the same, but enum value is different.
-    TlgInCOUNTEDANSISTRING,
-
-    _TlgInSTRUCT,
+    TlgInCOUNTEDSTRING,     // TDH_INTYPE_MANIFEST_COUNTEDSTRING
+    TlgInCOUNTEDANSISTRING, // TDH_INTYPE_MANIFEST_COUNTEDANSISTRING
+    _TlgInSTRUCT,           // TDH_INTYPE_RESERVED24
+    TlgInCOUNTEDBINARY,     // TDH_INTYPE_MANIFEST_COUNTEDBINARY
     // New values go above this line, but _TlgInMax must not exceed 32.
     _TlgInMax,
     TlgInINTPTR = sizeof(void*) == 8 ? TlgInINT64 : TlgInINT32,
@@ -2065,7 +2103,6 @@ struct _TlgProvider_t
     REGHANDLE RegHandle;
     TLG_PENABLECALLBACK EnableCallback;
     PVOID CallbackContext;
-    void (__cdecl *AnnotationFunc)();
 };
 
 /*
@@ -2240,7 +2277,7 @@ TraceLoggingSetInformation will return a NOT_SUPPORTED error.
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _IRQL_requires_same_
-__inline void NTAPI _TlgEnableCallback(
+TLG_INLINE void NTAPI _TlgEnableCallback(
     _In_ LPCGUID pSourceId,
     _In_ ULONG callbackType,
     _In_ UCHAR level,
@@ -2248,6 +2285,7 @@ __inline void NTAPI _TlgEnableCallback(
     _In_ ULONGLONG keywordAll,
     _In_opt_ PEVENT_FILTER_DESCRIPTOR pFilterData,
     _Inout_opt_ PVOID pCallbackContext)
+    TLG_NOEXCEPT
 {
     TLG_PAGED_CODE();
     if (pCallbackContext)
@@ -2280,7 +2318,8 @@ __inline void NTAPI _TlgEnableCallback(
 }
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline void TraceLoggingUnregister(TraceLoggingHProvider _Inout_ hProvider)
+TLG_INLINE void TraceLoggingUnregister(TraceLoggingHProvider _Inout_ hProvider)
+    TLG_NOEXCEPT
 {
     struct _TlgProvider_t* pProvider = (struct _TlgProvider_t*)hProvider;
     TLG_PAGED_CODE();
@@ -2290,18 +2329,20 @@ __inline void TraceLoggingUnregister(TraceLoggingHProvider _Inout_ hProvider)
 }
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingRegister(
+TLG_INLINE TLG_STATUS TraceLoggingRegister(
     TraceLoggingHProvider _Inout_ hProvider)
+    TLG_NOEXCEPT
 {
     TLG_PAGED_CODE();
     return TraceLoggingRegisterEx(hProvider, NULL, NULL);
 }
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingRegisterEx(
+TLG_INLINE TLG_STATUS TraceLoggingRegisterEx(
     TraceLoggingHProvider _Inout_ hProvider,
     _In_opt_ TLG_PENABLECALLBACK pEnableCallback,
     _In_opt_ PVOID pCallbackContext)
+    TLG_NOEXCEPT
 {
     TLG_STATUS status;
     struct _TlgProvider_t* pProvider = (struct _TlgProvider_t*)hProvider;
@@ -2328,7 +2369,7 @@ __inline TLG_STATUS TraceLoggingRegisterEx(
         UINT16 const cbMetadata = *pProvider->ProviderMetadataPtr;
         (void)TraceLoggingSetInformation(
             pProvider,
-            (enum _EVENT_INFO_CLASS)2, // EventProviderSetTraits
+            (EVENT_INFO_CLASS)2, // EventProviderSetTraits
             (PVOID)pProvider->ProviderMetadataPtr,
             cbMetadata);
     }
@@ -2336,11 +2377,12 @@ __inline TLG_STATUS TraceLoggingRegisterEx(
 }
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
-__inline TLG_STATUS TraceLoggingSetInformation(
+TLG_INLINE TLG_STATUS TraceLoggingSetInformation(
     TraceLoggingHProvider _Inout_ hProvider,
-    _In_ enum _EVENT_INFO_CLASS informationClass,
+    _In_ EVENT_INFO_CLASS informationClass,
     _In_reads_bytes_opt_(cbInformation) PVOID pvInformation,
     _In_ ULONG cbInformation)
+    TLG_NOEXCEPT
 {
     TLG_STATUS status;
 
@@ -2362,7 +2404,7 @@ __inline TLG_STATUS TraceLoggingSetInformation(
 #ifdef _ETW_KM_
     typedef NTSTATUS(NTAPI* PFEtwSetInformation)(
         _In_ REGHANDLE RegHandle,
-        _In_ enum _EVENT_INFO_CLASS InformationClass,
+        _In_ EVENT_INFO_CLASS InformationClass,
         _In_reads_bytes_opt_(InformationLength) PVOID EventInformation,
         _In_ ULONG InformationLength);
     static UNICODE_STRING strEtwSetInformation = {
@@ -2393,7 +2435,7 @@ __inline TLG_STATUS TraceLoggingSetInformation(
     {
         typedef ULONG(WINAPI* PFEventSetInformation)(
             _In_ REGHANDLE RegHandle,
-            _In_ enum _EVENT_INFO_CLASS InformationClass,
+            _In_ EVENT_INFO_CLASS InformationClass,
             _In_reads_bytes_opt_(InformationLength) PVOID EventInformation,
             _In_ ULONG InformationLength);
         PFEventSetInformation pfEventSetInformation =
@@ -2464,15 +2506,7 @@ _TlgWriteCommon does not get inlined. The result is slightly larger code at the
 call site with little or no benefit in performance.
 */
 _IRQL_requires_max_(HIGH_LEVEL)
-#if defined(PFORCEINLINE)
-    // __forceinline recommended for performance.
-    // In this case, it typically results in smaller code.
-    PFORCEINLINE
-#elif defined(FORCEINLINE)
-    FORCEINLINE
-#else
-    __inline
-#endif
+TLG_PFORCEINLINE
 void _TlgWriteCommon(
     _In_ TraceLoggingHProvider hProvider,
     _In_reads_bytes_(_TLG_EVENT_METADATA_PREAMBLE + *(UINT16*)((char*)pEventMetadata + _TLG_EVENT_METADATA_PREAMBLE))
@@ -2493,32 +2527,32 @@ void _TlgWriteCommon(
 #endif
 
     ((UINT32*)pDesc)[0] = eventId | (*p << 24);  p += 1; // Id, Version, Channel
-    ((UINT32*)pDesc)[1] = *(UINT16 UNALIGNED*)p; p += 2; // Level, Opcode, Task
-    pDesc[1] = *(ULONGLONG UNALIGNED*)p; p += 8; // Keyword
+    ((UINT32*)pDesc)[1] = *(UINT16 UNALIGNED const*)p; p += 2; // Level, Opcode, Task
+    pDesc[1] = *(ULONGLONG UNALIGNED const*)p; p += 8; // Keyword
     pData[0].Ptr = (ULONGLONG)(ULONG_PTR)hProvider->ProviderMetadataPtr;
     pData[0].Size = *hProvider->ProviderMetadataPtr;
     pData[0].Reserved = 2; // = EVENT_DATA_DESCRIPTOR_TYPE_PROVIDER_METADATA
     pData[1].Ptr = (ULONGLONG)(ULONG_PTR)p;
-    pData[1].Size = *(UINT16 UNALIGNED*)p;
+    pData[1].Size = *(UINT16 UNALIGNED const*)p;
     pData[1].Reserved = 1; // = EVENT_DATA_DESCRIPTOR_TYPE_EVENT_METADATA
     _TLG_ASSERT(eventId < 0x01000000, "EventId out of range"); // Event metadata segment too large (too many events)
-    _TLG_ASSERT((void*)&_TraceLoggingMetadata < (void*)pEventMetadata, "Event metadata not in metadata segment.");
-    _TLG_ASSERT((void*)&_TraceLoggingMetadataEnd > (void*)pEventMetadata, "Event metadata not in metadata segment.");
+    _TLG_ASSERT((void const*)&_TraceLoggingMetadata < (void const*)pEventMetadata, "Event metadata not in metadata segment.");
+    _TLG_ASSERT((void const*)&_TraceLoggingMetadataEnd > (void const*)pEventMetadata, "Event metadata not in metadata segment.");
 
     /*
     Passing provider handles from one module to another is illegal.
     Please fix your code to avoid doing this.
     */
     _TLG_ASSERT(
-        (void*)&_TraceLoggingMetadata < (void*)hProvider->ProviderMetadataPtr,
+        (void const*)&_TraceLoggingMetadata < (void const*)hProvider->ProviderMetadataPtr,
         "Provider handles must not be used outside of the module in which it was declared. Please don't share provider handles with other DLLs.");
     _TLG_ASSERT(
-        (void*)&_TraceLoggingMetadataEnd > (void*)hProvider->ProviderMetadataPtr,
+        (void const*)&_TraceLoggingMetadataEnd > (void const*)hProvider->ProviderMetadataPtr,
         "Provider handles must not be used outside of the module in which it was declared. Please don't share provider handles with other DLLs.");
 }
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline
+TLG_INLINE
 TLG_STATUS _TlgWrite(
     _In_ TraceLoggingHProvider hProvider,
     _In_reads_bytes_(_TLG_EVENT_METADATA_PREAMBLE + *(UINT16*)((char*)pEventMetadata + _TLG_EVENT_METADATA_PREAMBLE))
@@ -2527,19 +2561,20 @@ TLG_STATUS _TlgWrite(
     _In_opt_ LPCGUID pRelatedActivityId,
     _In_range_(2, 128) UINT32 cData,
     _Inout_cap_(cData) EVENT_DATA_DESCRIPTOR* pData)
+    TLG_NOEXCEPT
 {
     TLG_STATUS status;
     ULONGLONG desc[2];
     _TlgWriteCommon(hProvider, pEventMetadata, desc, pData);
     _TLG_ASSERT(cData <= 128, "Too many data values.");
-    status = TLG_EVENT_WRITE_TRANSFER(hProvider->RegHandle, (EVENT_DESCRIPTOR*)desc, pActivityId, pRelatedActivityId, cData, pData);
+    status = TLG_EVENT_WRITE_TRANSFER(hProvider->RegHandle, (EVENT_DESCRIPTOR const*)desc, pActivityId, pRelatedActivityId, cData, pData);
     return status;
 }
 
 #if _TLG_ENABLE_TraceLoggingWriteEx
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline
+TLG_INLINE
 TLG_STATUS _TlgWriteEx(
     _In_ TraceLoggingHProvider hProvider,
     _In_reads_bytes_(_TLG_EVENT_METADATA_PREAMBLE + *(UINT16*)((char*)pEventMetadata + _TLG_EVENT_METADATA_PREAMBLE))
@@ -2550,12 +2585,13 @@ TLG_STATUS _TlgWriteEx(
     _In_opt_ LPCGUID pRelatedActivityId,
     _In_range_(2, 128) UINT32 cData,
     _Inout_cap_(cData) EVENT_DATA_DESCRIPTOR* pData)
+    TLG_NOEXCEPT
 {
     TLG_STATUS status;
     ULONGLONG desc[2];
     _TlgWriteCommon(hProvider, pEventMetadata, desc, pData);
     _TLG_ASSERT(cData <= 128, "Too many data values.");
-    status = TLG_EVENT_WRITE_EX(hProvider->RegHandle, (EVENT_DESCRIPTOR*)desc, filter, flags, pActivityId, pRelatedActivityId, cData, pData);
+    status = TLG_EVENT_WRITE_EX(hProvider->RegHandle, (EVENT_DESCRIPTOR const*)desc, filter, flags, pActivityId, pRelatedActivityId, cData, pData);
     return status;
 }
 
@@ -2564,9 +2600,10 @@ TLG_STATUS _TlgWriteEx(
 #pragma warning(pop) // Don't warn if _TlgWriteCommon not inlined
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline BOOLEAN _TlgKeywordOn(
+TLG_INLINE BOOLEAN _TlgKeywordOn(
     TraceLoggingHProvider _In_ hProvider,
     ULONGLONG keyword)
+    TLG_NOEXCEPT
 {
     return keyword == 0 || (
         (keyword & hProvider->KeywordAny) &&
@@ -2574,17 +2611,19 @@ __inline BOOLEAN _TlgKeywordOn(
 }
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline BOOLEAN TraceLoggingProviderEnabled(
+TLG_INLINE BOOLEAN TraceLoggingProviderEnabled(
     TraceLoggingHProvider _In_ hProvider,
     UCHAR eventLevel,
     ULONGLONG eventKeyword)
+    TLG_NOEXCEPT
 {
     return eventLevel < hProvider->LevelPlus1 && _TlgKeywordOn(hProvider, eventKeyword);
 }
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline GUID TraceLoggingProviderId(
+TLG_INLINE GUID TraceLoggingProviderId(
     TraceLoggingHProvider _In_ hProvider)
+    TLG_NOEXCEPT
 {
     GUID const UNALIGNED* pProviderId =
         &CONTAINING_RECORD(hProvider->ProviderMetadataPtr, struct _TlgProviderMetadata_t, RemainingSize)->ProviderId;
@@ -2595,9 +2634,10 @@ __inline GUID TraceLoggingProviderId(
 #pragma warning(disable: 4995 4996) // strlen/wcslen marked as deprecated
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateSz(
+TLG_INLINE void _TlgCreateSz(
     _Out_ PEVENT_DATA_DESCRIPTOR pDesc,
     _In_opt_z_ LPCSTR psz)
+    TLG_NOEXCEPT
 {
     LPCSTR pch = "";
     SIZE_T cch = 0;
@@ -2610,9 +2650,10 @@ __inline void _TlgCreateSz(
 }
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateWsz(
+TLG_INLINE void _TlgCreateWsz(
     _Out_ PEVENT_DATA_DESCRIPTOR pDesc,
     _In_opt_z_ LPCWSTR pwsz)
+    TLG_NOEXCEPT
 {
     LPCWSTR pch = L"";
     SIZE_T cch = 0;
@@ -2628,9 +2669,10 @@ __inline void _TlgCreateWsz(
 
 #ifdef SID_DEFINED
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateSid(
+TLG_INLINE void _TlgCreateSid(
     _Out_ PEVENT_DATA_DESCRIPTOR pDesc,
     _In_ SID const* pSid)
+    TLG_NOEXCEPT
 {
     ULONG const cAuthorities = pSid->SubAuthorityCount <= SID_MAX_SUB_AUTHORITIES
         ? pSid->SubAuthorityCount
@@ -2641,20 +2683,22 @@ __inline void _TlgCreateSid(
 #endif
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateFixedArray(
+TLG_INLINE void _TlgCreateFixedArray(
     _Out_ PEVENT_DATA_DESCRIPTOR pDesc,
     _In_reads_bytes_(cVals * cbVal) void const* pVals,
     ULONG cVals,
     ULONG cbVal)
+    TLG_NOEXCEPT
 {
     EventDataDescCreate(pDesc, pVals, cVals * cbVal);
 }
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateBinary(
+TLG_INLINE void _TlgCreateBinary(
     _Out_writes_(2) PEVENT_DATA_DESCRIPTOR pDesc,
     _In_reads_bytes_(cVals) void const* pVals,
     _In_ ULONG cVals)
+    TLG_NOEXCEPT
 {
     EventDataDescCreate(pDesc + 0, &pDesc[1].Size, 2);
     EventDataDescCreate(pDesc + 1, pVals, cVals);
@@ -2663,11 +2707,12 @@ __inline void _TlgCreateBinary(
 #ifdef __cplusplus
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateArray(
+TLG_INLINE void _TlgCreateArray(
     _Out_writes_(2) PEVENT_DATA_DESCRIPTOR pDesc,
     _In_reads_bytes_(cVals * cbVal) void const* pVals,
     _In_ UINT16 const& cVals,
     ULONG cbVal)
+    TLG_NOEXCEPT
 {
     EventDataDescCreate(pDesc + 0, &cVals, 2);
     EventDataDescCreate(pDesc + 1, pVals, cVals * cbVal);
@@ -2676,11 +2721,12 @@ __inline void _TlgCreateArray(
 #else // __cplusplus
 
 _IRQL_requires_max_(HIGH_LEVEL)
-__inline void _TlgCreateArray(
+TLG_INLINE void _TlgCreateArray(
     _Out_writes_(2) PEVENT_DATA_DESCRIPTOR pDesc,
     _In_reads_bytes_(*pcVals * cbVal) void const* pVals,
     _In_ UINT16 const* pcVals,
     ULONG cbVal)
+    TLG_NOEXCEPT
 {
     EventDataDescCreate(pDesc + 0, pcVals, 2);
     EventDataDescCreate(pDesc + 1, pVals, *pcVals * cbVal);
@@ -2709,6 +2755,7 @@ _IRQL_requires_max_(HIGH_LEVEL)
 inline void _TlgCreateString(_Out_writes_(2) PEVENT_DATA_DESCRIPTOR pDesc, _In_ T const* pStr)
 {
     EventDataDescCreate(pDesc + 0, &pDesc[1].Size, 2);
+#pragma warning(suppress:26018) // Length might exceed strlen(Buffer).
     EventDataDescCreate(pDesc + 1, pStr->Buffer, pStr->Length);
 }
 
@@ -2843,6 +2890,7 @@ inline void _TlgCreateAuto(EVENT_DATA_DESCRIPTOR* pDesc, SID const* pVal)
 }
 #endif
 
+#pragma warning(suppress:25033) // Nonconst psz parameter (needed for overload)
 _IRQL_requires_max_(HIGH_LEVEL)
 inline void _TlgCreateAuto(EVENT_DATA_DESCRIPTOR* pDesc, _In_z_ char* psz)
 {
@@ -2855,6 +2903,7 @@ inline void _TlgCreateAuto(EVENT_DATA_DESCRIPTOR* pDesc, _In_z_ char const* psz)
     _TlgCreateSz(pDesc, psz);
 }
 
+#pragma warning(suppress:25033) // Nonconst psz parameter (needed for overload)
 _IRQL_requires_max_(HIGH_LEVEL)
 inline void _TlgCreateAuto(EVENT_DATA_DESCRIPTOR* pDesc, _In_z_ wchar_t* psz)
 {
@@ -2961,19 +3010,21 @@ Output = EventTag value encoded for UINT16 (but without chain bit set).
 #define _Tracelogging_SyntaxError_ProviderIdMustBeEnclosedInParentheses(...) \
     _TlgParseProviderId_N(_TLG_NARGS(__VA_ARGS__), __VA_ARGS__)
 #define _TlgParseProviderId_N(n, ...) \
-    _TLG_PASTE(_Tracelogging_SyntaxError_ProviderIdMustBeElevenIntegers_, n) _TLG_FLATTEN((__VA_ARGS__))
-#define _Tracelogging_SyntaxError_ProviderIdMustBeElevenIntegers_11(...) /* not an error */ \
-    { __VA_ARGS__ }
+    _TlgParseProviderId_N_CALL(_TLG_PASTE(_Tracelogging_SyntaxError_ProviderIdMustBeElevenIntegers_, n), (__VA_ARGS__))
+#define _TlgParseProviderId_N_CALL(macro, args) macro args
+#define _Tracelogging_SyntaxError_ProviderIdMustBeElevenIntegers_11(a, b, c, d, e, f, g, h, i, j, k) /* not an error */ \
+    { a, b, c, { d, e, f, g, h, i, j , k } }
 
 #define _TlgParseOption(option) \
     _Tracelogging_UnrecognizedOption_##option
 #define _Tracelogging_UnrecognizedOption__TlgOptionGroup(...) /* recognized */ \
     {__VA_ARGS__}
 
-#define _TlgProviderStorage_imp(    storageVariable, providerName, providerId, annotationFunc, ...)  _TlgProviderStorage_impn( \
+#define _TlgProviderStorage_imp(    storageVariable, providerName, providerId, annotationFunc, ...)  _TlgProviderStorage_impN( \
            _TLG_NARGS(__VA_ARGS__), storageVariable, providerName, providerId, annotationFunc, __VA_ARGS__)
-#define _TlgProviderStorage_impn(n, storageVariable, providerName, providerId, annotationFunc, ...) _TLG_PASTE(_TlgProviderStorage_imp, n) \
-                    _TLG_FLATTEN((  storageVariable, providerName, providerId, annotationFunc, __VA_ARGS__))
+#define _TlgProviderStorage_impN(n, storageVariable, providerName, providerId, annotationFunc, ...) _TlgProviderStorage_impN_CALL(_TLG_PASTE(_TlgProviderStorage_imp, n), \
+                                 (  storageVariable, providerName, providerId, annotationFunc, __VA_ARGS__))
+#define _TlgProviderStorage_impN_CALL(macro, args) macro args
 
 #define _TlgProviderStorage_imp0(storageVariable, providerName, providerId, annotationFunc, ...) \
     _TlgProviderStorage_impx(storageVariable, providerName, providerId, annotationFunc \
@@ -3003,13 +3054,25 @@ Output = EventTag value encoded for UINT16 (but without chain bit set).
     _TlgPragmaUtf8End \
     static struct _TlgProvider_t storageVariable = { \
         0, &storageVariable##_Meta._TlgProv.RemainingSize, \
-        0, 0, 0, 0, 0, \
+        0, 0, 0, 0, 0 \
         _TlgAnnotationFunc_imp(annotationFunc, storageVariable) \
     }
 
 #define _TlgAnnotationFunc_imp(use_annotationFunc, storageVariable) _TLG_PASTE(_TlgAnnotationFunc_imp, use_annotationFunc) (storageVariable)
-#define _TlgAnnotationFunc_imp0(storageVariable) 0
-#define _TlgAnnotationFunc_imp1(storageVariable) &_TLG_PASTE(_TlgDefineProvider_annotation_, storageVariable)
+#define _TlgAnnotationFunc_imp0(storageVariable)
+
+// NOTE: The pragma is NOT associated with the data as it appears, but with the source/object it occurs in (i.e. .c/.obj).
+// Any reference to the object will bring in the linker directive and the function with the annotation.
+// Putting the pragma link-directive on the data is a reasonable place to author it, and wishful
+// thinking as to the exact semantics. Address-taking has slight acceptable-but-avoided side effect
+// of adding the function to the CFG data, which is to be minimized.
+#if defined(_M_HYBRID)
+#define _TlgAnnotationFunc_imp1(storageVariable) __pragma(comment(linker, "/include:#" _TLG_STRINGIZE(_TLG_PASTE(_TlgDefineProvider_annotation_, storageVariable)))) // 
+#elif defined(_M_IX86) || defined(_X86_) // x86 requires leading underscore
+#define _TlgAnnotationFunc_imp1(storageVariable) __pragma(comment(linker, "/include:_" _TLG_STRINGIZE(_TLG_PASTE(_TlgDefineProvider_annotation_, storageVariable))))
+#else
+#define _TlgAnnotationFunc_imp1(storageVariable) __pragma(comment(linker,  "/include:" _TLG_STRINGIZE(_TLG_PASTE(_TlgDefineProvider_annotation_, storageVariable))))
+#endif
 
 /*
 _TlgArg(data_type, in_type, out_type, has_out, dim, value, cVals, name, desc, tags)
@@ -3048,7 +3111,7 @@ _TlgEvtTag: Event tag. Value is the event tag.
 _TlgDesc: Event description. Desc is the description. Emitted into the PDB.
 */
 
-#define _TlgArg_imp0(  data_type, in_type, out_type, has_out, dim, value, cVals, x                     ) \
+#define _TlgArg_imp0(  data_type, in_type, out_type, has_out, dim, value, cVals, ...                   ) \
                     (  data_type, in_type, out_type, has_out, dim, value, cVals, #value,,           , 0)
 #define _TlgArg_imp1(  data_type, in_type, out_type, has_out, dim, value, cVals, name                  ) \
                     (  data_type, in_type, out_type, has_out, dim, value, cVals, name,,             , 0)
@@ -3056,10 +3119,11 @@ _TlgDesc: Event description. Desc is the description. Emitted into the PDB.
                     (  data_type, in_type, out_type, has_out, dim, value, cVals, name, L##desc,     , 0)
 #define _TlgArg_imp3(  data_type, in_type, out_type, has_out, dim, value, cVals, name,    desc, tags   ) \
                     (  data_type, in_type, out_type, has_out, dim, value, cVals, name, L##desc, tags, 1)
-#define _TlgArg_imp(n, data_type, in_type, out_type, has_out, dim, value, cVals, ...        ) _TLG_PASTE(_TlgArg_imp, n) \
-       _TLG_FLATTEN((  data_type, in_type, out_type, has_out, dim, value, cVals, __VA_ARGS__))
+#define _TlgArg_imp(n, data_type, in_type, out_type, has_out, dim, value, cVals, ...        ) _TlgArg_imp_CALL(_TLG_PASTE(_TlgArg_imp, n), \
+                    (  data_type, in_type, out_type, has_out, dim, value, cVals, __VA_ARGS__))
 #define _TlgArg(       data_type, in_type, out_type, has_out, dim, value, cVals, ...        ) _TlgArg_imp(_TLG_NARGS(__VA_ARGS__), \
                        data_type, in_type, out_type, has_out, dim, value, cVals, __VA_ARGS__)
+#define _TlgArg_imp_CALL(macro, args) macro args
 
 #define _TlgapplyArgs_imp2(fn, n, data_type, in_type, out_type, has_out, dim, value, cVals, name, desc, tags, has_tags) \
     fn##_imp(n, data_type, in_type, out_type, has_out, dim, value, cVals, name, desc, tags, has_tags)
@@ -3461,12 +3525,12 @@ template<UINT32 n> struct _TraceLoggingEventTag : _TlgIntegralConstant<UINT32, n
 #endif
 
 #define _TlgWrite_imp(tlgWriteFunc, hProvider, eventName, tlgWriteArgs, ...) \
-    __pragma(warning(push)) \
-    __pragma(warning(disable:4127 4132 6001)) \
-    __pragma(warning(error:4047)) \
-    _TlgPragmaUtf8Begin \
-    __pragma(pack(push, 1)) \
     do { \
+        __pragma(warning(push)) \
+        __pragma(warning(disable:4127 4132 6001)) \
+        __pragma(warning(error:4047)) \
+        _TlgPragmaUtf8Begin \
+        __pragma(pack(push, 1)) \
         _TlgEvtTagDecl(__VA_ARGS__) \
         enum { _TlgLevelConst = 5 _TLG_FOREACH(_TlgLevelVal, __VA_ARGS__) }; \
         static struct { \
@@ -3498,10 +3562,10 @@ template<UINT32 n> struct _TraceLoggingEventTag : _TlgIntegralConstant<UINT32, n
             tlgWriteFunc(_TlgProv, &_TlgEvent._TlgChannel, _TLG_FLATTEN tlgWriteArgs, _TlgIdx, _TlgData) \
             _TlgSeqEnd; \
         } \
+        __pragma(pack(pop)) \
+        _TlgPragmaUtf8End \
+        __pragma(warning(pop)) \
     } while (0) \
-    __pragma(pack(pop)) \
-    _TlgPragmaUtf8End \
-    __pragma(warning(pop)) \
 
 #define _TlgDefineProvider_annotation(hProvider, functionPostfix, requiresWrapper, providerName) \
     _TlgDefineProvider_functionWrapperBegin##requiresWrapper(functionPostfix) \
@@ -3513,18 +3577,13 @@ template<UINT32 n> struct _TraceLoggingEventTag : _TlgIntegralConstant<UINT32, n
 
 #define _TlgDefineProvider_functionWrapperBegin0(functionPostfix)
 
-#if defined(XBOX_SYSTEMOS)
-
-#define _TlgDefineProvider_functionWrapperBegin1(functionPostfix) void __cdecl _TLG_PASTE(_TlgDefineProvider_annotation_, functionPostfix)(void) \
-                                                {
-
-#else
-
-#define _TlgDefineProvider_functionWrapperBegin1(functionPostfix) static void __cdecl _TLG_PASTE(_TlgDefineProvider_annotation_, functionPostfix)(void) \
-                                                {
-
-#endif
-
+// These functions exist only to contain annotations. They are never executed.
+// They are extern "C" so that they can be named in pragma(linker, /include).
+#define _TlgDefineProvider_functionWrapperBegin1(functionPostfix) \
+    _TLG_EXTERN_C \
+    void __cdecl \
+    _TLG_PASTE(_TlgDefineProvider_annotation_, functionPostfix)(void) TLG_NOEXCEPT \
+    {
 #define _TlgDefineProvider_functionWrapperEnd0
 #define _TlgDefineProvider_functionWrapperEnd1  }
 

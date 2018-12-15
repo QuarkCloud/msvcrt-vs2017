@@ -243,7 +243,7 @@ typedef struct _sockaddr_in6_pair
 // N.B. These addresses are in network byte order.
 //
 
-#define IN6ADDR_ANY_INIT { 0 }
+#define IN6ADDR_ANY_INIT {{{ 0 }}}
 
 #define IN6ADDR_LOOPBACK_INIT { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 }
 

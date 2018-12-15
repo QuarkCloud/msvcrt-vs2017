@@ -12,19 +12,19 @@
 
 static unexpected_handler __cdecl get_unexpected_or_default(
     __vcrt_ptd const* const ptd
-    ) throw()
+    ) noexcept
 {
     return ptd->_unexpected ? ptd->_unexpected : &terminate;
 }
 
-extern "C" unexpected_handler __cdecl _get_unexpected()
+extern "C" unexpected_handler __cdecl _get_unexpected() noexcept
 {
     return get_unexpected_or_default(__vcrt_getptd());
 }
 
 extern "C" unexpected_handler __cdecl set_unexpected(
     unexpected_handler const new_handler
-    )
+    ) noexcept
 {
     __vcrt_ptd* const ptd = __vcrt_getptd();
 

@@ -13,5 +13,5 @@ namespace std
 {
     // Note:  We use aggregate initialization in order to avoid use of a dynamic
     // initializer.
-    const nothrow_t nothrow = { };
+    const nothrow_t nothrow = { }; // TRANSITION, VSO#406237
 }

@@ -40,6 +40,12 @@ extern "C" int __cdecl __scrt_initialize_winrt()
     return 0;
 }
 
+extern "C" int __cdecl __scrt_initialize_mta()
+{
+    // Apps do their own thing with WinRT. No need to increment the MTA usage here.
+    return 0;
+}
+
 extern "C" void __cdecl __scrt_set_unhandled_exception_filter()
 {
     // No action is possible; we cannot register an unhandled exception filter

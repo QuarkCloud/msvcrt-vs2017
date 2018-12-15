@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * joystickapi.h -- ApiSet Contract for api-ms-win-mm-joystick-l1-1-0            *  
@@ -20,27 +19,11 @@
 
 #include <mmsyscom.h> // mm common definitions
 
-/* APISET_NAME: api-ms-win-mm-joystick-l1 */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_JOYSTICK_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_JOYSTICK_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Desktop Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
 
@@ -163,7 +146,6 @@ typedef struct tagJOYCAPSA {
     UINT    wNumButtons;         /* number of buttons */
     UINT    wPeriodMin;          /* minimum message period when captured */
     UINT    wPeriodMax;          /* maximum message period when captured */
-
 #if (WINVER >= 0x0400)
     UINT    wRmin;               /* minimum r position value */
     UINT    wRmax;               /* maximum r position value */
@@ -192,7 +174,6 @@ typedef struct tagJOYCAPSW {
     UINT    wNumButtons;         /* number of buttons */
     UINT    wPeriodMin;          /* minimum message period when captured */
     UINT    wPeriodMax;          /* maximum message period when captured */
-
 #if (WINVER >= 0x0400)
     UINT    wRmin;               /* minimum r position value */
     UINT    wRmax;               /* maximum r position value */
@@ -303,7 +284,6 @@ typedef struct joycaps_tag {
     UINT wNumButtons;           /* number of buttons */
     UINT wPeriodMin;            /* minimum message period when captured */
     UINT wPeriodMax;            /* maximum message period when captured */
-
 #if (WINVER >= 0x0400)
     UINT wRmin;                 /* minimum r position value */
     UINT wRmax;                 /* maximum r position value */
@@ -330,7 +310,6 @@ typedef struct joyinfo_tag {
     UINT wButtons;              /* button states */
 } JOYINFO, *PJOYINFO, NEAR *NPJOYINFO, FAR *LPJOYINFO;
 
-
 #if (WINVER >= 0x0400)
 typedef struct joyinfoex_tag {
     DWORD dwSize;                /* size of structure */
@@ -350,7 +329,6 @@ typedef struct joyinfoex_tag {
 #endif
 
 /* joystick function prototypes */
-
 
 #if (WINVER >= 0x0400)
 WINMMAPI
@@ -444,7 +422,6 @@ joySetThreshold(
     _In_ UINT uJoyID,
     _In_ UINT uThreshold
     );
-
 
 
 #if (WINVER >= 0x0400)

@@ -30,8 +30,6 @@ void
 //
 
 extern const unsigned char _guard_dispatch_icall_nop;
-extern const unsigned char __guard_ss_verify_failure_default;
-extern const unsigned char __guard_ss_verify_sp_default;
 
 #endif
 
@@ -100,14 +98,6 @@ __declspec(allocate(".00cfg"))
 DECLSPEC_SELECTANY
 PVOID __guard_dispatch_icall_fptr = (PVOID)&_guard_dispatch_icall_nop;
 
-__declspec(allocate(".00cfg"))
-DECLSPEC_SELECTANY
-PVOID __guard_ss_verify_failure_fptr = (PVOID)&__guard_ss_verify_failure_default;
-
-__declspec(allocate(".00cfg"))
-DECLSPEC_SELECTANY
-PVOID __guard_ss_verify_sp_fptr = (PVOID)&__guard_ss_verify_sp_default;
-
 #endif
 
 extern
@@ -169,42 +159,7 @@ Return Value:
 --*/
 
 {
-
-    //
-    // Use a volatile read to ensure that the compiler does not optimize away the read
-    // through a global that it thinks is always read-only.
-    //
-
-    return (ReadPointerNoFence(&__guard_ss_verify_failure_fptr) != (PVOID)&__guard_ss_verify_failure_default);
-}
-
-extern
-__inline
-__declspec(guard(nosspro))
-void
-__guard_ss_common_verify_stub(
-    VOID
-    )
-
-/*++
-
-Routine Description:
-
-    This function implements a shared epilogue verification stub for Return
-    Flow Guard.
-
-Arguments:
-
-    None.
-
-Return Value:
-
-    None.
-
---*/
-
-{
-    return;
+    return 0;
 }
 
 #endif

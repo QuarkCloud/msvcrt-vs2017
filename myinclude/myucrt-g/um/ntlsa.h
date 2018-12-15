@@ -2037,6 +2037,7 @@ typedef enum _POLICY_INFORMATION_CLASS {
     PolicyDnsDomainInformation,
     PolicyDnsDomainInformationInt,
     PolicyLocalAccountDomainInformation,
+    PolicyMachineAccountInformation,
     PolicyLastEntry
 
 } POLICY_INFORMATION_CLASS, *PPOLICY_INFORMATION_CLASS;
@@ -2408,6 +2409,20 @@ typedef struct _POLICY_DOMAIN_KERBEROS_TICKET_INFO {
 //
 //      Reserved   --  Reserved
 
+//
+// The following structure corresponds to the PolicyMachineAccountInformation
+// information class.  Only valid when the machine is joined to an AD domain.
+// When not joined, will return 0+NULL.
+//
+// Note, DN is not cached because it may change (if\when the account is
+// moved within the domain tree).
+//
+typedef struct _POLICY_MACHINE_ACCT_INFO {
+
+    ULONG Rid;
+    PSID Sid;
+
+} POLICY_MACHINE_ACCT_INFO, *PPOLICY_MACHINE_ACCT_INFO;
 
 //
 // The following data type defines the classes of Policy Information / Policy Domain Information
@@ -3397,6 +3412,7 @@ LsaLookupSids(
     );
 
 NTSTATUS
+NTAPI
 LsaLookupSids2(
     _In_ LSA_HANDLE PolicyHandle,
     _In_ ULONG LookupOptions,

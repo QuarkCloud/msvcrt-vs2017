@@ -45,7 +45,7 @@ wchar_t * __cdecl wcschr (
 
 #else
 
-wchar_t _CONST_RETURN * __cdecl wcschr (
+wchar_t * __cdecl wcschr (
         const wchar_t * string,
         wchar_t ch
         )

@@ -2239,6 +2239,9 @@ SHSTDAPI SHGetInstanceExplorer(_Outptr_ IUnknown **ppunk);
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 #define SHDID_MOBILE_DEVICE         21  // PDA/PalmPC
 #endif
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define SHDID_REMOTE_DESKTOP_DRIVE  22
+#endif
 
 #include <pshpack8.h>
 
@@ -2707,6 +2710,7 @@ SHSTDAPI_(BOOL) SignalFileOpen(_In_ PCIDLIST_ABSOLUTE pidl);
 #if (NTDDI_VERSION >= NTDDI_VISTA)
 SHSTDAPI AssocGetDetailsOfPropKey(_In_ IShellFolder *psf, _In_ PCUITEMID_CHILD pidl, _In_ const PROPERTYKEY *pkey, _Out_ VARIANT *pv, _Out_opt_ BOOL *pfFoundPropKey);
 #endif
+
 
 // both ANSI and UNICODE
 SHSTDAPI SHStartNetConnectionDialogA(_In_opt_ HWND hwnd, _In_opt_ LPCSTR pszRemoteName, DWORD dwType);

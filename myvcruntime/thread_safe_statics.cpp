@@ -50,10 +50,11 @@ static decltype(WakeAllConditionVariable)* encoded_wake_all_condition_variable;
 // kernel32.dll.
 // The helper __scrt_is_event_api_used signals the usage of the event API for the
 // rest of the code (allows it to be hardcoded to false when guaranteed to not be used).
-#if defined _SCRT_ENCLAVE_BUILD || \
+#if defined _SCRT_ENCLAVE_BUILD || defined _CRT_APP || \
     (!defined _CRT_WINDOWS && (defined _ONECORE || defined _KERNELX || defined _M_ARM || defined _M_ARM64))
-    static void __cdecl __scrt_initialize_thread_safe_statics_platform_specific() throw()
+    static void __cdecl __scrt_initialize_thread_safe_statics_platform_specific() noexcept
     {
+        // This can only fail due to invalid parameters (flags) so ignoring error is ok.
         InitializeCriticalSectionEx(&_Tss_mutex, 4000, 0);
 
         InitializeConditionVariable(&_Tss_cv);
@@ -64,9 +65,10 @@ static decltype(WakeAllConditionVariable)* encoded_wake_all_condition_variable;
 
     constexpr bool __scrt_is_event_api_used(HANDLE) { return false; }
 #else // ^^^ Modern Platforms ^^^ // vvv Ancient Platforms vvv //
-    static void __cdecl __scrt_initialize_thread_safe_statics_platform_specific() throw()
+    static void __cdecl __scrt_initialize_thread_safe_statics_platform_specific() noexcept
     {
-        __vcrt_InitializeCriticalSectionEx(&_Tss_mutex, 4000, 0);
+        // This can fail pre-Vista and that is ignored.
+        InitializeCriticalSectionAndSpinCount(&_Tss_mutex, 4000);
 
         // CONDITION_VARIABLE is available via this APISet starting on Windows 8.
         HMODULE kernel_dll = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
@@ -110,7 +112,7 @@ static decltype(WakeAllConditionVariable)* encoded_wake_all_condition_variable;
 #endif // Ancient Platforms
 
 // Terminator for synchronization data structures.
-static void __cdecl __scrt_uninitialize_thread_safe_statics() throw()
+static void __cdecl __scrt_uninitialize_thread_safe_statics() noexcept
 {
     DeleteCriticalSection(&_Tss_mutex);
     if (__scrt_is_event_api_used(_Tss_event))
@@ -120,7 +122,7 @@ static void __cdecl __scrt_uninitialize_thread_safe_statics() throw()
 }
 
 // Initializer for synchronization data structures.
-static int __cdecl __scrt_initialize_thread_safe_statics() throw()
+static int __cdecl __scrt_initialize_thread_safe_statics() noexcept
 {
     __scrt_initialize_thread_safe_statics_platform_specific();
 
@@ -156,20 +158,18 @@ extern "C" void __cdecl _Init_thread_unlock()
 // timeout expires.  The signal may be missed because the sleeping threads may be
 // stolen by the kernel to service an APC, or due to the race condition between the
 // unlock call and the WaitForSingleObject call.
-extern "C" bool __cdecl _Init_thread_wait(DWORD const timeout)
+extern "C" void __cdecl _Init_thread_wait(DWORD const timeout)
 {
     if (!__scrt_is_event_api_used(_Tss_event))
     {
-        return __crt_fast_decode_pointer(encoded_sleep_condition_variable_cs)(&_Tss_cv, &_Tss_mutex, timeout) != FALSE;
+        __crt_fast_decode_pointer(encoded_sleep_condition_variable_cs)(&_Tss_cv, &_Tss_mutex, timeout);
+        return;
     }
-    else
-    {
-        _ASSERT(timeout != INFINITE);
-        _Init_thread_unlock();
-        HRESULT res = WaitForSingleObjectEx(_Tss_event, timeout, FALSE);
-        _Init_thread_lock();
-        return (res == WAIT_OBJECT_0);
-    }
+
+    _ASSERT(timeout != INFINITE);
+    _Init_thread_unlock();
+    WaitForSingleObjectEx(_Tss_event, timeout, FALSE);
+    _Init_thread_lock();
 }
 
 extern "C" void __cdecl _Init_thread_notify()
@@ -193,7 +193,7 @@ DWORD const XpTimeout = 100; // ms
 // this function before the variable has completed initialization, this thread
 // will perform initialization.  All other threads are blocked until the
 // initialization completes or fails due to an exception.
-extern "C" __declspec(nothrow) void __cdecl _Init_thread_header(int* const pOnce)
+extern "C" void __cdecl _Init_thread_header(int* const pOnce) noexcept
 {
     _Init_thread_lock();
 
@@ -227,7 +227,7 @@ extern "C" __declspec(nothrow) void __cdecl _Init_thread_header(int* const pOnce
 // Abort processing of the initializer due to an exception.  Reset the state
 // to uninitialized and release waiting threads (one of which will take over
 // initialization, any remaining will again sleep).
-extern "C" __declspec(nothrow) void __cdecl _Init_thread_abort(int* const pOnce)
+extern "C" void __cdecl _Init_thread_abort(int* const pOnce) noexcept
 {
     _Init_thread_lock();
     *pOnce = Uninitialized;
@@ -238,7 +238,7 @@ extern "C" __declspec(nothrow) void __cdecl _Init_thread_abort(int* const pOnce)
 // Called by the thread that completes initialization of a variable.
 // Increment the global and per thread counters, mark the variable as
 // initialized, and release waiting threads.
-extern "C" __declspec(nothrow) void __cdecl _Init_thread_footer(int* const pOnce)
+extern "C" void __cdecl _Init_thread_footer(int* const pOnce) noexcept
 {
     _Init_thread_lock();
     ++_Init_global_epoch;

@@ -730,8 +730,6 @@ typedef struct _SCSI_PNP_REQUEST_BLOCK {
 //
 #define SRB_FUNCTION_STORAGE_REQUEST_BLOCK  0x28
 
-#define SRB_FUNCTION_CRYPTO_OPERATION       0x29
-
 // end_storport
 
 #define SRB_FUNCTION_GET_DUMP_INFO          0x2a
@@ -817,6 +815,11 @@ typedef struct _SCSI_PNP_REQUEST_BLOCK {
 // This flag indicates the request is part of the workflow for processing a D3.
 //
 #define SRB_FLAGS_D3_PROCESSING             0x00000800
+
+//
+// This flag indicates that LBA range falls into sequential write required zone
+//
+#define SRB_FLAGS_SEQUENTIAL_REQUIRED       0x00001000
 
 
 #define SRB_FLAGS_IS_ACTIVE                 0x00010000

@@ -67,6 +67,8 @@
 #include <stdlib.h>
 #endif
 
+#include <string.h>
+
 #ifndef _countof
 #define _countof(_Array) (sizeof(_Array) / sizeof(_Array[0]))
 #endif
@@ -174,6 +176,8 @@ enum Tokens
 	TOK_vectorcall,
 	TOK_cocall,
 	TOK_eabi,
+	TOK_swift_1,
+	TOK_swift_2,
 	TOK_ptr64,
 	TOK_restrict,
 	TOK_unaligned,
@@ -213,6 +217,8 @@ static constexpr pcchar_t tokenTable[] =
 	"__vectorcall",	// TOK_vectorcall
 	"__clrcall",	// TOK_cocall
 	"__eabi",		// TOK_eabi
+	"__swift_1",	// TOK_swift_1
+	"__swift_2",	// TOK_swift_2
 	"__ptr64",		// TOK_ptr64
 	"__restrict",	// TOK_restrict
 	"__unaligned",	// TOK_unaligned
@@ -526,8 +532,6 @@ private:
 
 	static pcchar_t gName;
 	static pcchar_t name;
-	static pchar_t outputString;
-	static int maxStringLength;
 	static unsigned long disableFlags;
 	static bool fExplicitTemplateParams;
 	static bool fGetTemplateArgumentList;
@@ -590,11 +594,14 @@ private:
 #endif // !NO_COMPILER_NAMES
 
 	static DName getStringEncoding(_In_z_ const char *prefix, int wantBody);
+    static DName parseDecoratedName(void);
 
 	static GetParameter_t m_pGetParameter;
+    static unsigned long m_CHPENameOffset;
+    static unsigned long m_recursionLevel;
 
 public:
-	UnDecorator(_In_opt_z_ pchar_t, pcchar_t, int, GetParameter_t, unsigned long);
+	UnDecorator(pcchar_t, GetParameter_t, unsigned long);
 
 	static int doUnderScore();
 	static int doMSKeywords();
@@ -627,30 +634,48 @@ public:
 #endif // CC_RESTRICTION_SPEC
 	static pcchar_t UScore(Tokens);
 
-	operator pchar_t ();
-
+    pchar_t getUndecoratedName(_Out_opt_z_cap_(maxStringLength) pchar_t, int maxStringLength);
+    pchar_t getCHPEName(_Out_opt_z_cap_(maxStringLength) pchar_t, int maxStringLength);
 };
 
 
 
-Replicator *	UnDecorator::pArgList;
-Replicator *	UnDecorator::pZNameList = 0;
-Replicator *	UnDecorator::pTemplateArgList = 0;
-pcchar_t UnDecorator::gName = 0;
-pcchar_t UnDecorator::name = 0;
-pchar_t UnDecorator::outputString = 0;
-int UnDecorator::maxStringLength = 0;
-unsigned long UnDecorator::disableFlags = 0;
-GetParameter_t UnDecorator::m_pGetParameter = 0;
-bool UnDecorator::fExplicitTemplateParams = false;
-bool UnDecorator::fGetTemplateArgumentList = false;
+Replicator * UnDecorator::pArgList;
+Replicator * UnDecorator::pZNameList;
+Replicator * UnDecorator::pTemplateArgList;
+pcchar_t UnDecorator::gName;
+pcchar_t UnDecorator::name;
+unsigned long UnDecorator::disableFlags;
+GetParameter_t UnDecorator::m_pGetParameter;
+bool UnDecorator::fExplicitTemplateParams;
+bool UnDecorator::fGetTemplateArgumentList;
+unsigned long UnDecorator::m_CHPENameOffset;
+unsigned long UnDecorator::m_recursionLevel;
 
+pchar_t __cdecl unDNameGenerateCHPE (
+    _Out_opt_z_cap_(maxStringLength) pchar_t outputString,
+    pcchar_t name,
+    int maxStringLength,
+    Alloc_t pAlloc,
+    Free_t pFree,
+    unsigned long disableFlags
+    )
+{
+    if (!(pAlloc))
+        return 0;
 
-#ifdef _VCRT_BUILD
-pchar_t _VCRTIMP __unDName(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
-#else
-pchar_t __cdecl 			unDName(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
-#endif
+    pchar_t chpeName = nullptr;
+
+    heap.Constructor(pAlloc, pFree);
+    UnDecorator unDecorate(name, nullptr, disableFlags);
+    chpeName = unDecorate.getCHPEName(outputString, maxStringLength);
+    heap.Destructor();
+
+    return chpeName;
+}
+
+pchar_t __UNDNAME_IMP __cdecl __UNDNAME_NAME(
+    _Out_opt_z_cap_(maxStringLength) pchar_t outputString,
 	pcchar_t name,
 	int maxStringLength,	// Note, COMMA is leading following optional arguments
 	Alloc_t pAlloc,
@@ -680,57 +705,15 @@ pchar_t __cdecl 			unDName(_Out_opt_z_cap_(maxStringLength) pchar_t outputString
  */
 
 {
-	//	Must have an allocator and a deallocator (and we MUST trust them)
-	if (!(pAlloc))
-		return 0;
-
-	pchar_t unDecoratedName = nullptr;
-
-#ifdef _VCRT_BUILD
-	__vcrt_lock(__vcrt_undname_lock);
-	__try
-	{
-#endif
-
-		heap.Constructor(pAlloc, pFree);
-
-		//	Create the undecorator object, and get the result
-
-		UnDecorator unDecorate(outputString,
-			name,
-			maxStringLength,
-			0,
-			disableFlags
-		);
-		unDecoratedName = unDecorate;
-
-
-		// Destruct the heap (would use a destructor, but that causes DLL problems)
-
-		heap.Destructor();
-
-#ifdef _VCRT_BUILD
-	}
-	__finally
-	{
-		__vcrt_unlock(__vcrt_undname_lock);
-	}
-#endif
-
-	//	And return the composed name
-
-	return unDecoratedName;
-
-}	// End of FUNCTION "unDName"
+	return __UNDNAME_NAME_EX(outputString, name, maxStringLength, pAlloc, pFree,
+                             nullptr, disableFlags);
+}
 
 
 
 
-#ifdef _VCRT_BUILD
-pchar_t _VCRTIMP __unDNameEx(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
-#else
-pchar_t __cdecl unDNameEx(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
-#endif
+pchar_t __UNDNAME_IMP __cdecl __UNDNAME_NAME_EX(
+    _Out_opt_z_cap_(maxStringLength) pchar_t outputString,
 	pcchar_t name,
 	int maxStringLength,	// Note, COMMA is leading following optional arguments
 	Alloc_t pAlloc,
@@ -778,13 +761,8 @@ pchar_t __cdecl unDNameEx(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
 
 		//	Create the undecorator object, and get the result
 
-		UnDecorator unDecorate(outputString,
-			name,
-			maxStringLength,
-			pGetParameter,
-			disableFlags
-		);
-		unDecoratedName = unDecorate;
+		UnDecorator unDecorate(name, pGetParameter, disableFlags);
+		unDecoratedName = unDecorate.getUndecoratedName(outputString, maxStringLength);
 
 
 		// Destruct the heap (would use a destructor, but that causes DLL problems)
@@ -807,9 +785,8 @@ pchar_t __cdecl unDNameEx(_Out_opt_z_cap_(maxStringLength) pchar_t outputString,
 
 //	The 'UnDecorator' member functions
 
-inline UnDecorator::UnDecorator(_In_opt_z_ pchar_t output,
+inline UnDecorator::UnDecorator(
 	pcchar_t dName,
-	int maxLen,
 	GetParameter_t pGetParameter,
 	unsigned long disable
 )
@@ -817,75 +794,74 @@ inline UnDecorator::UnDecorator(_In_opt_z_ pchar_t output,
 	name = dName;
 	gName = name;
 
-	if (output)
-	{
-		maxStringLength = maxLen;
-		outputString = output;
-	}
-	else
-	{
-		outputString = 0;
-		maxStringLength = 0;
-	}
-
 	pZNameList = &ZNameList;
 	pArgList = &ArgList;
 	disableFlags = disable;
 	m_pGetParameter = pGetParameter;
 	fExplicitTemplateParams = false;
+    m_CHPENameOffset = 0;
+    m_recursionLevel = 0;
 
 }	// End of "UnDecorator" CONSTRUCTOR '()'
 
-
-inline UnDecorator::operator pchar_t ()
+DName UnDecorator::parseDecoratedName(void)
 {
-	DName result;
-	DName unDName;
+    DName result;
 
-	//	Find out if the name is a decorated name or not.  Could be a reserved
-	//	CodeView variant of a decorated name
+    //	Find out if the name is a decorated name or not.  Could be a reserved
+    //	CodeView variant of a decorated name
 
-	if (name)
-	{
-		if ((*name == '?') && (name[1] == '@'))
-		{
+    if (name)
+    {
+        if ((*name == '?') && (name[1] == '@'))
+        {
 #if ( !NO_COMPILER_NAMES )
-			gName += 2;
-			result = "CV: " + getDecoratedName();
-#else // } elif NO_COMPILER_NAMES
-			result = DN_invalid;
+            gName += 2;
+            result = "CV: " + getDecoratedName();
+#else // elif NO_COMPILER_NAMES
+            result = DN_invalid;
 #endif // NO_COMPILER_NAMES
 
-		}	// End of IF then
-		else if ((*name == '?') && (name[1] == '$'))
-		{
-			result = getTemplateName(false);
+        }	// End of IF then
+        else if ((*name == '?') && (name[1] == '$'))
+        {
+            result = getTemplateName(false);
 
-			if ((result.status() == DN_invalid) || (!doNameOnly() && *gName))
-			{
-				//
-				// What harm could there be to try again ?
-				//	Repro:
-				//		?$S1@?1??VTFromRegType@CRegParser@ATL@@KAHPBGAAG@Z@4IA
-				//	---> unsigned int `protected: static int __cdecl ATL::CRegParser::VTFromRegType(unsigned short const *,unsigned short &)'::`2'::$S1
-				//
-				//	This is a compiler generated symbol for a local static array init.
-				//
-				gName = name;
-				result = getDecoratedName();
-			}
-		}
-		else if ((name[0] == '?') && (name[1] == '?') && (name[2] == '@'))
-		{
-			// A name that starts with "??@" is a truncated decorated name so do not attempt to undecorate it
-			result = DN_invalid;
-		}
-		else
-		{
-			result = getDecoratedName();
-		}
+            if ((result.status() == DN_invalid) || (!doNameOnly() && *gName))
+            {
+                //
+                // What harm could there be to try again ?
+                //	Repro:
+                //		?$S1@?1??VTFromRegType@CRegParser@ATL@@KAHPBGAAG@Z@4IA
+                //	---> unsigned int `protected: static int __cdecl ATL::CRegParser::VTFromRegType(unsigned short const *,unsigned short &)'::`2'::$S1
+                //
+                //	This is a compiler generated symbol for a local static array init.
+                //
+                gName = name;
+                result = getDecoratedName();
+            }
+        }
+        else if ((name[0] == '?') && (name[1] == '?') && (name[2] == '@'))
+        {
+            // A name that starts with "??@" is a truncated decorated name so do not attempt to undecorate it
+            result = DN_invalid;
+        }
+        else
+        {
+            result = getDecoratedName();
+        }
+    }
 
-	}	// End of IF then
+    return result;
+}
+
+inline pchar_t UnDecorator::getUndecoratedName (
+    _Out_opt_z_cap_(maxStringLength) pchar_t outputString,
+    int maxStringLength
+    )
+{
+	DName unDName;
+    DName result = parseDecoratedName();
 
 	//	If the name was not a valid name, then make the name the same as the original
 	//	It is also invalid if there are any remaining characters in the name (except when
@@ -935,8 +911,73 @@ inline UnDecorator::operator pchar_t ()
 
 	return outputString;
 
-}	// End of "UnDecorator" OPERATOR 'pchar_t'
+}	// End of "UnDecorator" getUndecoratedName
 
+inline pchar_t UnDecorator::getCHPEName(
+    _Out_opt_z_cap_(maxStringLength) pchar_t outputString,
+    int maxStringLength
+    )
+{
+    DName result = parseDecoratedName();
+
+    if (result.status() != DN_valid)
+    {
+        return nullptr;
+    }
+
+    if (m_CHPENameOffset == 0)
+    {
+        return nullptr;
+    }
+
+    // compute final string length
+    size_t len = strlen(name);
+
+    if (m_CHPENameOffset >= len)
+    {
+        DASSERT(FALSE && "Invalid CHPE name offset");
+        return nullptr;
+    }
+
+    const char chpeMarker[] = "$$h";
+    const size_t chpeMarkerSize = strlen(chpeMarker);
+
+    // Check if the name is already a CHPE name.
+    if (strncmp(name + m_CHPENameOffset, chpeMarker, chpeMarkerSize) == 0)
+    {
+        return nullptr;
+    }
+
+    size_t finalLen = len + chpeMarkerSize + sizeof('\0');
+    if (finalLen < len)
+    {
+        return nullptr;
+    }
+
+    if (outputString)
+    {
+        if (finalLen >= (size_t)maxStringLength)
+        {
+            return nullptr;
+        }
+    }
+    else
+    {
+        outputString = rnew char[finalLen];
+        if (!outputString)
+        {
+            return nullptr;
+        }
+    }
+
+    memcpy(outputString, name, m_CHPENameOffset);
+    memcpy(outputString + m_CHPENameOffset, chpeMarker, chpeMarkerSize);
+    memcpy(outputString + m_CHPENameOffset + chpeMarkerSize,
+           name + m_CHPENameOffset,
+           len - m_CHPENameOffset + sizeof('\0'));
+
+    return outputString;
+}
 
 #ifdef _DEBUG
 pchar_t DName::dbGetString() const
@@ -949,6 +990,18 @@ pchar_t DName::dbGetString() const
 
 DName UnDecorator::getDecoratedName(void)
 {
+
+    // Setup a C++ object that will count recursive invocations of this
+    // function.
+    struct TrackRecursion {
+        TrackRecursion() {
+            m_recursionLevel += 1;
+        }
+        ~TrackRecursion() {
+            m_recursionLevel -= 1;
+        }
+    } trackRecursion;
+
 	//	Ensure that it is intended to be a decorated name
 
 	if (doTypeOnly())
@@ -2340,6 +2393,7 @@ DName UnDecorator::getTemplateConstant(void)
 inline DName UnDecorator::composeDeclaration(const DName & symbol)
 {
 	DName declaration;
+    unsigned long chpeOffset = (unsigned long)(gName - name);
 	unsigned int typeCode = getTypeEncoding();
 	int symIsUDC = symbol.isUDC();
 
@@ -2508,6 +2562,15 @@ inline DName UnDecorator::composeDeclaration(const DName & symbol)
 
 			}	// End of IF
 #endif // !NO_COMPILER_NAMES
+
+            // If this is a function and we are at the top level of recursion
+            // (i.e. not inside a template scope), save the offset as the chpe
+            // offset.
+
+            if (m_recursionLevel == 1 && m_CHPENameOffset == 0)
+            {
+                m_CHPENameOffset = chpeOffset;
+            }
 
 			//	Add the function argument prototype
 
@@ -2818,6 +2881,7 @@ inline int UnDecorator::getTypeEncoding(void)
 
 			case SHF_Hybrid:
 			{
+                m_CHPENameOffset = 0; // clear the chpe name offset because this name is already chpe
 				gName += 1;
 				return getTypeEncoding();
 			}
@@ -3220,6 +3284,13 @@ DName UnDecorator::getCallingConvention(void)
 						callType = UScore(TOK_eabi);
 						break;
 
+					case CC_swift_1:
+						callType = UScore(TOK_swift_1);
+						break;
+
+					case CC_swift_2:
+						callType = UScore(TOK_swift_2);
+						break;
 					}	// End of SWITCH
 
 					//	Has it also got 'saveregs' marked ?

@@ -471,11 +471,16 @@ typedef ULONG64 TRACEHANDLE, *PTRACEHANDLE;
 
 #define EVENT_TRACE_CONTROL_FLUSH           3       // Flushes all the buffers
 
+#define EVENT_TRACE_CONTROL_INCREMENT_FILE  4       // Causes a session with EVENT_TRACE_FILE_MODE_NEWFILE
+                                                    // to switch to the next file before the automatic 
+                                                    // switching criteria is met
+
 //
 // Flags used by WMI Trace Message
 // Note that the order or value of these flags should NOT be changed as they are processed
 // in this order.
 //
+
 #define TRACE_MESSAGE_SEQUENCE              1  // Message should include a sequence number
 #define TRACE_MESSAGE_GUID                  2  // Message includes a GUID
 #define TRACE_MESSAGE_COMPONENTID           4  // Message has no GUID, Component ID instead
@@ -919,6 +924,7 @@ typedef struct _EVENT_TRACE_PROPERTIES_V2 {
     union {
         struct {
             ULONG Wow : 1; // Logger was started by a WOW64 process (output only).
+            ULONG QpcDeltaTracking : 1; // QPC delta tracking events are enabled.
         } DUMMYSTRUCTNAME;
         ULONG64 V2Options;
     } DUMMYUNIONNAME3;
@@ -1840,16 +1846,16 @@ GetTraceEnableFlags (
 //  );
 //
 
-ETW_APP_DECLSPEC_DEPRECATED
 EXTERN_C
+ETW_APP_DECLSPEC_DEPRECATED
 TRACEHANDLE
 WMIAPI
 OpenTraceW (
     _Inout_ PEVENT_TRACE_LOGFILEW Logfile
     );
 
-ETW_APP_DECLSPEC_DEPRECATED
 EXTERN_C
+ETW_APP_DECLSPEC_DEPRECATED
 ULONG
 WMIAPI
 ProcessTrace (
@@ -1859,8 +1865,8 @@ ProcessTrace (
     _In_opt_ LPFILETIME EndTime
     );
 
-ETW_APP_DECLSPEC_DEPRECATED
 EXTERN_C
+ETW_APP_DECLSPEC_DEPRECATED
 ULONG
 WMIAPI
 CloseTrace (
@@ -1879,7 +1885,7 @@ typedef enum _ETW_PROCESS_HANDLE_INFO_TYPE {
 typedef struct _ETW_TRACE_PARTITION_INFORMATION {
     GUID PartitionId;
     GUID ParentId;
-    ULONG64 Reserved;
+    LONG64 QpcOffsetFromRoot;
     ULONG PartitionType;
 } ETW_TRACE_PARTITION_INFORMATION, *PETW_TRACE_PARTITION_INFORMATION;
 

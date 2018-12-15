@@ -11,8 +11,8 @@
 #include <eh.h>         // User-visible routines for eh
 #include <ehassert.h>   // This project's versions of standard assert macros
 #include <ehdata.h>     // Declarations of all types used for EH
+#include <ehdata4.h>
 #include <ehhooks.h>    // Declarations of hook variables and callbacks
-#include <ehstate.h>    // Declarations of state management stuff
 #include <trnsctrl.h>   // Routines to handle transfer of control (trnsctrl.asm)
 #include <vcruntime_exception.h>
 #include <vcruntime_typeinfo.h>
@@ -190,8 +190,7 @@ extern "C" int __cdecl __CxxExceptionFilter(
 #else
             pCatch.pType = (TypeDescriptor *)pType;
 #endif
-            pCatch.adjectives = adjectives;
-            SET_HT_ISCOMPLUSEH(pCatch);
+            pCatch.adjectives = adjectives | HT_IsComplusEh;
 
             // Scan all types that thrown object can be converted to:
             ppCatchable = THROW_CTLIST(*PER_PTHROW(pExcept));
@@ -324,4 +323,3 @@ extern "C" int __cdecl __CxxQueryExceptionSize(
 {
     return sizeof(FRAMEINFO) + sizeof(void *) + sizeof(void *);
 }
-

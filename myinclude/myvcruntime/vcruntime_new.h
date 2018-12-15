@@ -48,7 +48,11 @@ namespace std
 #define __NOTHROW_T_DEFINED
     namespace std
     {
-        struct nothrow_t { };
+        struct nothrow_t {
+#ifndef _CRTBLD // TRANSITION, VSO#406237
+            explicit nothrow_t() = default;
+#endif // _CRTBLD
+        };
 
         #ifdef _CRT_ENABLE_SELECTANY_NOTHROW
             extern __declspec(selectany) nothrow_t const nothrow;
@@ -67,7 +71,7 @@ _Ret_maybenull_ _Success_(return != NULL) _Post_writable_byte_size_(_Size)
 _VCRT_ALLOCATOR void* __CRTDECL operator new(
     size_t _Size,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 _Ret_notnull_ _Post_writable_byte_size_(_Size)
 _VCRT_ALLOCATOR void* __CRTDECL operator new[](
@@ -78,35 +82,35 @@ _Ret_maybenull_ _Success_(return != NULL) _Post_writable_byte_size_(_Size)
 _VCRT_ALLOCATOR void* __CRTDECL operator new[](
     size_t _Size,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void* _Block
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void* _Block,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void* _Block
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void* _Block,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void*  _Block,
     size_t _Size
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void* _Block,
     size_t _Size
-    ) throw();
+    ) noexcept;
 
 #if _HAS_ALIGNED_NEW
 _Ret_notnull_ _Post_writable_byte_size_(_Size)
@@ -120,7 +124,7 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new(
     size_t                _Size,
     std::align_val_t      _Al,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 
 _Ret_notnull_ _Post_writable_byte_size_(_Size)
@@ -134,53 +138,56 @@ _VCRT_ALLOCATOR void* __CRTDECL operator new[](
     size_t                _Size,
     std::align_val_t      _Al,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void*            _Block,
     std::align_val_t _Al
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void*                 _Block,
     std::align_val_t      _Al,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void*            _Block,
     std::align_val_t _Al
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void*                 _Block,
     std::align_val_t      _Al,
     std::nothrow_t const&
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete(
     void*            _Block,
     size_t           _Size,
     std::align_val_t _Al
-    ) throw();
+    ) noexcept;
 
 void __CRTDECL operator delete[](
     void*            _Block,
     size_t           _Size,
     std::align_val_t _Al
-    ) throw();
+    ) noexcept;
 #endif
 
+#pragma warning(push)
+#pragma warning(disable: 4577) // 'noexcept' used with no exception handling mode specified
+#pragma warning(disable: 4514) // 'operator new': unreferenced inline function has been removed
 #ifndef __PLACEMENT_NEW_INLINE
     #define __PLACEMENT_NEW_INLINE
-    _Ret_notnull_ _Post_writable_byte_size_(_Size)
-    inline void* __CRTDECL operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) throw()
+    _Ret_notnull_ _Post_writable_byte_size_(_Size) _Post_satisfies_(return == _Where)
+    inline void* __CRTDECL operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept
     {
         (void)_Size;
         return _Where;
     }
 
-    inline void __CRTDECL operator delete(void*, void*) throw()
+    inline void __CRTDECL operator delete(void*, void*) noexcept
     {
         return;
     }
@@ -188,17 +195,19 @@ void __CRTDECL operator delete[](
 
 #ifndef __PLACEMENT_VEC_NEW_INLINE
     #define __PLACEMENT_VEC_NEW_INLINE
-    _Ret_notnull_ _Post_writable_byte_size_(_Size)
-    inline void* __CRTDECL operator new[](size_t _Size, _Writable_bytes_(_Size) void* _Where) throw()
+    _Ret_notnull_ _Post_writable_byte_size_(_Size) _Post_satisfies_(return == _Where)
+    inline void* __CRTDECL operator new[](size_t _Size,
+        _Writable_bytes_(_Size) void* _Where) noexcept
     {
         (void)_Size;
         return _Where;
     }
 
-    inline void __CRTDECL operator delete[](void*, void*) throw()
+    inline void __CRTDECL operator delete[](void*, void*) noexcept
     {
     }
 #endif
+#pragma warning(pop)
 
 #pragma pop_macro("new")
 

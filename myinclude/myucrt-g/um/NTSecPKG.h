@@ -686,6 +686,7 @@ typedef struct _SECPKG_CALL_INFO {
 #define SECPKG_CALL_NEGO_EXTENDER   0x00008000  // Called by NEGO extender
 #define SECPKG_CALL_BUFFER_MARSHAL  0x00010000  // Buffer passed is marshaled (by RPC)
 #define SECPKG_CALL_UNLOCK          0x00020000  // Unlock
+#define SECPKG_CALL_CLOUDAP_CONNECT 0x00040000  // the caller of LsaLogonuser() is CloudAP during connection flow
 
 //
 // WOWXX: Additional defines to determine which type of WoW guest we are dealing with.
@@ -738,6 +739,7 @@ typedef struct _SECPKG_SUPPLIED_CREDENTIAL {
 //
 
 #define SECPKG_CREDENTIAL_FLAGS_CALLER_HAS_TCB 0x1
+#define SECPKG_CREDENTIAL_FLAGS_CREDMAN_CRED   0x2
 
 typedef struct _SECPKG_CREDENTIAL {
     ULONG64 Version; // contains SECPKG_CREDENTIAL_VERSION
@@ -820,6 +822,7 @@ typedef LSA_CALLBACK_FUNCTION * PLSA_CALLBACK_FUNCTION;
                                                                 // that the logon was cached interactive(no network) and the absence of this flag
                                                                 // denotes network logon was attempted.
 #define PRIMARY_CRED_INTERACTIVE_NGC_LOGON          0x00080000
+#define PRIMARY_CRED_INTERACTIVE_FIDO_LOGON         0x00100000
 
 #define PRIMARY_CRED_LOGON_PACKAGE_SHIFT 24
 #define PRIMARY_CRED_PACKAGE_MASK 0xff000000
@@ -1043,6 +1046,7 @@ typedef struct _SECPKG_CALL_PACKAGE_UNPIN_ALL_DCS_REQUEST
 
 #define SECPKG_CALL_PACKAGE_TRANSFER_CRED_REQUEST_FLAG_OPTIMISTIC_LOGON    0x1
 #define SECPKG_CALL_PACKAGE_TRANSFER_CRED_REQUEST_FLAG_CLEANUP_CREDENTIALS 0x2
+#define SECPKG_CALL_PACKAGE_TRANSFER_CRED_REQUEST_FLAG_TO_SSO_SESSION      0x4
 
 typedef struct _SECPKG_CALL_PACKAGE_TRANSFER_CRED_REQUEST {
     ULONG       MessageType;

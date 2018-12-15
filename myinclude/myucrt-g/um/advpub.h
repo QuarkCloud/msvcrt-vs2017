@@ -10,6 +10,8 @@
 //
 //----------------------------------------------------------------------------
 
+//@[contract("advpub"), comment("MVI_tracked - https://osgwiki.com/wiki/Microsoft_Virus_Initiative")];
+
 #ifndef _ADVPUB_H_
 #define _ADVPUB_H_
 #include <winapifamily.h>

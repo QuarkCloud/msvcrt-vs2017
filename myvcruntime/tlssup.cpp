@@ -1,5 +1,5 @@
 /***
-*tlssup.c - Thread Local Storage run-time support module
+*tlssup.cpp - Thread Local Storage run-time support module
 *
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *

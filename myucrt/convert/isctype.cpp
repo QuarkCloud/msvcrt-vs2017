@@ -28,7 +28,7 @@
 // The _chvalidator function is called by the character classification functions
 // in the debug CRT.  This function tests the character argument to ensure that
 // it is not out of range.  For performance reasons, this function is not used
-// in the retail CRT.  
+// in the retail CRT.
 #if defined _DEBUG
 
 extern "C" int __cdecl _chvalidator(int const c, int const mask)
@@ -39,16 +39,11 @@ extern "C" int __cdecl _chvalidator(int const c, int const mask)
 
 extern "C" int __cdecl _chvalidator_l(_locale_t const locale, int const c, int const mask)
 {
-	/**
     _ASSERTE(c >= -1 && c <= 255);
-    
+
     _LocaleUpdate locale_update(locale);
 
-    int const index = (c >= -1 && c <= 255) ? c : -1;
-
-    return locale_update.GetLocaleT()->locinfo->_public._locale_pctype[index] & mask; 
-	*/
-	return 0 ;
+    return __acrt_locale_get_ctype_array_value(locale_update.GetLocaleT()->locinfo->_public._locale_pctype, c, mask);
 }
 
 #endif // _DEBUG
@@ -66,18 +61,16 @@ extern "C" int __cdecl _chvalidator_l(_locale_t const locale, int const c, int c
 //
 extern "C" int __cdecl _isctype_l(int const c, int const mask, _locale_t const locale)
 {
-	/**
     _LocaleUpdate locale_update(locale);
 
-    // c valid between -1 and 255:
     if (c >= -1 && c <= 255)
     {
+        // Direct access to _locale_pctype is allowed due to bounds check.
         return locale_update.GetLocaleT()->locinfo->_public._locale_pctype[c] & mask;
     }
-	*/
 
     size_t const buffer_count{3};
-    /*
+
     int  buffer_length;
     char buffer[buffer_count];
     if (_isleadbyte_l(c >> 8 & 0xff, locale_update.GetLocaleT()))
@@ -94,9 +87,8 @@ extern "C" int __cdecl _isctype_l(int const c, int const mask, _locale_t const l
         buffer_length = 1;
     }
 
-    */
+
     unsigned short character_type[buffer_count]{};
-    /*
     if (__acrt_GetStringTypeA(
             locale_update.GetLocaleT(),
             CT_CTYPE1,
@@ -109,19 +101,16 @@ extern "C" int __cdecl _isctype_l(int const c, int const mask, _locale_t const l
     {
         return 0;
     }
-    */
 
     return static_cast<int>(character_type[0] & mask);
 }
 
 extern "C" int __cdecl _isctype(int const c, int const mask)
 {
-    if (!__acrt_locale_changed())
-    {
-        return __acrt_initial_locale_data._public._locale_pctype[c] & mask;
-    }
-    else
+    if (__acrt_locale_changed())
     {
         return _isctype_l(c, mask, nullptr);
     }
+
+    return __acrt_locale_get_ctype_array_value(__acrt_initial_locale_data._public._locale_pctype, c, mask);
 }

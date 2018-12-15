@@ -1,5 +1,5 @@
 /***
-*mangdeh.cxx - The frame handler and everything associated with it.
+* managdeh.cpp - The frame handler and everything associated with it.
 *
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *
@@ -25,7 +25,6 @@
 #include <ehassert.h>   // This project's versions of standard assert macros
 #include <ehdata.h>     // Declarations of all types used for EH
 #include <ehhooks.h>    // Declarations of hook variables and callbacks
-#include <ehstate.h>    // Declarations of state management stuff
 #include <trnsctrl.h>   // Routines to handle transfer of control (trnsctrl.asm)
 
 #include <Windows.h>
@@ -477,8 +476,7 @@ int __clrcall ___CxxExceptionFilter(
          */
         struct _s_HandlerType HType;
         HType.pType = (TypeDescriptor *)pType;
-        HType.adjectives = adjectives;
-        SET_HT_ISCOMPLUSEH(HType);
+        HType.adjectives = adjectives | HT_IsComplusEh;
 
         // Scan all types that thrown object can be converted to:
         ppCatchable = THROW_CTLIST(*PER_PTHROW(pExcept));

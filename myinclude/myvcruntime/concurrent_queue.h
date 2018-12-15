@@ -226,13 +226,13 @@ namespace details
 
         // Default constructor
         _Concurrent_queue_iterator_base_v4()
-            : _My_rep(NULL), _My_item(NULL)
+            : _My_rep(nullptr), _My_item(nullptr)
         {
         }
 
         // Copy constructor
         _Concurrent_queue_iterator_base_v4( const _Concurrent_queue_iterator_base_v4& _I )
-            : _My_rep(NULL), _My_item(NULL)
+            : _My_rep(nullptr), _My_item(nullptr)
         {
             _Assign(_I);
         }
@@ -318,12 +318,6 @@ namespace details
         }
     }; // _Concurrent_queue_iterator
 
-    template<typename _Container, typename _Value>
-    struct std::_Is_checked_helper<_Concurrent_queue_iterator<_Container, _Value> >
-        : public true_type
-    {   // mark _Concurrent_queue_iterator as checked. This suppresses warning C4996
-    };
-
     template<typename _C, typename _Ty, typename _U>
     bool operator==( const _Concurrent_queue_iterator<_C,_Ty>& _I, const _Concurrent_queue_iterator<_C,_U>& _J )
     {
@@ -364,6 +358,7 @@ class concurrent_queue: public ::Concurrency::details::_Concurrent_queue_base_v4
     // allocator type
     typedef typename std::allocator_traits<_Ax>::template rebind_alloc<char> _Page_allocator_type;
     _Page_allocator_type _My_allocator;
+    using _Page_allocator_traits = std::allocator_traits<_Page_allocator_type>;
 
     // Class used to ensure exception-safety of method "pop"
     class _Destroyer
@@ -404,7 +399,7 @@ class concurrent_queue: public ::Concurrency::details::_Concurrent_queue_base_v4
     {
         _Ty& _From = _Get_ref(_Src,_Index);
         _Destroyer _D(_From);
-        if (_Dst != NULL)
+        if (_Dst != nullptr)
         {
             *static_cast<_Ty*>(_Dst) = std::move(_From);
         }
@@ -825,7 +820,7 @@ void concurrent_queue<_Ty,_Ax>::clear()
 {
     while( !empty() )
     {
-        if (!_Internal_pop_if_present(NULL))
+        if (!_Internal_pop_if_present(nullptr))
         {
             _CONCRT_ASSERT(empty());
             break;

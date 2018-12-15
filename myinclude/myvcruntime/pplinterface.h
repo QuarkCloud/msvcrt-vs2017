@@ -139,7 +139,7 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit invalid_operation(_In_z_ const char* _Message) _NOEXCEPT
+    explicit invalid_operation(_In_z_ const char* _Message) noexcept
         : exception(_Message)
     { }
 
@@ -147,7 +147,7 @@ public:
     ///     Constructs an <c>invalid_operation</c> object.
     /// </summary>
     /**/
-    invalid_operation() _NOEXCEPT
+    invalid_operation() noexcept
         : exception()
     {}
 };
@@ -170,7 +170,7 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit task_canceled(_In_z_ const char * _Message) _NOEXCEPT
+    explicit task_canceled(_In_z_ const char * _Message) noexcept
         : exception(_Message)
     {}
 
@@ -178,7 +178,7 @@ public:
     ///     Constructs a <c>task_canceled</c> object.
     /// </summary>
     /**/
-    task_canceled() _NOEXCEPT
+    task_canceled() noexcept
         : exception()
     {}
 };
@@ -194,11 +194,11 @@ namespace details
 class _Interruption_exception : public std::exception
 {
 public:
-    explicit _Interruption_exception(const char * _Message) _NOEXCEPT
+    explicit _Interruption_exception(const char * _Message) noexcept
         : exception(_Message)
     {}
 
-    _Interruption_exception() _NOEXCEPT
+    _Interruption_exception() noexcept
         : exception()
     {}
 };

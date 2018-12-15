@@ -2203,6 +2203,7 @@ typedef _Enum_is_bitflag_ enum _SUITE_TYPE {
     ComputeServer,
     WHServer,
     PhoneNT,
+    MultiUserTS,
     MaxSuiteType
 } SUITE_TYPE;
 
@@ -2226,6 +2227,7 @@ typedef _Enum_is_bitflag_ enum _SUITE_TYPE {
 #define VER_SUITE_STORAGE_SERVER            0x00002000
 #define VER_SUITE_COMPUTE_SERVER            0x00004000
 #define VER_SUITE_WH_SERVER                 0x00008000
+#define VER_SUITE_MULTIUSERTS               0x00020000
 
 // end_winnt
 
@@ -2340,7 +2342,6 @@ typedef _Enum_is_bitflag_ enum _SUITE_TYPE {
 #define PRODUCT_CORE_SINGLELANGUAGE                 0x00000064
 #define PRODUCT_CORE                                0x00000065
 #define PRODUCT_PROFESSIONAL_WMC                    0x00000067
-#define PRODUCT_MOBILE_CORE                         0x00000068
 #define PRODUCT_EMBEDDED_INDUSTRY_EVAL              0x00000069
 #define PRODUCT_EMBEDDED_INDUSTRY_E_EVAL            0x0000006A
 #define PRODUCT_EMBEDDED_EVAL                       0x0000006B
@@ -2392,6 +2393,12 @@ typedef _Enum_is_bitflag_ enum _SUITE_TYPE {
 #define PRODUCT_SERVERRDSH                          0x000000AF
 #define PRODUCT_CLOUD                               0x000000B2
 #define PRODUCT_CLOUDN                              0x000000B3
+#define PRODUCT_HUBOS                               0x000000B4
+#define PRODUCT_ONECOREUPDATEOS                     0x000000B6
+#define PRODUCT_CLOUDE                              0x000000B7
+#define PRODUCT_ANDROMEDA                           0x000000B8
+#define PRODUCT_IOTOS                               0x000000B9
+#define PRODUCT_CLOUDEN                             0x000000BA
 
 #define PRODUCT_UNLICENSED                          0xABCDABCD
 

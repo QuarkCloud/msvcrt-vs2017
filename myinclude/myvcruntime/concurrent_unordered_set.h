@@ -545,8 +545,8 @@ public:
     /// </remarks>
     /**/
     template<class _Valty>
-        typename std::enable_if<!std::is_same<const_iterator,
-            typename std::remove_reference<_Valty>::type>::value, iterator>::type
+        std::enable_if_t<!std::is_same_v<const_iterator,
+            std::remove_reference_t<_Valty>>, iterator>
     insert(const_iterator _Where, _Valty&& _Value)
     {
         // Current implementation ignores the hint. The method is provided for compatibility with unordered_set.
@@ -1127,8 +1127,8 @@ public:
     /// </remarks>
     /**/
     template<class _Valty>
-        typename std::enable_if<!std::is_same<const_iterator,
-            typename std::remove_reference<_Valty>::type>::value, iterator>::type
+        std::enable_if_t<!std::is_same_v<const_iterator,
+            std::remove_reference_t<_Valty>>, iterator>
     insert(const_iterator _Where, _Valty&& _Value)
     {
         // Current implementation ignores the hint. The method is provided for compatibility with unordered_multiset.

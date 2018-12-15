@@ -25,6 +25,7 @@
 // |delete_array_size|  |delete_array_nothrow|
 // +-----------------+  +--------------------+
 
+_CRT_SECURITYCRITICAL_ATTRIBUTE
 void __CRTDECL operator delete[](void* const block, size_t const) noexcept
 {
     operator delete[](block);

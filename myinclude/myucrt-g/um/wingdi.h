@@ -2818,6 +2818,7 @@ typedef enum
     DISPLAYCONFIG_OUTPUT_TECHNOLOGY_SDTVDONGLE              = 14,
     DISPLAYCONFIG_OUTPUT_TECHNOLOGY_MIRACAST                = 15,
     DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INDIRECT_WIRED          = 16,
+    DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INDIRECT_VIRTUAL        = 17,
     DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL                = 0x80000000,
     DISPLAYCONFIG_OUTPUT_TECHNOLOGY_FORCE_UINT32            = 0xFFFFFFFF
 } DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY;
@@ -3035,8 +3036,10 @@ typedef enum
       DISPLAYCONFIG_DEVICE_INFO_SET_SUPPORT_VIRTUAL_RESOLUTION  = 8,
       DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO         = 9,
       DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE        = 10,
+      DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL             = 11,
       DISPLAYCONFIG_DEVICE_INFO_FORCE_UINT32                = 0xFFFFFFFF
 } DISPLAYCONFIG_DEVICE_INFO_TYPE;
+
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
@@ -3111,6 +3114,7 @@ typedef struct DISPLAYCONFIG_TARGET_BASE_TYPE {
     DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY baseOutputTechnology;
 } DISPLAYCONFIG_TARGET_BASE_TYPE;
 
+
 typedef struct DISPLAYCONFIG_SET_TARGET_PERSISTENCE
 {
     DISPLAYCONFIG_DEVICE_INFO_HEADER    header;
@@ -3156,10 +3160,11 @@ typedef struct _DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO
     {
         struct
         {
-          UINT32 advancedColorSupported  :1;
-          UINT32 advancedColorEnabled    :1;
-          UINT32 wideColorEnforced       :1;
-          UINT32 reserved  :29;
+          UINT32 advancedColorSupported        :1;    // A type of advanced color is supported
+          UINT32 advancedColorEnabled          :1;    // A type of advanced color is enabled
+          UINT32 wideColorEnforced             :1;    // Wide color gamut is enabled
+          UINT32 advancedColorForceDisabled    :1;    // Advanced color is force disabled due to system/OS policy
+          UINT32 reserved                      :28;
         } DUMMYSTRUCTNAME;
 
         UINT32 value;
@@ -3183,6 +3188,17 @@ typedef struct _DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE
         UINT32 value;
     }DUMMYUNIONNAME;
 } DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE;
+
+typedef struct _DISPLAYCONFIG_SDR_WHITE_LEVEL
+{
+    DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+
+    // SDRWhiteLevel represents a multiplier for standard SDR white
+    // peak value i.e. 80 nits represented as fixed point.
+    // To get value in nits use the following conversion
+    // SDRWhiteLevel in nits = (SDRWhiteLevel / 1000 ) * 80
+    ULONG SDRWhiteLevel;
+} DISPLAYCONFIG_SDR_WHITE_LEVEL;
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
@@ -4324,6 +4340,7 @@ WINGDIAPI BOOL  WINAPI GetCharABCWidthsI(   _In_ HDC    hdc,
 #define STAMP_DESIGNVECTOR  (0x8000000 + 'd' + ('v' << 8))
 #define STAMP_AXESLIST      (0x8000000 + 'a' + ('l' << 8))
 #define STAMP_TRUETYPE_VARIATION (0x8000000 + 't' + ('v' << 8))
+#define STAMP_CFF2          (0x8000000 + 'c' + ('v' << 8))
 #define MM_MAX_NUMAXES      16
 
 

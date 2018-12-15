@@ -9,6 +9,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -24,7 +25,7 @@ template<class _Elem,
 	: public _STD codecvt<_Elem, char, _Statype>
 	{	// facet for converting between JIS-X0208 _Elem and EUC bytes
 public:
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -36,7 +37,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~codecvt_sjis_0208() _NOEXCEPT
+	virtual ~codecvt_sjis_0208() noexcept
 		{	// destroy the object
 		}
 
@@ -55,39 +56,52 @@ protected:
 			unsigned char _By = (unsigned char)*_Mid1;
 			unsigned short _Ch = _By;
 
-			if (_By <= 0x80
-				|| (0xa0 <= _By && _By <= 0xdf)
-				|| (0xf0 <= _By && _By <= _Xff))
-				;
-			else if (_Last1 - _Mid1 < 2)
-				break;
-			else
-				{	// convert 2-byte code
-				unsigned char _By2 = *++_Mid1;
+			if (_By > 0x80
+				&& (0xa0 > _By || _By > 0xdf)
+				&& (0xf0 > _By || _By > _Xff))
+				{
+				if (_Last1 - _Mid1 < 2)
+					{
+					break;
+					}
 
-				if ((_By2 < 0x40 || 0x7e < _By2)
-					&& (_By2 < 0x80 && 0xfc < _By2))
+				// convert 2-byte code
+				unsigned char _By2 = static_cast<unsigned char>(*++_Mid1);
+
+				if ((_By2 < 0x40 || 0x7e < _By2) && (_By2 < 0x80 && 0xfc < _By2))	// TRANSITION, VSO#609129
+					{
 					return (_Mybase::error);	// bad second byte
+					}
 
 				if (0xe0 <= _Ch)
+					{
 					_Ch -= 0xb0;	// MS [e0, ef] => [30, 3f]
+					}
 				else
+					{
 					_Ch -= 0x70;	// MS [81, 9f] => [11, 2f]
-				_Ch <<= 9;	// MS [11, 3f] => [22, 7e] in place
+					}
 
+				_Ch <<= 9;	// MS [11, 3f] => [22, 7e] in place
 				if (0x9f <= _By2)
-					_Ch = (unsigned short)(_Ch
-						+ (_By2 - 0x7e));	// LS [9f, fc] => [21, 7e]
+					{
+					_Ch = (unsigned short)(_Ch + (_By2 - 0x7e));	// LS [9f, fc] => [21, 7e]
+					}
 				else if (_By2 <= 0x7e)
-					_Ch = (unsigned short)(_Ch
-						+ (_By2 - 0x11f));	// LS [40, 7e] => [21, 5f] - 100
+					{
+					_Ch = (unsigned short)(_Ch + (_By2 - 0x11f));	// LS [40, 7e] => [21, 5f] - 100
+					}
 				else
-					_Ch = (unsigned short)(_Ch
-						+ (_By2 - 0x120));	// LS [80, 9e] => [60, 7e] - 100
+					{
+					_Ch = (unsigned short)(_Ch + (_By2 - 0x120));	// LS [80, 9e] => [60, 7e] - 100
+					}
 				}
 
 			if (_Maxc < _Ch)
+				{
 				return (_Mybase::error);	// code too large
+				}
+
 			++_Mid1;
 			*_Mid2++ = (_Elem)_Ch;
 			}
@@ -109,29 +123,40 @@ protected:
 			static unsigned char _Xff = 0xff;
 
 			if (_Maxc < _Ch)
+				{
 				return (_Mybase::error);
+				}
 
 			if (_Ch <= 0x80
 				|| (0xa0 <= _Ch && _Ch <= 0xdf)
 				|| (0xf0 <= _Ch && _Ch <= _Xff))
+				{
 				*_Mid2++ = (_Byte)_Ch;
+				}
 			else if (_Last2 - _Mid2 < 2)
+				{
 				break;
+				}
 			else
 				{	// convert 2-byte code
 				unsigned char _By0 = (unsigned char)(_Ch >> 8);
 				unsigned char _By1 = (unsigned char)_Ch;
-				if (_By0 < 0x21 || 0x7e < _By0
-					|| _By1 < 0x21 || 0x7e < _By1)
+				if (_By0 < 0x21 || 0x7e < _By0 || _By1 < 0x21 || 0x7e < _By1)
+					{
 					return (_Mybase::error);
+					}
 
-				*_Mid2++ = (_Byte)((_By0 + 1) / 2
-					+ (_By0 < 0x5f ? 0x70 : 0xb0));
+				*_Mid2++ = (_Byte)((_By0 + 1) / 2 + (_By0 < 0x5f ? 0x70 : 0xb0));
 				if ((_By0 & 1) != 0)
+					{
 					*_Mid2++ = (_Byte)(_By1 + (0x5f <= _By1 ? 0x20 : 0x1f));
+					}
 				else
+					{
 					*_Mid2++ = (_Byte)(_By1 + 0x7e);
+					}
 				}
+
 			++_Mid1;
 			}
 
@@ -147,7 +172,7 @@ protected:
 		}
 
 	virtual int do_length(_Statype& _State, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
 		size_t _Wchars = 0;
 		_Statype _Mystate = _State;
@@ -158,15 +183,17 @@ protected:
 			_Elem *_Mid2;
 			_Elem _Ch;
 
-			switch (do_in(_Mystate, _First1, _Last1, _Mid1,
-				&_Ch, &_Ch + 1, _Mid2))
+			switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1, _Mid2))
 				{	// test result of single wide-char conversion
 			case _Mybase::noconv:
 				return ((int)(_Wchars + (_Last1 - _First1)));
 
-			case  _Mybase::ok:
+			case _Mybase::ok:
 				if (_Mid2 == &_Ch + 1)
+					{
 					++_Wchars;	// replacement do_in might not convert one
+					}
+
 				_First1 = _Mid1;
 				break;
 
@@ -178,17 +205,17 @@ protected:
 		return ((int)_Wchars);
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
 		return (3);
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
 		return (0);	// 0 => varying length
 		}
@@ -206,6 +233,7 @@ protected:
  #endif /* _TEST_IT */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

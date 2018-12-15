@@ -2087,6 +2087,37 @@ extern int __cdecl _mm256_extract_epi32(__m256i /* src */, const int /* index */
 extern __int64 __cdecl _mm256_extract_epi64(__m256i /* src */, const int /* index */);
 #endif  // defined (_M_X64)
 
+// Zero-extended cast functions
+extern __m256d __cdecl _mm256_zextpd128_pd256(__m128d);
+extern __m256  __cdecl _mm256_zextps128_ps256(__m128);
+extern __m256i __cdecl _mm256_zextsi128_si256(__m128i);
+
+// RDPID
+extern unsigned int __cdecl _rdpid_u32(void);
+// PTWRITE
+extern void         __cdecl _ptwrite32(unsigned int);
+#if defined(_M_X64)
+extern void         __cdecl _ptwrite64(unsigned __int64);
+#endif  // defined (_M_X64)
+
+/*
+* Intel(R) Control-Flow Enforcement Technology (CET) shadow stack intrinsic functions
+*/
+extern void             __cdecl _incsspd (unsigned int);
+extern unsigned int     __cdecl _rdsspd (void);
+extern void             __cdecl _saveprevssp (void);
+extern void             __cdecl _rstorssp (void *);
+extern void             __cdecl _wrssd (unsigned int, void *);
+extern void             __cdecl _wrussd (unsigned int, void *);
+extern void             __cdecl _setssbsy (void);
+extern void             __cdecl _clrssbsy (void *);
+extern void *           __cdecl _switchssp(void *);
+#if defined(_M_X64)
+extern void             __cdecl _incsspq (unsigned __int64);
+extern unsigned __int64 __cdecl _rdsspq (void);
+extern void             __cdecl _wrssq (unsigned __int64, void *);
+extern void             __cdecl _wrussq(unsigned __int64, void *);
+#endif
 
 #if defined __cplusplus
 }; /* End "C" */

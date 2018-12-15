@@ -3102,6 +3102,10 @@ EXTERN_C __declspec(selectany) const GUID SEC_WINNT_AUTH_DATA_TYPE_CREDMAN_CERT 
 EXTERN_C __declspec(selectany) const GUID SEC_WINNT_AUTH_DATA_TYPE_NGC =
    { 0x10a47879, 0x5ebf, 0x4b85, { 0xbd, 0x8d, 0xc2, 0x1b, 0xb4, 0xf4, 0x9c, 0x8a } };
 
+// {32E8F8D7-7871-4BCC-83C5-460F66C6135C}
+EXTERN_C __declspec(selectany) const GUID SEC_WINNT_AUTH_DATA_TYPE_FIDO =
+{ 0x32e8f8d7, 0x7871, 0x4bcc, { 0x83, 0xc5, 0x46, 0xf, 0x66, 0xc6, 0x13, 0x5c } };
+
 typedef struct _SEC_WINNT_AUTH_DATA_PASSWORD {
    SEC_WINNT_AUTH_BYTE_VECTOR UnicodePassword;
 } SEC_WINNT_AUTH_DATA_PASSWORD, PSEC_WINNT_AUTH_DATA_PASSWORD;
@@ -3144,6 +3148,16 @@ typedef struct _SEC_WINNT_AUTH_DATA_TYPE_SMARTCARD_CONTEXTS_DATA
     LPWSTR pwszECDHKeyName; // only optionally set for ECDSA smartcards
 } SEC_WINNT_AUTH_DATA_TYPE_SMARTCARD_CONTEXTS_DATA, *PSEC_WINNT_AUTH_DATA_TYPE_SMARTCARD_CONTEXTS_DATA;
 
+// FIDO cred data
+typedef struct _SEC_WINNT_AUTH_FIDO_DATA {
+   unsigned short cbHeaderLength;
+   unsigned short cbStructureLength;
+   SEC_WINNT_AUTH_BYTE_VECTOR Secret; // offsets are from the beginning of this structure
+   SEC_WINNT_AUTH_BYTE_VECTOR NewSecret;
+   SEC_WINNT_AUTH_BYTE_VECTOR EncryptedNewSecret; // For storage by cloud AP
+   SEC_WINNT_AUTH_BYTE_VECTOR NetworkLogonBuffer; // Opaque data, understood by plugin, may contain signed Nonce and other data to perform a network logon
+   ULONG64 ulSignatureCount; // signature count to be stored in public cached info, required for CredProv
+} SEC_WINNT_AUTH_FIDO_DATA, *PSEC_WINNT_AUTH_FIDO_DATA;
 
 typedef struct _SEC_WINNT_CREDUI_CONTEXT_VECTOR
 {

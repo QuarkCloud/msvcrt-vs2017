@@ -904,6 +904,9 @@ typedef HTTP_OPAQUE_ID HTTP_RAW_CONNECTION_ID, *PHTTP_RAW_CONNECTION_ID;
 typedef HTTP_OPAQUE_ID HTTP_URL_GROUP_ID,      *PHTTP_URL_GROUP_ID;
 typedef HTTP_OPAQUE_ID HTTP_SERVER_SESSION_ID, *PHTTP_SERVER_SESSION_ID;
 
+// #if _WIN32_WINNT >= Somevalue
+typedef HTTP_OPAQUE_ID HTTP_CLIENT_REQUEST_ID, *PHTTP_CLIENT_REQUEST_ID;
+
 #endif // _WIN32_WINNT >= 0x0600
 
 //
@@ -979,6 +982,17 @@ do {                                                        \
 
 #define HTTP_LESS_EQUAL_VERSION(version, major, minor)      \
     (!HTTP_GREATER_VERSION(version, major, minor))
+
+//
+// The enum type for HTTP Scheme.
+//
+
+typedef enum _HTTP_URI_SCHEME
+{
+    HttpSchemeHttp,
+    HttpSchemeHttps,
+    HttpSchemeMaximum
+} HTTP_SCHEME, *PHTTP_URI_SCHEME;
 
 //
 // The enum type for HTTP verbs.
@@ -1798,8 +1812,13 @@ typedef struct _HTTP_RESPONSE_V1
 // to the Http Server API for content negotiation  used when serving from the
 // the kernel response cache.
 //
+// HTTP_RESPONSE_FLAG_MORE_ENTITY_BODY_EXISTS - there is more entity body
+// to be read for this response.  Otherwise, there is no entity body or
+// all of the entity body was copied into pEntityChunks.
+//
 
 #define HTTP_RESPONSE_FLAG_MULTIPLE_ENCODINGS_AVAILABLE 0x00000001
+#define HTTP_RESPONSE_FLAG_MORE_ENTITY_BODY_EXISTS   0x00000002
 
 
 typedef enum _HTTP_RESPONSE_INFO_TYPE
@@ -2109,6 +2128,12 @@ typedef struct _HTTP_SERVICE_CONFIG_SSL_PARAM
 #endif // _WIN32_WINNT < 0x0600
 #define HTTP_SERVICE_CONFIG_SSL_FLAG_REJECT                0x00000008
 
+#define HTTP_SERVICE_CONFIG_SSL_FLAG_DISABLE_HTTP2         0x00000010
+#define HTTP_SERVICE_CONFIG_SSL_FLAG_DISABLE_QUIC          0x00000020
+#define HTTP_SERVICE_CONFIG_SSL_FLAG_DISABLE_TLS13         0x00000040
+
+#define HTTP_SERVICE_CONFIG_SSL_FLAG_DISABLE_OCSP_STAPLING 0x00000080
+
 
 //
 // These data structures are used by HttpSetServiceConfiguration() to add a new
@@ -2388,25 +2413,25 @@ HTTPAPI_LINKAGE
 ULONG
 WINAPI
 HttpSetRequestQueueProperty(
-    IN HANDLE RequestQueueHandle,
-    IN HTTP_SERVER_PROPERTY Property,
+    _In_ HANDLE RequestQueueHandle,
+    _In_ HTTP_SERVER_PROPERTY Property,
     _In_reads_bytes_(PropertyInformationLength) PVOID PropertyInformation,
-    IN ULONG PropertyInformationLength,
-    _Reserved_ IN ULONG Reserved1,
-    _Reserved_ IN PVOID Reserved2
+    _In_ ULONG PropertyInformationLength,
+    _Reserved_ _In_ ULONG Reserved1,
+    _Reserved_ _In_ PVOID Reserved2
     );
 
 HTTPAPI_LINKAGE
 ULONG
 WINAPI
 HttpQueryRequestQueueProperty(
-    IN HANDLE RequestQueueProperty,
-    IN HTTP_SERVER_PROPERTY Property,
+    _In_ HANDLE RequestQueueProperty,
+    _In_ HTTP_SERVER_PROPERTY Property,
     _Out_writes_bytes_to_opt_(PropertyInformationLength, *ReturnLength) PVOID PropertyInformation,
-    IN ULONG PropertyInformationLength,
-    _Reserved_ IN ULONG Reserved1,
+    _In_ ULONG PropertyInformationLength,
+    _Reserved_ _In_ ULONG Reserved1,
     _Out_opt_ PULONG ReturnLength OPTIONAL,
-    _Reserved_ IN PVOID Reserved2
+    _Reserved_ _In_ PVOID Reserved2
     );
 
 HTTPAPI_LINKAGE
@@ -2798,11 +2823,11 @@ HTTPAPI_LINKAGE
 ULONG
 WINAPI
 HttpUpdateServiceConfiguration(
-    __reserved __in HANDLE Handle,
-    __in HTTP_SERVICE_CONFIG_ID ConfigId,
-    __in_bcount(ConfigInfoLength) PVOID ConfigInfo,
-    __in ULONG ConfigInfoLength,
-    __reserved __in LPOVERLAPPED Overlapped
+    _Reserved_ _In_opt_ HANDLE Handle,
+    _In_ HTTP_SERVICE_CONFIG_ID ConfigId,
+    _In_reads_bytes_(ConfigInfoLength) PVOID ConfigInfo,
+    _In_ ULONG ConfigInfoLength,
+    _Reserved_ _In_opt_ LPOVERLAPPED Overlapped
     );
 
 HTTPAPI_LINKAGE
@@ -2820,15 +2845,23 @@ HTTPAPI_LINKAGE
 ULONG
 WINAPI
 HttpQueryServiceConfiguration(
-    _Reserved_ IN HANDLE ServiceHandle,
-    IN HTTP_SERVICE_CONFIG_ID ConfigId,
-    _In_reads_bytes_opt_(InputLength) IN PVOID pInput OPTIONAL,
-    IN ULONG InputLength OPTIONAL,
-    _Out_writes_bytes_to_opt_(OutputLength, *pReturnLength)
-    OUT PVOID pOutput OPTIONAL,
-    IN ULONG OutputLength OPTIONAL,
-    _Out_opt_ OUT PULONG pReturnLength OPTIONAL,
-    _Reserved_ IN LPOVERLAPPED pOverlapped
+    _Reserved_ _In_ HANDLE ServiceHandle,
+    _In_ HTTP_SERVICE_CONFIG_ID ConfigId,
+    _In_reads_bytes_opt_(InputLength) PVOID pInput,
+    _In_ ULONG InputLength,
+    _Out_writes_bytes_to_opt_(OutputLength, *pReturnLength) PVOID pOutput,
+    _In_ ULONG OutputLength,
+    _Out_opt_ PULONG pReturnLength,
+    _Reserved_ _In_ LPOVERLAPPED pOverlapped
+    );
+
+ULONG
+WINAPI
+HttpGetExtension(
+    __in HTTPAPI_VERSION Version,
+    __in ULONG Extension,
+    __in PVOID __bcount(BufferSize) Buffer,
+    __in ULONG BufferSize
     );
 
 

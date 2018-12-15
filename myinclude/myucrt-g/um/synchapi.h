@@ -1,7 +1,3 @@
- 
- 
-// begin_1_0
-// begin_2_0
 /********************************************************************************
 *                                                                               *
 * synchapi.h -- ApiSet Contract for api-ms-win-core-synch-l1                    *
@@ -22,38 +18,11 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-synch-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_SYNCH_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_SYNCH_VER 0x0201
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_SYNCH_VER 0x0200
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_SYNCH_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// end_1_0
-// end_2_0
-
-// begin_1_0
-// begin_2_0
-
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 //
@@ -67,14 +36,8 @@ typedef RTL_SRWLOCK SRWLOCK, *PSRWLOCK;
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-// end_2_0
-
-// begin_1_0
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= 0x0600)
 
@@ -142,7 +105,6 @@ TryAcquireSRWLockShared(
 
 #endif // (_WIN32_WINNT >= 0x0600)
 
-
 #if (_WIN32_WINNT < 0x0600)
 
 _Maybe_raises_SEH_exception_
@@ -191,7 +153,6 @@ InitializeCriticalSectionAndSpinCount(
     );
 
 
-
 #if (_WIN32_WINNT >= 0x0600)
 
 WINBASEAPI
@@ -215,7 +176,6 @@ SetCriticalSectionSpinCount(
     );
 
 
-
 #if (_WIN32_WINNT >= 0x0400)
 
 WINBASEAPI
@@ -235,10 +195,6 @@ DeleteCriticalSection(
     _Inout_ LPCRITICAL_SECTION lpCriticalSection
     );
 
-
-// end_1_0
-
-// begin_2_0
 
 //
 // Define one-time initialization primitive
@@ -273,10 +229,6 @@ BOOL
     _Outptr_opt_result_maybenull_ PVOID *Context
     );
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
-
-
 #if (_WIN32_WINNT >= 0x0600)
 
 WINBASEAPI
@@ -294,7 +246,7 @@ InitOnceExecuteOnce(
     _Inout_ PINIT_ONCE InitOnce,
     _In_ __callback PINIT_ONCE_FN InitFn,
     _Inout_opt_ PVOID Parameter,
-    _Outptr_opt_result_maybenull_ LPVOID * Context
+    _Outptr_opt_result_maybenull_ LPVOID* Context
     );
 
 
@@ -305,7 +257,7 @@ InitOnceBeginInitialize(
     _Inout_ LPINIT_ONCE lpInitOnce,
     _In_ DWORD dwFlags,
     _Out_ PBOOL fPending,
-    _Outptr_opt_result_maybenull_ LPVOID * lpContext
+    _Outptr_opt_result_maybenull_ LPVOID* lpContext
     );
 
 
@@ -320,8 +272,6 @@ InitOnceComplete(
 
 
 #endif // (_WIN32_WINNT >= 0x0600)
-
-#endif // #if !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
 
 //
 // Define condition variable
@@ -340,10 +290,6 @@ typedef RTL_CONDITION_VARIABLE CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 //
 
 #define CONDITION_VARIABLE_LOCKMODE_SHARED RTL_CONDITION_VARIABLE_LOCKMODE_SHARED
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
-
 
 #if (_WIN32_WINNT >= 0x0600)
 
@@ -393,12 +339,6 @@ SleepConditionVariableSRW(
 
 
 #endif // (_WIN32_WINNT >= 0x0600)
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
-
-// end_2_0
-
-// begin_1_0
 
 WINBASEAPI
 BOOL
@@ -467,7 +407,7 @@ DWORD
 WINAPI
 WaitForMultipleObjectsEx(
     _In_ DWORD nCount,
-    _In_reads_(nCount) CONST HANDLE * lpHandles,
+    _In_reads_(nCount) CONST HANDLE* lpHandles,
     _In_ BOOL bWaitAll,
     _In_ DWORD dwMilliseconds,
     _In_ BOOL bAlertable
@@ -591,7 +531,6 @@ OpenSemaphoreW(
 #define OpenSemaphore  OpenSemaphoreW
 #endif
 
-
 #if (_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)
 
 typedef
@@ -617,14 +556,13 @@ OpenWaitableTimerW(
 #define OpenWaitableTimer  OpenWaitableTimerW
 #endif
 
-
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
 
 BOOL
 WINAPI
 SetWaitableTimerEx(
     _In_ HANDLE hTimer,
-    _In_ const LARGE_INTEGER * lpDueTime,
+    _In_ const LARGE_INTEGER* lpDueTime,
     _In_ LONG lPeriod,
     _In_opt_ PTIMERAPCROUTINE pfnCompletionRoutine,
     _In_opt_ LPVOID lpArgToCompletionRoutine,
@@ -640,7 +578,7 @@ BOOL
 WINAPI
 SetWaitableTimer(
     _In_ HANDLE hTimer,
-    _In_ const LARGE_INTEGER * lpDueTime,
+    _In_ const LARGE_INTEGER* lpDueTime,
     _In_ LONG lPeriod,
     _In_opt_ PTIMERAPCROUTINE pfnCompletionRoutine,
     _In_opt_ LPVOID lpArgToCompletionRoutine,
@@ -654,7 +592,6 @@ WINAPI
 CancelWaitableTimer(
     _In_ HANDLE hTimer
     );
-
 
 
 #if (_WIN32_WINNT >= 0x0600)
@@ -739,6 +676,9 @@ CreateSemaphoreExW(
 #endif
 
 #define CREATE_WAITABLE_TIMER_MANUAL_RESET  0x00000001
+#if (_WIN32_WINNT >= _NT_TARGET_VERSION_WIN10_RS4)
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
 
 WINBASEAPI
 _Ret_maybenull_
@@ -763,15 +703,7 @@ CreateWaitableTimerExW(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-
-// begin_2_0
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
-
 #pragma region Desktop or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 typedef RTL_BARRIER SYNCHRONIZATION_BARRIER;
@@ -810,7 +742,6 @@ DeleteSynchronizationBarrier(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -824,7 +755,7 @@ Sleep(
 BOOL
 WINAPI
 WaitOnAddress(
-    _In_reads_bytes_(AddressSize) volatile VOID * Address,
+    _In_reads_bytes_(AddressSize) volatile VOID* Address,
     _In_reads_bytes_(AddressSize) PVOID CompareAddress,
     _In_ SIZE_T AddressSize,
     _In_opt_ DWORD dwMilliseconds
@@ -844,12 +775,11 @@ WakeByAddressAll(
     _In_ PVOID Address
     );
 
-    
+
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Desktop or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 #ifndef MIDL_PASS
@@ -870,15 +800,7 @@ SignalObjectAndWait(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0200)
-
-// end_2_0
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0201)
-
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -886,7 +808,7 @@ DWORD
 WINAPI
 WaitForMultipleObjects(
     _In_ DWORD nCount,
-    _In_reads_(nCount) CONST HANDLE * lpHandles,
+    _In_reads_(nCount) CONST HANDLE* lpHandles,
     _In_ BOOL bWaitAll,
     _In_ DWORD dwMilliseconds
     );
@@ -925,16 +847,8 @@ CreateWaitableTimerW(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_SYNCH_VER >= 0x0201)
-
-
-// begin_1_0
-// begin_2_0
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif // _SYNCHAPI_H_
-// end_1_0
-// end_2_0

@@ -42,7 +42,7 @@ public:
     typedef _Key_type key_type;
     typedef _Key_comparator _Key_compare;
 
-    typedef typename _Allocator_type::template rebind<value_type>::other allocator_type;
+    typedef typename std::allocator_traits<_Allocator_type>::template rebind_alloc<value_type> allocator_type;
 
     enum
     {
@@ -574,8 +574,8 @@ public:
     /// </remarks>
     /**/
     template<class _Valty>
-        typename std::enable_if<!std::is_same<const_iterator,
-            typename std::remove_reference<_Valty>::type>::value, iterator>::type
+        std::enable_if_t<!std::is_same_v<const_iterator,
+            std::remove_reference_t<_Valty>>, iterator>
     insert(const_iterator _Where, _Valty&& _Value)
     {
         // Current implementation ignores the hint. The method is provided for compatibility with unordered_map.
@@ -1277,7 +1277,7 @@ public:
     /// </remarks>
     /**/
     template<class _Valty>
-        typename std::enable_if<!std::is_same<const_iterator, typename std::remove_reference<_Valty>::type>::value, iterator>::type
+        std::enable_if_t<!std::is_same_v<const_iterator, std::remove_reference_t<_Valty>>, iterator>
     insert(const_iterator _Where, _Valty&& _Value)
     {
         // Current implementation ignores the hint. The method is provided for compatibility with unordered_multimap.

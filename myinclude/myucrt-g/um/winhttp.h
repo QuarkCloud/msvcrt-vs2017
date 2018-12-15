@@ -449,6 +449,9 @@ typedef struct
 #define WINHTTP_OPTION_WEB_SOCKET_SEND_BUFFER_SIZE    123
 
 
+#define WINHTTP_OPTION_TCP_PRIORITY_HINT              128
+
+
 #define WINHTTP_OPTION_CONNECTION_FILTER              131
 
 
@@ -458,7 +461,11 @@ typedef struct
 
 #define WINHTTP_OPTION_KDC_PROXY_SETTINGS             136
 
-#define WINHTTP_LAST_OPTION                           WINHTTP_OPTION_KDC_PROXY_SETTINGS
+
+#define WINHTTP_OPTION_ENCODE_EXTRA                   138
+#define WINHTTP_OPTION_DISABLE_STREAM_QUEUE           139
+
+#define WINHTTP_LAST_OPTION                           WINHTTP_OPTION_DISABLE_STREAM_QUEUE
 
 #define WINHTTP_OPTION_USERNAME                      0x1000
 #define WINHTTP_OPTION_PASSWORD                      0x1001
@@ -1093,6 +1100,7 @@ typedef struct
 #define WINHTTP_RESET_ALL                       0x0000FFFF
 #define WINHTTP_RESET_NOTIFY_NETWORK_CHANGED    0x00010000
 #define WINHTTP_RESET_OUT_OF_PROC               0x00020000
+#define WINHTTP_RESET_DISCARD_RESOLVERS         0x00040000
 
 
 //#endif // !defined(_WINERROR_)

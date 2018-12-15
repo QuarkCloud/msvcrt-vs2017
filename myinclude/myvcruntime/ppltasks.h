@@ -40,11 +40,23 @@
 #define _PPLTASK_ASYNC_LOGGING 1
 #endif // #ifndef _PPLTASK_ASYNC_LOGGING
 
+// Enforce consistent task definitions across clients
 #if _PPLTASK_ASYNC_LOGGING
 #pragma detect_mismatch("_PPLTASK_ASYNC_LOGGING", "1")
 #else
 #pragma detect_mismatch("_PPLTASK_ASYNC_LOGGING", "0")
 #endif // #if _PPLTASK_ASYNC_LOGGING
+
+#if defined(PPL_TASK_CONTEXT_ERROR_CONTROL) || defined (__cplusplus_winrt)
+#define _PPL_TASK_CONTEXT_CONTROL_ENABLED true
+#else
+#define _PPL_TASK_CONTEXT_CONTROL_ENABLED false
+#endif
+#if defined(PPL_TASK_CONTEXT_ERROR_CONTROL)
+#define _PPL_TASK_ERROR_REPORT_ENABLED true
+#else
+#define _PPL_TASK_ERROR_REPORT_ENABLED false
+#endif
 
 #pragma pack(push,_CRT_PACKING)
 
@@ -97,6 +109,7 @@ template <> class task<void>;
 
 #ifndef __EDG__
 #define _EXPAND_STR(x) #x
+// Enforce consistent task frame save count across clients
 #pragma detect_mismatch("ppltask_saved_frame_numbers", _EXPAND_STR(PPL_TASK_SAVE_FRAME_COUNT))
 #undef _EXPAND_STR
 #endif
@@ -131,7 +144,11 @@ template <> class task<void>;
 /**/
 inline __declspec(noreturn) void __cdecl cancel_current_task()
 {
+#ifdef BUILD_WINDOWS
+    _THROW(task_canceled, _EMPTY_ARGUMENT);
+#else
     _THROW(task_canceled{});
+#endif
 }
 
 namespace details
@@ -144,7 +161,11 @@ namespace details
         /// </summary>
         static void __declspec(noreturn) __cdecl _NoCallOnDefaultTask_ErrorImpl()
         {
+#ifdef BUILD_WINDOWS
+            _THROW(invalid_operation, "This function cannot be called on a default constructed task");
+#else
             _THROW(invalid_operation("This function cannot be called on a default constructed task"));
+#endif
         }
     };
 
@@ -370,7 +391,7 @@ namespace details
     struct _FunctionTypeTraits
     {
         typedef decltype(_ReturnTypeHelper(details::declval<_ExpectedParameterType>(),details::declval<_Function>(), 0, 0)) _FuncRetType;
-        static_assert(!std::is_same<_FuncRetType,_BadContinuationParamType>::value, "incorrect parameter type for the callable object in 'then'; consider _ExpectedParameterType or task<_ExpectedParameterType> (see below)");
+        static_assert(!std::is_same_v<_FuncRetType, _BadContinuationParamType>, "incorrect parameter type for the callable object in 'then'; consider _ExpectedParameterType or task<_ExpectedParameterType> (see below)");
 
         typedef decltype(_IsTaskHelper(details::declval<_ExpectedParameterType>(),details::declval<_Function>(), 0, 0)) _Takes_task;
     };
@@ -386,7 +407,7 @@ namespace details
     template<typename _Ty, typename _IsTaskType>
     struct _ContinuationArgTypeHelper
     {
-        static_assert(std::is_same<_IsTaskType, std::false_type>::value,  "_IsTaskType template parameter must be std::true_type or std::false_type");
+        static_assert(std::is_same_v<_IsTaskType, std::false_type>, "_IsTaskType template parameter must be std::true_type or std::false_type");
         typedef _Ty _ArgType;
     };
 
@@ -496,7 +517,7 @@ namespace details
 
     class _ContextCallback
     {
-        typedef std::function<void __cdecl (void)> _CallbackFunction;
+        typedef std::function<void __cdecl ()> _CallbackFunction;
 
     public:
 
@@ -732,7 +753,13 @@ namespace details
     struct _ExceptionHolder
     {
     private:
+        // To ensure that the ReportUnhandledError DLL export is preserved, conditional error reporting via
+        // _REPORT_PPLTASK_UNOBSERVED_EXCEPTION below is based on the header definition of ReportUnhandledError.
+#if !defined(_CRTBLD) && defined(BUILD_WINDOWS) && (!_PPL_TASK_ERROR_REPORT_ENABLED || defined(_KERNELX))
+        void ReportUnhandledError() {}
+#else
         _CRTIMP2 void __thiscall ReportUnhandledError();
+#endif
 
     public:
         explicit _ExceptionHolder(const std::exception_ptr& _E, const _TaskCreationCallstack &_stackTrace) :
@@ -855,7 +882,7 @@ namespace details
                           _Result>(_Operation) {}
 
     public:
-        virtual _Result GetResults() override { return _M_asyncInfo.Get()->GetResults(); }
+        virtual _Result GetResults() override { return this->_M_asyncInfo.Get()->GetResults(); }
     };
 
     /// <summary>
@@ -876,7 +903,7 @@ namespace details
         virtual details::_Unit_type GetResults() override
         {
             // Invoke GetResults on the IAsyncAction to allow exceptions to be thrown to higher layers before returning a dummy value.
-            _M_asyncInfo.Get()->GetResults();
+            this->_M_asyncInfo.Get()->GetResults();
             return details::_Unit_type();
         }
     };
@@ -899,7 +926,7 @@ namespace details
         virtual details::_Unit_type GetResults() override
         {
             // Invoke GetResults on the IAsyncActionWithProgress to allow exceptions to be thrown before returning a dummy value.
-            _M_asyncInfo.Get()->GetResults();
+            this->_M_asyncInfo.Get()->GetResults();
             return details::_Unit_type();
         }
     };
@@ -936,7 +963,7 @@ public:
     /**/
     static task_continuation_context use_default()
     {
-        return task_continuation_context();
+        return task_continuation_context{_Tag{}};
     }
 
     /// <summary>
@@ -955,12 +982,12 @@ public:
     /**/
     static task_continuation_context get_current_winrt_context()
     {
-        task_continuation_context _Current;
+        task_continuation_context _Current{_Tag{}};
         _Current._Resolve(true);
         return _Current;
     }
 
-#if defined (__cplusplus_winrt)
+#if defined(__cplusplus_winrt) || defined(PPL_TASK_CONTEXT_ERROR_CONTROL)
     /// <summary>
     ///     Creates a task continuation context which allows the Runtime to choose the execution context for a continuation.
     /// </summary>
@@ -977,7 +1004,7 @@ public:
     /**/
     static task_continuation_context use_arbitrary()
     {
-        task_continuation_context _Arbitrary;
+        task_continuation_context _Arbitrary{_Tag{}};
         _Arbitrary._Resolve(false);
         return _Arbitrary;
     }
@@ -1000,7 +1027,7 @@ public:
     {
         return get_current_winrt_context();
     }
-#endif  /* defined (__cplusplus_winrt) */
+#endif
 
     /// <summary>
     ///     Returns a task continuation context object that represents the synchronous execution context.
@@ -1016,7 +1043,7 @@ public:
     /**/
     static task_continuation_context use_synchronous_execution()
     {
-        task_continuation_context _Current;
+        task_continuation_context _Current{_Tag{}};
         _Current._Resolve(false);
         _Current._M_RunInline = true;
         return _Current;
@@ -1026,9 +1053,23 @@ public:
     {
         return _M_RunInline;
     }
-private:
 
+private:
     _CRTIMP2 __thiscall task_continuation_context();
+#if defined(BUILD_WINDOWS) || _PPL_TASK_CONTEXT_CONTROL_ENABLED
+    explicit task_continuation_context(bool _Enable_context) : _ContextCallback(_Enable_context), _M_RunInline(false)
+    {
+    }
+#endif
+    // To ensure that the task_continuation_context ctor DLL export is preserved, conditional context behavior for the ctor
+    // calls above is achieved with the tag dispatched ctor overload below, which forwards to the appropriate exported ctor.
+    struct _Tag {};
+#if !defined(_CRTBLD) && _PPL_TASK_CONTEXT_CONTROL_ENABLED && !defined(_PPL_TASK_FORCE_DEFAULT_CTOR)
+    explicit task_continuation_context(_Tag) : task_continuation_context(_PPL_TASK_CONTEXT_CONTROL_ENABLED) {}
+#else
+    explicit task_continuation_context(_Tag) : task_continuation_context() {}
+#endif
+
     bool _M_RunInline; // default, it's false
 };
 
@@ -1487,13 +1528,18 @@ namespace details
         {
             bool _DoWait = true;
 
+#if (_PPL_TASK_CONTEXT_CONTROL_ENABLED)
             if (_IsNonBlockingThread())
             {
                 // In order to prevent Windows Runtime STA threads from blocking the UI, calling task.wait() task.get() is illegal
                 // if task has not been completed.
                 if (!_IsCompleted() && !_IsCanceled())
                 {
+#ifdef BUILD_WINDOWS
+                    _THROW(invalid_operation, "Illegal to wait on a task in a Windows Runtime STA");
+#else
                     _THROW(invalid_operation("Illegal to wait on a task in a Windows Runtime STA"));
+#endif
                 }
                 else
                 {
@@ -1506,6 +1552,7 @@ namespace details
                     _DoWait = false;
                 }
             }
+#endif
 
             if (_DoWait)
             {
@@ -2074,7 +2121,7 @@ namespace details
             _DeregisterCancellation();
         }
 
-        virtual bool _CancelAndRunContinuations(bool _SynchronousCancel, bool _UserException, bool _PropagatedFromAncestor, const std::shared_ptr<_ExceptionHolder> & _ExceptionHolder_arg)
+        virtual bool _CancelAndRunContinuations(bool _SynchronousCancel, bool _UserException, bool _PropagatedFromAncestor, const std::shared_ptr<_ExceptionHolder> & _ExceptionHolder_arg) override
         {
             enum { _Nothing, _RunContinuations, _Cancel } _Do = _Nothing;
             {
@@ -2296,13 +2343,13 @@ namespace details
     };
 
     // Utility method for dealing with void functions
-    inline std::function<_Unit_type(void)> _MakeVoidToUnitFunc(const std::function<void(void)>& _Func)
+    inline std::function<_Unit_type()> _MakeVoidToUnitFunc(const std::function<void()>& _Func)
     {
         return [=]() -> _Unit_type { _Func(); return _Unit_type(); };
     }
 
     template <typename _Type>
-    std::function<_Type(_Unit_type)> _MakeUnitToTFunc(const std::function<_Type(void)>& _Func)
+    std::function<_Type(_Unit_type)> _MakeUnitToTFunc(const std::function<_Type()>& _Func)
     {
         return [=](_Unit_type) -> _Type { return _Func(); };
     }
@@ -2313,7 +2360,7 @@ namespace details
         return [=](_Type _Obj) -> _Unit_type { _Func(_Obj); return _Unit_type(); };
     }
 
-    inline std::function<_Unit_type(_Unit_type)> _MakeUnitToUnitFunc(const std::function<void(void)>& _Func)
+    inline std::function<_Unit_type(_Unit_type)> _MakeUnitToUnitFunc(const std::function<void()>& _Func)
     {
         return [=](_Unit_type) -> _Unit_type { _Func(); return _Unit_type(); };
     }
@@ -2546,7 +2593,7 @@ private:
             }
         }
 
-        bool _UserException = _M_Impl->_HasUserException();
+        const bool _UserException = _M_Impl->_HasUserException();
 
         if (_Cancel)
         {
@@ -2758,7 +2805,7 @@ namespace details
     template<typename _ReturnType, typename _Ty>
     void _ValidateTaskConstructorArgs(const _Ty& _Param)
     {
-        static_assert(std::is_same<decltype(_IsValidTaskCtor<_ReturnType, _Ty>(_Param,0,0,0,0)),std::true_type>::value,
+        static_assert(std::is_same_v<decltype(_IsValidTaskCtor<_ReturnType, _Ty>(_Param,0,0,0,0)), std::true_type>,
 #if defined (__cplusplus_winrt)
             "incorrect argument for task constructor; must be a callable object, an asynchronous operation or a task_completion_event"
 #else  /* defined (__cplusplus_winrt) */
@@ -2766,7 +2813,7 @@ namespace details
 #endif  /* defined (__cplusplus_winrt) */
             );
 #if defined (__cplusplus_winrt)
-        static_assert(!(std::is_same<_Ty,_ReturnType>::value && details::_IsIAsyncInfo<_Ty>::_Value),
+        static_assert(!(std::is_same_v<_Ty, _ReturnType> && details::_IsIAsyncInfo<_Ty>::_Value),
             "incorrect template argument for task; consider using the return type of the async operation");
 #endif  /* defined (__cplusplus_winrt) */
     }
@@ -2815,7 +2862,7 @@ template<typename _OutType>
 class _Continuation_func_transformer<void, _OutType>
 {
 public:
-    static auto _Perform(std::function<_OutType(void)> _Func) -> decltype(details::_MakeUnitToTFunc<_OutType>(_Func))
+    static auto _Perform(std::function<_OutType()> _Func) -> decltype(details::_MakeUnitToTFunc<_OutType>(_Func))
     {
         return details::_MakeUnitToTFunc<_OutType>(_Func);
     }
@@ -2835,7 +2882,7 @@ template<>
 class _Continuation_func_transformer<void, void>
 {
 public:
-    static auto _Perform(std::function<void(void)> _Func) -> decltype(details::_MakeUnitToUnitFunc(_Func))
+    static auto _Perform(std::function<void()> _Func) -> decltype(details::_MakeUnitToUnitFunc(_Func))
     {
         return details::_MakeUnitToUnitFunc(_Func);
     }
@@ -2847,7 +2894,7 @@ template<typename _RetType>
 class _Init_func_transformer
 {
 public:
-    static auto _Perform(std::function<_RetType(void)> _Func) -> decltype(_Func)
+    static auto _Perform(std::function<_RetType()> _Func) -> decltype(_Func)
     {
         return _Func;
     }
@@ -2857,7 +2904,7 @@ template<>
 class _Init_func_transformer<void>
 {
 public:
-    static auto _Perform(std::function<void(void)> _Func) -> decltype(details::_MakeVoidToUnitFunc(_Func))
+    static auto _Perform(std::function<void()> _Func) -> decltype(details::_MakeVoidToUnitFunc(_Func))
     {
         return details::_MakeVoidToUnitFunc(_Func);
     }
@@ -2924,7 +2971,7 @@ public:
     /// <param name="_Param">
     ///     The parameter from which the task is to be constructed. This could be a lambda, a function object, a <c>task_completion_event&lt;result_type&gt;</c>
     ///     object, or a Windows::Foundation::IAsyncInfo if you are using tasks in your Windows Store app. The lambda or function
-    ///     object should be a type equivalent to <c>std::function&lt;X(void)&gt;</c>, where X can be a variable of type <c>result_type</c>,
+    ///     object should be a type equivalent to <c>std::function&lt;X()&gt;</c>, where X can be a variable of type <c>result_type</c>,
     ///     <c>task&lt;result_type&gt;</c>, or a Windows::Foundation::IAsyncInfo in Windows Store apps.
     /// </param>
     /// <param name="_Token">
@@ -2973,7 +3020,7 @@ public:
     /// <param name="_Param">
     ///     The parameter from which the task is to be constructed. This could be a lambda, a function object, a <c>task_completion_event&lt;result_type&gt;</c>
     ///     object, or a Windows::Foundation::IAsyncInfo if you are using tasks in your Windows Store app. The lambda or function
-    ///     object should be a type equivalent to <c>std::function&lt;X(void)&gt;</c>, where X can be a variable of type <c>result_type</c>,
+    ///     object should be a type equivalent to <c>std::function&lt;X()&gt;</c>, where X can be a variable of type <c>result_type</c>,
     ///     <c>task&lt;result_type&gt;</c>, or a Windows::Foundation::IAsyncInfo in Windows Store apps.
     /// </param>
     /// <param name="_TaskOptions">
@@ -3271,7 +3318,11 @@ public:
 
         if (_M_Impl->_Wait() == canceled)
         {
+#ifdef BUILD_WINDOWS
+            _THROW(task_canceled, _EMPTY_ARGUMENT);
+#else
             _THROW(task_canceled{});
+#endif
         }
 
         return _M_Impl->_GetResult();
@@ -3942,7 +3993,7 @@ public:
     /// <param name="_Param">
     ///     The parameter from which the task is to be constructed. This could be a lambda, a function object, a <c>task_completion_event&lt;result_type&gt;</c>
     ///     object, or a Windows::Foundation::IAsyncInfo if you are using tasks in your Windows Store app. The lambda or function
-    ///     object should be a type equivalent to <c>std::function&lt;X(void)&gt;</c>, where X can be a variable of type <c>result_type</c>,
+    ///     object should be a type equivalent to <c>std::function&lt;X()&gt;</c>, where X can be a variable of type <c>result_type</c>,
     ///     <c>task&lt;result_type&gt;</c>, or a Windows::Foundation::IAsyncInfo in Windows Store apps.
     /// </param>
     /// <remarks>
@@ -4449,8 +4500,8 @@ namespace details
     inline bool _IsHRCOMDisconnected(int __hr)
     {
         return static_cast<unsigned int>(__hr) == 0x800706BAU // HRESULT_FROM_WIN32(RPC_S_SERVER_UNAVAILABLE)
-            || static_cast<unsigned int>(__hr) == 0x80010108U // RPC_E_DISCONNECTED
-            || static_cast<unsigned int>(__hr) == 0x89020001U; // JSCRIPT_E_CANTEXECUTE
+        || static_cast<unsigned int>(__hr) == 0x80010108U // RPC_E_DISCONNECTED
+        || static_cast<unsigned int>(__hr) == 0x89020001U; // JSCRIPT_E_CANTEXECUTE
     }
 } // namespace details
 
@@ -4486,7 +4537,7 @@ template<typename _Ty>
 __declspec(noinline)
 auto create_task(_Ty _Param, task_options _TaskOptions = task_options()) -> task<typename details::_TaskTypeFromParam<_Ty>::_Type>
 {
-    static_assert(!std::is_same<typename details::_TaskTypeFromParam<_Ty>::_Type,details::_BadArgType>::value,
+    static_assert(!std::is_same_v<typename details::_TaskTypeFromParam<_Ty>::_Type, details::_BadArgType>,
 #if defined (__cplusplus_winrt)
             "incorrect argument for create_task; can be a callable object, an asynchronous operation, or a task_completion_event"
 #else  /* defined (__cplusplus_winrt) */
@@ -4910,7 +4961,7 @@ namespace details
     struct _ProgressTypeTraits<progress_reporter<_Ty>>
     {
         static const bool _TakesProgress = true;
-        typedef typename _Ty _ProgressType;
+        typedef _Ty _ProgressType;
     };
 
 
@@ -5895,17 +5946,17 @@ namespace details
                 }
                 catch (task_canceled&)
                 {
-                    _TryTransitionToCancelled();
+                    this->_TryTransitionToCancelled();
                 }
                 catch (::Platform::Exception^ _Ex)
                 {
-                    _TryTransitionToError(_Ex->HResult);
+                    this->_TryTransitionToError(_Ex->HResult);
                 }
                 catch (...)
                 {
-                    _TryTransitionToError(E_FAIL);
+                    this->_TryTransitionToError(E_FAIL);
                 }
-                _FireCompletion();
+                this->_FireCompletion();
             });
         }
 
@@ -5971,10 +6022,8 @@ template<typename _Function>
 __declspec(noinline)
 details::_AsyncTaskGeneratorThunk<_Function> ^create_async(const _Function& _Func)
 {
-    static_assert(std::is_same<decltype(details::_IsValidCreateAsync(_Func,0,0,0,0)),std::true_type>::value,
+    static_assert(std::is_same_v<decltype(details::_IsValidCreateAsync(_Func,0,0,0,0)), std::true_type>,
         "argument to create_async must be a callable object taking zero, one or two arguments");
-
-
 
     return ref new details::_AsyncTaskGeneratorThunk<_Function>(_Func, _CAPTURE_CALLSTACK());
 }
@@ -6416,7 +6465,7 @@ auto when_all(_Iterator _Begin, _Iterator _End, const task_options& _TaskOptions
 /// <seealso cref="Task Parallelism (Concurrency Runtime)"/>
 /**/
 template<typename _ReturnType>
-task<std::vector<_ReturnType>> operator&&(const task<_ReturnType> & _Lhs, const task<_ReturnType> & _Rhs)
+auto operator&&(const task<_ReturnType> & _Lhs, const task<_ReturnType> & _Rhs)
 {
     task<_ReturnType> _PTasks[2] = {_Lhs, _Rhs};
     return when_all(_PTasks, _PTasks+2);
@@ -6516,37 +6565,6 @@ task<std::vector<_ReturnType>> operator&&(const task<std::vector<_ReturnType>> &
     return when_all(_PTasks, _PTasks+2);
 }
 
-/// <summary>
-///     Creates a task that will complete successfully when both of the tasks supplied as arguments complete successfully.
-/// </summary>
-/// <typeparam name="_ReturnType">
-///     The type of the returned task.
-/// </typeparam>
-/// <param name="_Lhs">
-///     The first task to combine into the resulting task.
-/// </param>
-/// <param name="_Rhs">
-///     The second task to combine into the resulting task.
-/// </param>
-/// <returns>
-///     A task that completes successfully when both of the input tasks have completed successfully. If the input tasks are of type <c>T</c>,
-///     the output of this function will be a <c>task&lt;std::vector&lt;T&gt;&gt;</c>. If the input tasks are of type <c>void</c> the output
-///     task will also be a <c>task&lt;void&gt;</c>.
-///     <para> To allow for a construct of the sort taskA &amp;&amp; taskB &amp;&amp; taskC, which are combined in pairs, the &amp;&amp; operator
-///     produces a <c>task&lt;std::vector&lt;T&gt;&gt;</c> if either one or both of the tasks are of type <c>task&lt;std::vector&lt;T&gt;&gt;</c>.</para>
-/// </returns>
-/// <remarks>
-///     If one of the tasks is canceled or throws an exception, the returned task will complete early, in the canceled state, and the exception,
-///     if one is encountered, will be thrown if you call <c>get()</c> or <c>wait()</c> on that task.
-/// </remarks>
-/// <seealso cref="Task Parallelism (Concurrency Runtime)"/>
-/**/
-inline task<void> operator&&(const task<void> & _Lhs, const task<void> & _Rhs)
-{
-    task<void> _PTasks[2] = {_Lhs, _Rhs};
-    return when_all(_PTasks, _PTasks+2);
-}
-
 namespace details
 {
     // Helper struct for when_any operators to know when tasks have completed
@@ -6641,7 +6659,11 @@ namespace details
         {
             if( _Begin == _End )
             {
+#ifdef BUILD_WINDOWS
+                _THROW(invalid_operation, "when_any(begin, end) cannot be called on an empty container.");
+#else
                 _THROW(invalid_operation("when_any(begin, end) cannot be called on an empty container."));
+#endif
             }
             _CancellationTokenState *_PTokenState = _TaskOptions.has_cancellation_token() ? _TaskOptions.get_cancellation_token()._GetImplValue() : nullptr;
             auto _PParam = new _RunAnyParam<std::pair<std::pair<_ElementType, size_t>, _CancellationTokenState *>>();
@@ -6698,7 +6720,11 @@ namespace details
         {
             if( _Begin == _End )
             {
+#ifdef BUILD_WINDOWS
+                _THROW(invalid_operation, "when_any(begin, end) cannot be called on an empty container.");
+#else
                 _THROW(invalid_operation("when_any(begin, end) cannot be called on an empty container."));
+#endif
             }
 
             _CancellationTokenState *_PTokenState = _TaskOptions.has_cancellation_token() ? _TaskOptions.get_cancellation_token()._GetImplValue() : nullptr;
@@ -6997,14 +7023,18 @@ task<std::vector<_ReturnType>> operator||(const task<_ReturnType> & _Lhs, const 
 /// </remarks>
 /// <seealso cref="Task Parallelism (Concurrency Runtime)"/>
 /**/
-inline task<void> operator||(const task<void> & _Lhs, const task<void> & _Rhs)
+template<typename _Ty = task<void>, typename _Pair = std::pair<details::_Unit_type, details::_CancellationTokenState *>>
+inline _Ty operator||(const task<void> & _Lhs_arg, const task<void> & _Rhs_arg)
 {
-    auto _PParam = new details::_RunAnyParam<std::pair<details::_Unit_type, details::_CancellationTokenState *>>();
+    const _Ty& _Lhs = _Lhs_arg;
+    const _Ty& _Rhs = _Rhs_arg;
 
-    task<std::pair<details::_Unit_type, details::_CancellationTokenState *>> _Any_task_completed(_PParam->_M_Completed, _PParam->_M_cancellationSource.get_token());
+    auto _PParam = new details::_RunAnyParam<_Pair>();
+
+    task<_Pair> _Any_task_completed(_PParam->_M_Completed, _PParam->_M_cancellationSource.get_token());
     // Chain the return continuation task here to ensure it will get inline execution when _M_Completed.set is called,
     // So that _PParam can be used before it getting deleted.
-    auto _ReturnTask = _Any_task_completed._Then([=](std::pair<details::_Unit_type, details::_CancellationTokenState *> _Ret) {
+    auto _ReturnTask = _Any_task_completed._Then([=](_Pair _Ret) {
         _ASSERTE(_Ret.second);
         details::_JoinAllTokens_Add(_PParam->_M_cancellationSource, _Ret.second);
     }, nullptr);
@@ -7015,7 +7045,7 @@ inline task<void> operator||(const task<void> & _Lhs, const task<void> & _Rhs)
     }
 
     _PParam->_M_numTasks = 2;
-    auto _Continuation = [_PParam](task<void> _ResultTask) mutable {
+    auto _Continuation = [_PParam](_Ty _ResultTask) mutable {
         auto _Func = [&_ResultTask, _PParam]() {
             _PParam->_M_Completed.set(std::make_pair(details::_Unit_type(), _ResultTask._GetImpl()->_M_pTokenState));
         };
@@ -7060,11 +7090,12 @@ namespace details
     ///   A function representing the body of the loop. It will be invoked at least once and
     ///   then repetitively as long as it returns true.
     /// </param>
+    template<typename _Ty = task<bool>>
     inline
-    task<bool> do_while(std::function<task<bool>(void)> _Func)
+    _Ty do_while(std::enable_if_t<true, std::function<_Ty()>> _Func)
     {
-        task<bool> _First = _Func();
-        return _First.then([=](bool _Guard) -> task<bool> {
+        _Ty _First = _Func();
+        return _First.then([=](bool _Guard) -> _Ty {
             if (_Guard)
                 return do_while(_Func);
             else

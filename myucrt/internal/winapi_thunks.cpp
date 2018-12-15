@@ -7,32 +7,13 @@
 // directly because they are not available on all supported operating systems.
 //
 
+#include <nt.h>
+#include <ntrtl.h>
+#include <nturtl.h>
+#include <ntsecapi.h>
 #include <corecrt_internal.h>
 #include <appmodel.h>
 #include <roapi.h>
-#include <suppress.h>
-
-// Define this locally because including ntstatus.h conflicts with headers above
-#define STATUS_NOT_FOUND                 ((LONG)0xC0000225L)
-
-// Prototype for NT OS API defined locally to avoid conflicts with NT headers
-extern "C" NTSYSAPI LONG NTAPI RtlQueryPackageClaims(
-    _In_ PVOID TokenObject,
-    _Out_writes_bytes_to_opt_(*PackageSize, *PackageSize) PWSTR PackageFullName,
-    _Inout_opt_ PSIZE_T PackageSize,
-    _Out_writes_bytes_to_opt_(*AppIdSize, *AppIdSize) PWSTR AppId,
-    _Inout_opt_ PSIZE_T AppIdSize,
-    _Out_opt_ LPGUID DynamicId,
-    _Out_opt_ PVOID /* PPS_PKG_CLAIM */ PkgClaim,
-    _Out_opt_ PULONG64 AttributesPresent
-    );
-
-// SystemFunction036 is RtlGenRandom.  We declare it ourselves because the
-// declaration in ntsecapi.h lacks an explicit calling convention.
-extern "C" BOOLEAN WINAPI SystemFunction036(
-    _Out_writes_bytes_(buffer_count) PVOID buffer,
-    _In_                             ULONG buffer_count
-    );
 
 // The XState APIs are declared by the Windows headers only when building for
 // x86 and x64.  We declare them here unconditionally so that we can share the
@@ -53,9 +34,7 @@ extern "C" WINBASEAPI PVOID WINAPI LocateXStateFeature(
     _Out_opt_ PDWORD   length
     );
 
-
-
-#define _ACRT_APPLY_TO_LATE_BOUND_MODULES(_APPLY)                                                        \
+#define _ACRT_APPLY_TO_LATE_BOUND_MODULES                                                                \
     _APPLY(api_ms_win_core_datetime_l1_1_1,              "api-ms-win-core-datetime-l1-1-1"             ) \
     _APPLY(api_ms_win_core_fibers_l1_1_1,                "api-ms-win-core-fibers-l1-1-1"               ) \
     _APPLY(api_ms_win_core_file_l1_2_2,                  "api-ms-win-core-file-l1-2-2"                 ) \
@@ -79,7 +58,7 @@ extern "C" WINBASEAPI PVOID WINAPI LocateXStateFeature(
 
 
 
-#define _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS(_APPLY)                                                                                                     \
+#define _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS                                                                                                             \
     _APPLY(AreFileApisANSI,                             ({ /* api_ms_win_core_file_l1_2_2, */            kernel32                                   })) \
     _APPLY(CompareStringEx,                             ({ api_ms_win_core_string_l1_1_0,                kernel32                                   })) \
     _APPLY(EnumSystemLocalesEx,                         ({ api_ms_win_core_localization_l1_2_1,          kernel32                                   })) \
@@ -121,7 +100,7 @@ namespace
     enum module_id : unsigned
     {
         #define _APPLY(_SYMBOL, _NAME) _SYMBOL,
-        _ACRT_APPLY_TO_LATE_BOUND_MODULES(_APPLY)
+        _ACRT_APPLY_TO_LATE_BOUND_MODULES
         #undef _APPLY
 
         module_id_count
@@ -132,7 +111,7 @@ namespace
     static wchar_t const* const module_names[module_id_count] =
     {
         #define _APPLY(_SYMBOL, _NAME) _CRT_WIDE(_NAME),
-        _ACRT_APPLY_TO_LATE_BOUND_MODULES(_APPLY)
+        _ACRT_APPLY_TO_LATE_BOUND_MODULES
         #undef _APPLY
     };
 
@@ -140,7 +119,7 @@ namespace
     enum function_id : unsigned
     {
         #define _APPLY(_FUNCTION, _MODULES) _CRT_CONCATENATE(_FUNCTION, _id),
-        _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS(_APPLY)
+        _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS
         #undef _APPLY
 
         function_id_count
@@ -149,7 +128,7 @@ namespace
     // Generate a typedef for each function of the form function_pft.
     #define _APPLY(_FUNCTION, _MODULES) \
         using _CRT_CONCATENATE(_FUNCTION, _pft) = decltype(_FUNCTION)*;
-    _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS(_APPLY)
+    _ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS
     #undef _APPLY
 }
 
@@ -228,14 +207,12 @@ static HMODULE __cdecl try_load_library_from_system_directory(wchar_t const* con
     // all APISets will be forwarders.  To prevent DLL hijacking, do not attempt
     // to load the APISet forwarders dynamically.  This will cause our caller to
     // fall back to the real DLL (e.g. kernel32).  All of those are known DLLs.
-	/*
     if (GetLastError() == ERROR_INVALID_PARAMETER &&
         wcsncmp(name, L"api-ms-", 7) != 0 &&
         wcsncmp(name, L"ext-ms-", 7) != 0)
     {
         return LoadLibraryExW(name, nullptr, 0);
     }
-	*/
 
     return nullptr;
 }
@@ -397,7 +374,7 @@ static void* __cdecl try_get_function(
             candidate_modules,                                                                        \
             candidate_modules + _countof(candidate_modules)));                                        \
     }
-_ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS(_APPLY)
+_ACRT_APPLY_TO_LATE_BOUND_FUNCTIONS
 #undef _APPLY
 
 
@@ -657,15 +634,12 @@ extern "C" int WINAPI __acrt_LCIDToLocaleName(
     DWORD  const flags
     )
 {
-	/**
     if (auto const lcid_to_locale_name = try_get_LCIDToLocaleName())
     {
         return lcid_to_locale_name(locale, name, name_count, flags);
     }
 
     return __acrt_DownlevelLCIDToLocaleName(locale, name, name_count);
-	*/
-	return -1 ;
 }
 
 extern "C" LCID WINAPI __acrt_LocaleNameToLCID(
@@ -673,13 +647,12 @@ extern "C" LCID WINAPI __acrt_LocaleNameToLCID(
     DWORD   const flags
     )
 {
-    //if (auto const locale_name_to_lcid = try_get_LocaleNameToLCID())
+    if (auto const locale_name_to_lcid = try_get_LocaleNameToLCID())
     {
-    //    return locale_name_to_lcid(name, flags);
+        return locale_name_to_lcid(name, flags);
     }
 
-    //return __acrt_DownlevelLocaleNameToLCID(name);
-    return 0;
+    return __acrt_DownlevelLocaleNameToLCID(name);
 }
 
 extern "C" PVOID WINAPI __acrt_LocateXStateFeature(
@@ -724,20 +697,6 @@ extern "C" int WINAPI __acrt_MessageBoxW(
     }
 
     abort(); // No fallback; callers should check availablility before calling
-}
-
-extern "C" void WINAPI __acrt_OutputDebugStringA(
-    LPCSTR const text
-)
-{
-    OutputDebugStringA(text);
-}
-
-extern "C" void WINAPI __acrt_OutputDebugStringW(
-    LPCWSTR const text
-)
-{
-    OutputDebugStringW(text);
 }
 
 extern "C" BOOLEAN WINAPI __acrt_RtlGenRandom(
@@ -828,14 +787,12 @@ extern "C" BOOL WINAPI __acrt_SetThreadStackGuarantee(PULONG const stack_size_in
 extern "C" bool __cdecl __acrt_can_show_message_box()
 {
     bool can_show_message_box = false;
-	/*
     if (__acrt_get_windowing_model_policy() == windowing_model_policy_hwnd
         && try_get_MessageBoxA() != nullptr
         && try_get_MessageBoxW() != nullptr)
     {
         can_show_message_box = true;
     }
-	*/
     return can_show_message_box;
 }
 

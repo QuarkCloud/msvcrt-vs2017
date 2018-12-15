@@ -1641,18 +1641,6 @@ namespace Platform {
   } // namespace Collections
 } // namespace Platform
 
-template <typename X> struct ::std::_Is_checked_helper< ::Platform::Collections::InputIterator<X>>
-    : public ::std::true_type { };
-
-template <typename T> struct ::std::_Is_checked_helper< ::Platform::Collections::VectorIterator<T>>
-    : public ::std::true_type { };
-
-template <typename T> struct ::std::_Is_checked_helper< ::Platform::Collections::VectorViewIterator<T>>
-    : public ::std::true_type { };
-
-template <typename T> struct ::std::_Is_checked_helper< ::Platform::Collections::BackInsertIterator<T>>
-    : public ::std::true_type { };
-
 namespace Platform {
   namespace Collections {
     template <typename X> class InputIterator {

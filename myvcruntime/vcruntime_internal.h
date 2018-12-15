@@ -160,7 +160,7 @@ void __cdecl __vcrt_unlock(_In_ __vcrt_lock_id _Lock);
 extern "C++"
 {
     template <typename Action>
-    auto __vcrt_lock_and_call(__vcrt_lock_id const lock_id, Action&& action) throw()
+    auto __vcrt_lock_and_call(__vcrt_lock_id const lock_id, Action&& action)
         -> decltype(action())
     {
         return __crt_seh_guarded_call<decltype(action())>()(
@@ -198,12 +198,19 @@ typedef struct __vcrt_ptd
     uintptr_t          _ImageBase;
     uintptr_t          _ThrowImageBase;
     void*              _pForeignException;
+    int                _HandlerSearchState;  // Used when exceptions occur in catch funclets in Pass 1 of SEH handling, represents a state in the throwing catch funclet
+                                             // so unwind can properly search through parent catch funclets.
+    ptrdiff_t          _UnwindStateorOffset; // In Pass 2 of SEH handling, represents the start state of the try enclosing the catch funclet. All states within the try
+                                             // will have been already unwound before calling the catch, so this prevents us from unwinding those states twice.
+                                             // Also used if an SEH exception is thrown out of a dtor, in which case it's encoded as an offset into the UW map.
+    bool               _IsOffset;            // Whether the value in _UnwindStateorOffset is an offset from the start of the UW map or an actual state.
     #elif defined _M_IX86
     void*              _pFrameInfoChain;
     #endif
 
 } __vcrt_ptd;
 
+#define INVALID_CATCH_SPECIFIC_STATE -2
 __vcrt_ptd* __cdecl __vcrt_getptd(void);
 __vcrt_ptd* __cdecl __vcrt_getptd_noexit(void);
 __vcrt_ptd* __cdecl __vcrt_getptd_noinit(void);

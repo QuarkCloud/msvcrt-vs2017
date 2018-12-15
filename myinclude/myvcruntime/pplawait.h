@@ -18,12 +18,12 @@
 #ifndef _PPLAWAIT_H
 #define _PPLAWAIT_H
 
+#include <functional>
+#include <type_traits>
+#include <utility>
 #include <experimental/resumable>
 #include <ppltasks.h>
-#include <allocators>
-#include <type_traits>
 #include <ppltaskscheduler.h>
-#include <utility>
 
 #define __resumable
 

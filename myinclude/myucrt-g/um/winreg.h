@@ -1,4 +1,3 @@
- 
 /*++ BUILD Version: 0001    // Increment this if a change has global effects
 
 Copyright (c) Microsoft Corporation.  All rights reserved.
@@ -24,27 +23,6 @@ Abstract:
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-registry-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_REGISTRY_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS3
-#define _APISET_REGISTRY_VER 0x0102
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_REGISTRY_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_REGISTRY_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
-
 
 #ifdef _MAC
 #include <macwin32.h>
@@ -54,14 +32,12 @@ Abstract:
 extern "C" {
 #endif
 
-
 #if _MSC_VER >= 1200
 #pragma warning(push)
 #pragma warning(disable:4820) // padding added after data member
 #endif
 
 #pragma region Application Family or Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 
@@ -86,7 +62,6 @@ typedef _Return_type_success_(return==ERROR_SUCCESS) LONG LSTATUS;
 #define RRF_RT_DWORD           (RRF_RT_REG_BINARY | RRF_RT_REG_DWORD) // restrict type to *32-bit* RRF_RT_REG_BINARY or RRF_RT_REG_DWORD (other data types will not return ERROR_SUCCESS)
 #define RRF_RT_QWORD           (RRF_RT_REG_BINARY | RRF_RT_REG_QWORD) // restrict type to *64-bit* RRF_RT_REG_BINARY or RRF_RT_REG_DWORD (other data types will not return ERROR_SUCCESS)
 #define RRF_RT_ANY             0x0000ffff                             // no type restriction
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINTHRESHOLD)
 #define RRF_SUBKEY_WOW6464KEY  0x00010000  // when opening the subkey (if provided) force open from the 64bit location (only one SUBKEY_WOW64* flag can be set or RegGetValue will fail with ERROR_INVALID_PARAMETER)
@@ -119,7 +94,6 @@ typedef ACCESS_MASK REGSAM;
 #define HKEY_PERFORMANCE_DATA               (( HKEY ) (ULONG_PTR)((LONG)0x80000004) )
 #define HKEY_PERFORMANCE_TEXT               (( HKEY ) (ULONG_PTR)((LONG)0x80000050) )
 #define HKEY_PERFORMANCE_NLSTEXT            (( HKEY ) (ULONG_PTR)((LONG)0x80000060) )
-
 #if (WINVER >= 0x0400)
 #define HKEY_CURRENT_CONFIG                 (( HKEY ) (ULONG_PTR)((LONG)0x80000005) )
 #define HKEY_DYN_DATA                       (( HKEY ) (ULONG_PTR)((LONG)0x80000006) )
@@ -212,14 +186,12 @@ typedef PVALENTA PVALENT;
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 //
 // Flags for RegLoadMUIString
 //
 #define REG_MUI_STRING_TRUNCATE     0x00000001
-
 
 #if (WINVER >= 0x0400)
 
@@ -575,7 +547,7 @@ APIENTRY
 RegEnumKeyExA(
     _In_ HKEY hKey,
     _In_ DWORD dwIndex,
-    _Out_writes_to_opt_(*lpcchName, *lpcchName + 1) LPSTR lpName,
+    _Out_writes_to_opt_(*lpcchName,*lpcchName + 1) LPSTR lpName,
     _Inout_ LPDWORD lpcchName,
     _Reserved_ LPDWORD lpReserved,
     _Out_writes_to_opt_(*lpcchClass,*lpcchClass + 1) LPSTR lpClass,
@@ -589,7 +561,7 @@ APIENTRY
 RegEnumKeyExW(
     _In_ HKEY hKey,
     _In_ DWORD dwIndex,
-    _Out_writes_to_opt_(*lpcchName, *lpcchName + 1) LPWSTR lpName,
+    _Out_writes_to_opt_(*lpcchName,*lpcchName + 1) LPWSTR lpName,
     _Inout_ LPDWORD lpcchName,
     _Reserved_ LPDWORD lpReserved,
     _Out_writes_to_opt_(*lpcchClass,*lpcchClass + 1) LPWSTR lpClass,
@@ -609,7 +581,7 @@ APIENTRY
 RegEnumValueA(
     _In_ HKEY hKey,
     _In_ DWORD dwIndex,
-    _Out_writes_to_opt_(*lpcchValueName, *lpcchValueName + 1) LPSTR lpValueName,
+    _Out_writes_to_opt_(*lpcchValueName,*lpcchValueName + 1) LPSTR lpValueName,
     _Inout_ LPDWORD lpcchValueName,
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpType,
@@ -623,7 +595,7 @@ APIENTRY
 RegEnumValueW(
     _In_ HKEY hKey,
     _In_ DWORD dwIndex,
-    _Out_writes_to_opt_(*lpcchValueName, *lpcchValueName + 1) LPWSTR lpValueName,
+    _Out_writes_to_opt_(*lpcchValueName,*lpcchValueName + 1) LPWSTR lpValueName,
     _Inout_ LPDWORD lpcchValueName,
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpType,
@@ -777,7 +749,7 @@ LSTATUS
 APIENTRY
 RegQueryInfoKeyA(
     _In_ HKEY hKey,
-    _Out_writes_to_opt_(*lpcchClass, *lpcchClass + 1) LPSTR lpClass,
+    _Out_writes_to_opt_(*lpcchClass,*lpcchClass + 1) LPSTR lpClass,
     _Inout_opt_ LPDWORD lpcchClass,
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpcSubKeys,
@@ -795,7 +767,7 @@ LSTATUS
 APIENTRY
 RegQueryInfoKeyW(
     _In_ HKEY hKey,
-    _Out_writes_to_opt_(*lpcchClass, *lpcchClass + 1) LPWSTR lpClass,
+    _Out_writes_to_opt_(*lpcchClass,*lpcchClass + 1) LPWSTR lpClass,
     _Inout_opt_ LPDWORD lpcchClass,
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpcSubKeys,
@@ -838,11 +810,7 @@ RegQueryValueW (
 #define RegQueryValue  RegQueryValueA
 #endif // !UNICODE
 
-
-
 #if (WINVER >= 0x0400)
-
-#if !defined(_CONTRACT_GEN) || (_APISET_REGISTRY_VER >= 0x0102)
 
 WINADVAPI
 LSTATUS
@@ -872,7 +840,6 @@ RegQueryMultipleValuesW(
 #define RegQueryMultipleValues  RegQueryMultipleValuesA
 #endif // !UNICODE
 
-#endif
 #endif /* WINVER >= 0x0400 */
 
 WINADVAPI
@@ -884,8 +851,7 @@ RegQueryValueExA(
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpType,
     _Out_writes_bytes_to_opt_(*lpcbData, *lpcbData) __out_data_source(REGISTRY) LPBYTE lpData,
-    _When_(lpData == NULL, _Out_opt_)
-             _When_(lpData != NULL, _Inout_opt_) LPDWORD lpcbData
+    _When_(lpData == NULL,_Out_opt_) _When_(lpData != NULL,_Inout_opt_) LPDWORD lpcbData
     );
 
 WINADVAPI
@@ -897,8 +863,7 @@ RegQueryValueExW(
     _Reserved_ LPDWORD lpReserved,
     _Out_opt_ LPDWORD lpType,
     _Out_writes_bytes_to_opt_(*lpcbData, *lpcbData) __out_data_source(REGISTRY) LPBYTE lpData,
-    _When_(lpData == NULL, _Out_opt_)
-             _When_(lpData != NULL, _Inout_opt_) LPDWORD lpcbData
+    _When_(lpData == NULL,_Out_opt_) _When_(lpData != NULL,_Inout_opt_) LPDWORD lpcbData
     );
 
 #ifdef UNICODE
@@ -954,7 +919,6 @@ RegRestoreKeyW(
 #else
 #define RegRestoreKey  RegRestoreKeyA
 #endif // !UNICODE
-
 
 #if (WINVER >= 0x0600)
 
@@ -1035,7 +999,7 @@ RegSetValueExA(
     _In_opt_ LPCSTR lpValueName,
     _Reserved_ DWORD Reserved,
     _In_ DWORD dwType,
-    _In_reads_bytes_opt_(cbData) CONST BYTE * lpData,
+    _In_reads_bytes_opt_(cbData) CONST BYTE* lpData,
     _In_ DWORD cbData
     );
 
@@ -1047,7 +1011,7 @@ RegSetValueExW(
     _In_opt_ LPCWSTR lpValueName,
     _Reserved_ DWORD Reserved,
     _In_ DWORD dwType,
-    _In_reads_bytes_opt_(cbData) CONST BYTE * lpData,
+    _In_reads_bytes_opt_(cbData) CONST BYTE* lpData,
     _In_ DWORD cbData
     );
 
@@ -1082,11 +1046,7 @@ RegUnLoadKeyW(
 //
 // Utils wrappers
 //
-
 #if _WIN32_WINNT >= 0x0600
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_REGISTRY_VER >= 0x0101)
 
 WINADVAPI
 LSTATUS
@@ -1142,8 +1102,6 @@ RegSetKeyValueW(
 #define RegSetKeyValue  RegSetKeyValueA
 #endif // !UNICODE
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_REGISTRY_VER >= 0x0101)
-
 WINADVAPI
 LSTATUS
 APIENTRY
@@ -1179,7 +1137,6 @@ RegCopyTreeA (
 #endif // !UNICODE
 
 #endif // _WIN32_WINNT >= 0x0600
-
 
 #if (_WIN32_WINNT >= 0x0502)
 
@@ -1230,7 +1187,6 @@ RegGetValueW(
 #endif // !UNICODE
 
 #endif // (_WIN32_WINNT >= 0x0502)
-
 
 #if (_WIN32_WINNT >= 0x0600)
 
@@ -1340,7 +1296,6 @@ InitiateSystemShutdownW(
 #else
 #define InitiateSystemShutdown  InitiateSystemShutdownA
 #endif // !UNICODE
-
 
 WINADVAPI
 BOOL
@@ -1498,7 +1453,6 @@ RegSaveKeyExW(
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
-
 
 #if _MSC_VER >= 1200
 #pragma warning(pop)

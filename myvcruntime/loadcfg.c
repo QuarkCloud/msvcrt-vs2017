@@ -8,6 +8,53 @@
 *
 *******************************************************************************/
 
+#if defined(_KERNELX) || defined(LNM)
+
+#include <Windows.h>
+
+extern UINT_PTR __security_cookie;  /* /GS security cookie */
+
+//
+// CAUTION: Do not grow the LNM LoadConfig beyond the SDK
+// size without consulting Xbox Code Integrity (XCI) team -- HoiV, JayKrell.
+//
+// There are non-hypothetical impossible to debug fatal problems
+// if a larger LoadConfig is used with older Xbox signing tools.
+// It has been seen.
+//
+// Also, make sure the size IN the struct and the size OF the struct are the same.
+// The linker records the size OF the struct elsewhere in the PE headers and the two must match.
+//
+
+extern
+const
+__declspec(selectany)
+IMAGE_LOAD_CONFIG_DIRECTORY
+_load_config_used = {
+    sizeof(_load_config_used),
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (SIZE_T)&__security_cookie,
+    0,
+    0
+};
+
+#else
+
 #include <Windows.h>
 
 extern UINT_PTR __security_cookie;  /* /GS security cookie */
@@ -236,3 +283,5 @@ _load_config_used = {
     0,      // Reserved3
     (SIZE_T)&__enclave_config,
 };
+
+#endif // _KERNELX || LNM

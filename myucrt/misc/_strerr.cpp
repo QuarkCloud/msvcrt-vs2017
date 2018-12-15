@@ -63,7 +63,6 @@ static errno_t __cdecl append_message(
     char const*                              const message
     ) throw()
 {
-	/**
     size_t const buffer_length = wcslen(buffer);
     return mbstowcs_s(
         nullptr,
@@ -71,8 +70,6 @@ static errno_t __cdecl append_message(
         buffer_count - buffer_length,
         message,
         buffer_count - buffer_length - 2);
-	*/
-	return 0 ;
 }
 
 template <typename Character>

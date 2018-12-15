@@ -18,7 +18,7 @@ extern "C" void __acrt_update_locale_info(
         *locale_info = __acrt_update_thread_locale_data();
     }
 }
-/**
+
 extern "C" void __acrt_update_multibyte_info(
     __acrt_ptd*            const ptd,
     __crt_multibyte_data** const multibyte_info
@@ -29,4 +29,3 @@ extern "C" void __acrt_update_multibyte_info(
         *multibyte_info = __acrt_update_thread_multibyte_data();
     }
 }
-*/

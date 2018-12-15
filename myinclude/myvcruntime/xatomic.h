@@ -14,6 +14,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -142,13 +143,11 @@ typedef unsigned long long _Uint8_t;
 typedef long _Atomic_flag_t;
 
   #ifndef _INVALID_MEMORY_ORDER
-   #if _ITERATOR_DEBUG_LEVEL == 2
-    #define _INVALID_MEMORY_ORDER	_DEBUG_ERROR("Invalid memory_order")
-   #elif _ITERATOR_DEBUG_LEVEL == 1
-    #define _INVALID_MEMORY_ORDER	_SCL_SECURE_VALIDATE("Invalid memory_order" && 0)
-   #elif _ITERATOR_DEBUG_LEVEL == 0
+   #ifdef _DEBUG
+    #define _INVALID_MEMORY_ORDER	_STL_REPORT_ERROR("Invalid memory_order")
+   #else /* ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv */
     #define _INVALID_MEMORY_ORDER	static_cast<void>(0)
-   #endif /* _ITERATOR_DEBUG_LEVEL */
+   #endif /* _DEBUG */
   #endif /* _INVALID_MEMORY_ORDER */
 
 		// FUNCTION _Check_memory_order
@@ -253,7 +252,7 @@ inline void _Store_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	_Memory_barrier();
 
  #else
-	_INTRIN_SEQ_CST(_InterlockedExchange8)((volatile char *)_Tgt, _Value);
+	_INTRIN_SEQ_CST(_InterlockedExchange8)((volatile char *)_Tgt, static_cast<char>(_Value));
  #endif
 	}
 
@@ -350,29 +349,30 @@ inline _Uint1_t _Atomic_load_1(
 inline _Uint1_t _Exchange_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchange8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchange8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Exchange_relaxed_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			relaxed memory order */
 
-	return (_INTRIN_RELAXED(_InterlockedExchange8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedExchange8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Exchange_acquire_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchange8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchange8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Exchange_release_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchange8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedExchange8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Atomic_exchange_1(
@@ -405,10 +405,11 @@ inline int _Compare_exchange_seq_cst_1(volatile _Uint1_t *_Tgt,
 	_Uint1_t *_Exp, _Uint1_t _Value)
 	{	/* compare and exchange values atomically with
 			sequentially consistent memory order */
-	_Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint1_t _Prev = _INTRIN_SEQ_CST(_InterlockedCompareExchange8)((volatile char *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedCompareExchange8)((volatile char *)_Tgt,
+			static_cast<char>(_Value), static_cast<char>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -423,10 +424,11 @@ inline int _Compare_exchange_relaxed_1(volatile _Uint1_t *_Tgt,
 	_Uint1_t *_Exp, _Uint1_t _Value)
 	{	/* compare and exchange values atomically with
 			relaxed memory order */
-	_Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint1_t _Prev = _INTRIN_RELAXED(_InterlockedCompareExchange8)((volatile char *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedCompareExchange8)((volatile char *)_Tgt,
+			static_cast<char>(_Value), static_cast<char>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -441,10 +443,11 @@ inline int _Compare_exchange_acquire_1(volatile _Uint1_t *_Tgt,
 	_Uint1_t *_Exp, _Uint1_t _Value)
 	{	/* compare and exchange values atomically with
 			acquire memory order */
-	_Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint1_t _Prev = _INTRIN_ACQUIRE(_InterlockedCompareExchange8)((volatile char *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedCompareExchange8)((volatile char *)_Tgt,
+			static_cast<char>(_Value), static_cast<char>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -459,10 +462,11 @@ inline int _Compare_exchange_release_1(volatile _Uint1_t *_Tgt,
 	_Uint1_t *_Exp, _Uint1_t _Value)
 	{	/* compare and exchange values atomically with
 			release memory order */
-	_Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint1_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint1_t _Prev = _INTRIN_RELEASE(_InterlockedCompareExchange8)((volatile char *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedCompareExchange8)((volatile char *)_Tgt,
+			static_cast<char>(_Value), static_cast<char>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -503,8 +507,7 @@ inline int _Atomic_compare_exchange_weak_1(
 	volatile _Uint1_t *_Tgt, _Uint1_t *_Exp, _Uint1_t _Value,
 	memory_order _Order1, memory_order _Order2)
 	{	/* compare and exchange values atomically */
-	/* No weak compare-exchange is currently available,
-	   even for ARM, so fall back to strong */
+	/* No weak compare-exchange is currently available, even for ARM, so fall back to strong */
 	return (_Atomic_compare_exchange_strong_1(_Tgt, _Exp, _Value,
 		_Order1, _Order2));
 	}
@@ -513,29 +516,29 @@ inline int _Atomic_compare_exchange_weak_1(
 inline _Uint1_t _Fetch_add_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchangeAdd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchangeAdd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_add_relaxed_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchangeAdd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedExchangeAdd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_add_acquire_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchangeAdd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchangeAdd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_add_release_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchangeAdd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedExchangeAdd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Atomic_fetch_add_1(
@@ -566,36 +569,36 @@ inline _Uint1_t _Atomic_fetch_add_1(
 inline _Uint1_t _Atomic_fetch_sub_1(
 	volatile _Uint1_t *_Tgt, _Uint1_t _Value, memory_order _Order)
 	{	/* subtract _Value from *_Tgt atomically */
-	return (_Atomic_fetch_add_1(_Tgt, 0 - _Value, _Order));
+	return (_Atomic_fetch_add_1(_Tgt, static_cast<_Uint1_t>(0 - _Value), _Order));
 	}
 
 	/* _Atomic_fetch_and_1 */
 inline _Uint1_t _Fetch_and_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedAnd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedAnd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_and_relaxed_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedAnd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedAnd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_and_acquire_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedAnd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedAnd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_and_release_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedAnd8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedAnd8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Atomic_fetch_and_1(
@@ -627,29 +630,29 @@ inline _Uint1_t _Atomic_fetch_and_1(
 inline _Uint1_t _Fetch_or_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedOr8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedOr8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_or_relaxed_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedOr8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedOr8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_or_acquire_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedOr8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedOr8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_or_release_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedOr8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedOr8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Atomic_fetch_or_1(
@@ -681,29 +684,29 @@ inline _Uint1_t _Atomic_fetch_or_1(
 inline _Uint1_t _Fetch_xor_seq_cst_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedXor8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_SEQ_CST(_InterlockedXor8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_xor_relaxed_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedXor8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELAXED(_InterlockedXor8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_xor_acquire_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedXor8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_ACQUIRE(_InterlockedXor8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Fetch_xor_release_1(volatile _Uint1_t *_Tgt, _Uint1_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedXor8)((volatile char *)_Tgt, _Value));
+	return (static_cast<_Uint1_t>(
+		_INTRIN_RELEASE(_InterlockedXor8)((volatile char *)_Tgt, static_cast<char>(_Value))));
 	}
 
 inline _Uint1_t _Atomic_fetch_xor_1(
@@ -762,11 +765,11 @@ inline void _Store_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 
  #if defined(_M_ARM) || defined(_M_ARM64)
 	_Memory_barrier();
-	__iso_volatile_store16((volatile short *)_Tgt, _Value);
+	__iso_volatile_store16((volatile short *)_Tgt, static_cast<short>(_Value));
 	_Memory_barrier();
 
  #else
-	_INTRIN_SEQ_CST(_InterlockedExchange16)((volatile short *)_Tgt, _Value);
+	_INTRIN_SEQ_CST(_InterlockedExchange16)((volatile short *)_Tgt, static_cast<short>(_Value));
  #endif
 	}
 
@@ -803,7 +806,7 @@ inline _Uint2_t _Load_seq_cst_2(volatile _Uint2_t *_Tgt)
 	_Uint2_t _Value;
 
  #if defined(_M_ARM) || defined(_M_ARM64)
-	_Value = __iso_volatile_load16((volatile short *)_Tgt);
+	_Value = static_cast<_Uint2_t>(__iso_volatile_load16((volatile short *)_Tgt));
 	_Memory_barrier();
 
  #else
@@ -820,7 +823,7 @@ inline _Uint2_t _Load_relaxed_2(volatile _Uint2_t *_Tgt)
 	_Uint2_t _Value;
 
  #if defined(_M_ARM) || defined(_M_ARM64)
-	_Value = __iso_volatile_load16((volatile short *)_Tgt);
+	_Value = static_cast<_Uint2_t>(__iso_volatile_load16((volatile short *)_Tgt));
 
  #else
 	_Value = *_Tgt;
@@ -863,29 +866,29 @@ inline _Uint2_t _Atomic_load_2(
 inline _Uint2_t _Exchange_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchange16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchange16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Exchange_relaxed_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchange16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELAXED(_InterlockedExchange16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Exchange_acquire_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchange16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchange16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Exchange_release_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchange16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELEASE(_InterlockedExchange16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Atomic_exchange_2(
@@ -918,10 +921,10 @@ inline int _Compare_exchange_seq_cst_2(volatile _Uint2_t *_Tgt,
 	_Uint2_t *_Exp, _Uint2_t _Value)
 	{	/* compare and exchange values atomically with
 			sequentially consistent memory order */
-	_Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint2_t _Prev = _INTRIN_SEQ_CST(_InterlockedCompareExchange16)((volatile short *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint2_t>(_INTRIN_SEQ_CST(_InterlockedCompareExchange16)((volatile short *)_Tgt,
+		static_cast<short>(_Value), static_cast<short>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -936,10 +939,10 @@ inline int _Compare_exchange_relaxed_2(volatile _Uint2_t *_Tgt,
 	_Uint2_t *_Exp, _Uint2_t _Value)
 	{	/* compare and exchange values atomically with
 			relaxed memory order */
-	_Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint2_t _Prev = _INTRIN_RELAXED(_InterlockedCompareExchange16)((volatile short *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint2_t>(_INTRIN_RELAXED(_InterlockedCompareExchange16)((volatile short *)_Tgt,
+		static_cast<short>(_Value), static_cast<short>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -954,10 +957,10 @@ inline int _Compare_exchange_acquire_2(volatile _Uint2_t *_Tgt,
 	_Uint2_t *_Exp, _Uint2_t _Value)
 	{	/* compare and exchange values atomically with
 			acquire memory order */
-	_Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint2_t _Prev = _INTRIN_ACQUIRE(_InterlockedCompareExchange16)((volatile short *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint2_t>(_INTRIN_ACQUIRE(_InterlockedCompareExchange16)((volatile short *)_Tgt,
+		static_cast<short>(_Value), static_cast<short>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -972,10 +975,10 @@ inline int _Compare_exchange_release_2(volatile _Uint2_t *_Tgt,
 	_Uint2_t *_Exp, _Uint2_t _Value)
 	{	/* compare and exchange values atomically with
 			release memory order */
-	_Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint2_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint2_t _Prev = _INTRIN_RELEASE(_InterlockedCompareExchange16)((volatile short *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint2_t>(_INTRIN_RELEASE(_InterlockedCompareExchange16)((volatile short *)_Tgt,
+		static_cast<short>(_Value), static_cast<short>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1016,8 +1019,7 @@ inline int _Atomic_compare_exchange_weak_2(
 	volatile _Uint2_t *_Tgt, _Uint2_t *_Exp, _Uint2_t _Value,
 	memory_order _Order1, memory_order _Order2)
 	{	/* compare and exchange values atomically */
-	/* No weak compare-exchange is currently available,
-	   even for ARM, so fall back to strong */
+	/* No weak compare-exchange is currently available, even for ARM, so fall back to strong */
 	return (_Atomic_compare_exchange_strong_2(_Tgt, _Exp, _Value,
 		_Order1, _Order2));
 	}
@@ -1026,29 +1028,29 @@ inline int _Atomic_compare_exchange_weak_2(
 inline _Uint2_t _Fetch_add_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchangeAdd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchangeAdd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_add_relaxed_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchangeAdd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELAXED(_InterlockedExchangeAdd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_add_acquire_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchangeAdd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchangeAdd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_add_release_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchangeAdd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELEASE(_InterlockedExchangeAdd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Atomic_fetch_add_2(
@@ -1079,36 +1081,36 @@ inline _Uint2_t _Atomic_fetch_add_2(
 inline _Uint2_t _Atomic_fetch_sub_2(
 	volatile _Uint2_t *_Tgt, _Uint2_t _Value, memory_order _Order)
 	{	/* subtract _Value from *_Tgt atomically */
-	return (_Atomic_fetch_add_2(_Tgt, 0 - _Value, _Order));
+	return (_Atomic_fetch_add_2(_Tgt, static_cast<_Uint2_t>(0 - _Value), _Order));
 	}
 
 	/* _Atomic_fetch_and_2 */
 inline _Uint2_t _Fetch_and_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedAnd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_SEQ_CST(_InterlockedAnd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_and_relaxed_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedAnd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELAXED(_InterlockedAnd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_and_acquire_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedAnd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_ACQUIRE(_InterlockedAnd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_and_release_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedAnd16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELEASE(_InterlockedAnd16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Atomic_fetch_and_2(
@@ -1140,29 +1142,29 @@ inline _Uint2_t _Atomic_fetch_and_2(
 inline _Uint2_t _Fetch_or_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedOr16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_SEQ_CST(_InterlockedOr16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_or_relaxed_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedOr16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELAXED(_InterlockedOr16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_or_acquire_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedOr16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_ACQUIRE(_InterlockedOr16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_or_release_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedOr16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELEASE(_InterlockedOr16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Atomic_fetch_or_2(
@@ -1194,29 +1196,29 @@ inline _Uint2_t _Atomic_fetch_or_2(
 inline _Uint2_t _Fetch_xor_seq_cst_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedXor16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_SEQ_CST(_InterlockedXor16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_xor_relaxed_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedXor16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELAXED(_InterlockedXor16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_xor_acquire_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedXor16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_ACQUIRE(_InterlockedXor16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Fetch_xor_release_2(volatile _Uint2_t *_Tgt, _Uint2_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedXor16)((volatile short *)_Tgt, _Value));
+	return (static_cast<_Uint2_t>(
+		_INTRIN_RELEASE(_InterlockedXor16)((volatile short *)_Tgt, static_cast<short>(_Value))));
 	}
 
 inline _Uint2_t _Atomic_fetch_xor_2(
@@ -1249,7 +1251,7 @@ inline void _Store_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* store _Value atomically with relaxed memory order */
 
  #if defined(_M_ARM) || defined(_M_ARM64)
-	__iso_volatile_store32((volatile int *)_Tgt, _Value);
+	__iso_volatile_store32((volatile int *)_Tgt, static_cast<int>(_Value));
 
  #else
 	*_Tgt = _Value;
@@ -1261,7 +1263,7 @@ inline void _Store_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 
  #if defined(_M_ARM) || defined(_M_ARM64)
 	_Memory_barrier();
-	__iso_volatile_store32((volatile int *)_Tgt, _Value);
+	__iso_volatile_store32((volatile int *)_Tgt, static_cast<int>(_Value));
 
  #else
 	_Compiler_barrier();
@@ -1275,11 +1277,11 @@ inline void _Store_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 
  #if defined(_M_ARM) || defined(_M_ARM64)
 	_Memory_barrier();
-	__iso_volatile_store32((volatile int *)_Tgt, _Value);
+	__iso_volatile_store32((volatile int *)_Tgt, static_cast<int>(_Value));
 	_Memory_barrier();
 
  #else
-	_INTRIN_SEQ_CST(_InterlockedExchange)((volatile long *)_Tgt, _Value);
+	_INTRIN_SEQ_CST(_InterlockedExchange)((volatile long *)_Tgt, static_cast<long>(_Value));
  #endif
 	}
 
@@ -1316,7 +1318,7 @@ inline _Uint4_t _Load_seq_cst_4(volatile _Uint4_t *_Tgt)
 	_Uint4_t _Value;
 
  #if defined(_M_ARM) || defined(_M_ARM64)
-	_Value = __iso_volatile_load32((volatile int *)_Tgt);
+	_Value = static_cast<_Uint4_t>(__iso_volatile_load32((volatile int *)_Tgt));
 	_Memory_barrier();
 
  #else
@@ -1333,7 +1335,7 @@ inline _Uint4_t _Load_relaxed_4(volatile _Uint4_t *_Tgt)
 	_Uint4_t _Value;
 
  #if defined(_M_ARM) || defined(_M_ARM64)
-	_Value = __iso_volatile_load32((volatile int *)_Tgt);
+	_Value = static_cast<_Uint4_t>(__iso_volatile_load32((volatile int *)_Tgt));
 
  #else
 	_Value = *_Tgt;
@@ -1376,29 +1378,29 @@ inline _Uint4_t _Atomic_load_4(
 inline _Uint4_t _Exchange_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchange)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchange)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Exchange_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchange)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELAXED(_InterlockedExchange)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Exchange_acquire_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchange)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchange)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Exchange_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchange)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELEASE(_InterlockedExchange)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Atomic_exchange_4(
@@ -1431,10 +1433,10 @@ inline int _Compare_exchange_seq_cst_4(volatile _Uint4_t *_Tgt,
 	_Uint4_t *_Exp, _Uint4_t _Value)
 	{	/* compare and exchange values atomically with
 			sequentially consistent memory order */
-	_Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint4_t _Prev = _INTRIN_SEQ_CST(_InterlockedCompareExchange)((volatile long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint4_t>(_INTRIN_SEQ_CST(_InterlockedCompareExchange)((volatile long *)_Tgt,
+		static_cast<long>(_Value), static_cast<long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1449,10 +1451,10 @@ inline int _Compare_exchange_relaxed_4(volatile _Uint4_t *_Tgt,
 	_Uint4_t *_Exp, _Uint4_t _Value)
 	{	/* compare and exchange values atomically with
 			relaxed memory order */
-	_Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint4_t _Prev = _INTRIN_RELAXED(_InterlockedCompareExchange)((volatile long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint4_t>(_INTRIN_RELAXED(_InterlockedCompareExchange)((volatile long *)_Tgt,
+		static_cast<long>(_Value), static_cast<long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1467,10 +1469,10 @@ inline int _Compare_exchange_acquire_4(volatile _Uint4_t *_Tgt,
 	_Uint4_t *_Exp, _Uint4_t _Value)
 	{	/* compare and exchange values atomically with
 			acquire memory order */
-	_Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint4_t _Prev = _INTRIN_ACQUIRE(_InterlockedCompareExchange)((volatile long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint4_t>(_INTRIN_ACQUIRE(_InterlockedCompareExchange)((volatile long *)_Tgt,
+		static_cast<long>(_Value), static_cast<long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1485,10 +1487,10 @@ inline int _Compare_exchange_release_4(volatile _Uint4_t *_Tgt,
 	_Uint4_t *_Exp, _Uint4_t _Value)
 	{	/* compare and exchange values atomically with
 			release memory order */
-	_Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint4_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint4_t _Prev = _INTRIN_RELEASE(_InterlockedCompareExchange)((volatile long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint4_t>(_INTRIN_RELEASE(_InterlockedCompareExchange)((volatile long *)_Tgt,
+		static_cast<long>(_Value), static_cast<long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1529,8 +1531,7 @@ inline int _Atomic_compare_exchange_weak_4(
 	volatile _Uint4_t *_Tgt, _Uint4_t *_Exp, _Uint4_t _Value,
 	memory_order _Order1, memory_order _Order2)
 	{	/* compare and exchange values atomically */
-	/* No weak compare-exchange is currently available,
-	   even for ARM, so fall back to strong */
+	/* No weak compare-exchange is currently available, even for ARM, so fall back to strong */
 	return (_Atomic_compare_exchange_strong_4(_Tgt, _Exp, _Value,
 		_Order1, _Order2));
 	}
@@ -1539,29 +1540,29 @@ inline int _Atomic_compare_exchange_weak_4(
 inline _Uint4_t _Fetch_add_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchangeAdd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchangeAdd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_add_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchangeAdd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELAXED(_InterlockedExchangeAdd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_add_acquire_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchangeAdd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchangeAdd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_add_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchangeAdd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELEASE(_InterlockedExchangeAdd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Atomic_fetch_add_4(
@@ -1599,29 +1600,29 @@ inline _Uint4_t _Atomic_fetch_sub_4(
 inline _Uint4_t _Fetch_and_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedAnd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_SEQ_CST(_InterlockedAnd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_and_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedAnd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELAXED(_InterlockedAnd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_and_acquire_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedAnd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_ACQUIRE(_InterlockedAnd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_and_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedAnd)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELEASE(_InterlockedAnd)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Atomic_fetch_and_4(
@@ -1653,29 +1654,29 @@ inline _Uint4_t _Atomic_fetch_and_4(
 inline _Uint4_t _Fetch_or_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedOr)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_SEQ_CST(_InterlockedOr)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_or_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedOr)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELAXED(_InterlockedOr)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_or_acquire_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedOr)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_ACQUIRE(_InterlockedOr)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_or_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedOr)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELEASE(_InterlockedOr)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Atomic_fetch_or_4(
@@ -1707,29 +1708,29 @@ inline _Uint4_t _Atomic_fetch_or_4(
 inline _Uint4_t _Fetch_xor_seq_cst_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedXor)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_SEQ_CST(_InterlockedXor)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_xor_relaxed_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedXor)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELAXED(_InterlockedXor)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_xor_acquire_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedXor)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_ACQUIRE(_InterlockedXor)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Fetch_xor_release_4(volatile _Uint4_t *_Tgt, _Uint4_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedXor)((volatile long *)_Tgt, _Value));
+	return (static_cast<_Uint4_t>(
+		_INTRIN_RELEASE(_InterlockedXor)((volatile long *)_Tgt, static_cast<long>(_Value))));
 	}
 
 inline _Uint4_t _Atomic_fetch_xor_4(
@@ -1765,10 +1766,10 @@ inline void _Store_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	*_Tgt = _Value;
 
  #elif defined(_M_ARM64)
-	__iso_volatile_store64((volatile long long *)_Tgt, _Value);
+	__iso_volatile_store64((volatile long long *)_Tgt, static_cast<long long>(_Value));
 
  #else
-	_INTRIN_RELAXED(_InterlockedExchange64)((volatile long long *)_Tgt, _Value);
+	_INTRIN_RELAXED(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value));
  #endif
 	}
 
@@ -1781,10 +1782,10 @@ inline void _Store_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 
  #elif defined(_M_ARM64)
 	_Memory_barrier();
-	__iso_volatile_store64((volatile long long *)_Tgt, _Value);
+	__iso_volatile_store64((volatile long long *)_Tgt, static_cast<long long>(_Value));
 
  #else
-	_INTRIN_RELEASE(_InterlockedExchange64)((volatile long long *)_Tgt, _Value);
+	_INTRIN_RELEASE(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value));
  #endif
 	}
 
@@ -1794,11 +1795,11 @@ inline void _Store_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 
  #if defined(_M_ARM64)
 	_Memory_barrier();
-	__iso_volatile_store64((volatile long long *)_Tgt, _Value);
+	__iso_volatile_store64((volatile long long *)_Tgt, static_cast<long long>(_Value));
 	_Memory_barrier();
 
  #else
-	_INTRIN_SEQ_CST(_InterlockedExchange64)((volatile long long *)_Tgt, _Value);
+	_INTRIN_SEQ_CST(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value));
  #endif
 	}
 
@@ -1839,15 +1840,15 @@ inline _Uint8_t _Load_seq_cst_8(volatile _Uint8_t *_Tgt)
 	_Compiler_barrier();
 
  #elif defined(_M_ARM)
-	_Value = __ldrexd((volatile long long *)_Tgt);
+	_Value = static_cast<_Uint8_t>(__ldrexd((volatile long long *)_Tgt));
 	_Memory_barrier();
 
  #elif defined(_M_ARM64)
-	_Value = __iso_volatile_load64((volatile long long *)_Tgt);
+	_Value = static_cast<_Uint8_t>(__iso_volatile_load64((volatile long long *)_Tgt));
 	_Memory_barrier();
 
  #else
-	_Value = _InterlockedOr64((volatile long long *)_Tgt, 0);
+	_Value = static_cast<_Uint8_t>(_InterlockedOr64((volatile long long *)_Tgt, 0));
  #endif
 
 	return (_Value);
@@ -1862,13 +1863,13 @@ inline _Uint8_t _Load_relaxed_8(volatile _Uint8_t *_Tgt)
 	_Value = *_Tgt;
 
  #elif defined(_M_ARM)
-	_Value = __ldrexd((volatile long long *)_Tgt);
+	_Value = static_cast<_Uint8_t>(__ldrexd((volatile long long *)_Tgt));
 
  #elif defined(_M_ARM64)
-	_Value = __iso_volatile_load64((volatile long long *)_Tgt);
+	_Value = static_cast<_Uint8_t>(__iso_volatile_load64((volatile long long *)_Tgt));
 
  #else
-	_Value = _InterlockedOr64((volatile long long *)_Tgt, 0);
+	_Value = static_cast<_Uint8_t>(_InterlockedOr64((volatile long long *)_Tgt, 0));
  #endif
 
 	return (_Value);
@@ -1908,29 +1909,29 @@ inline _Uint8_t _Atomic_load_8(
 inline _Uint8_t _Exchange_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchange64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Exchange_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchange64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELAXED(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Exchange_acquire_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchange64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Exchange_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* exchange _Value and *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchange64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELEASE(_InterlockedExchange64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Atomic_exchange_8(
@@ -1963,10 +1964,10 @@ inline int _Compare_exchange_seq_cst_8(volatile _Uint8_t *_Tgt,
 	_Uint8_t *_Exp, _Uint8_t _Value)
 	{	/* compare and exchange values atomically with
 			sequentially consistent memory order */
-	_Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint8_t _Prev = _INTRIN_SEQ_CST(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint8_t>(_INTRIN_SEQ_CST(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
+		static_cast<long long>(_Value), static_cast<long long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1981,10 +1982,10 @@ inline int _Compare_exchange_relaxed_8(volatile _Uint8_t *_Tgt,
 	_Uint8_t *_Exp, _Uint8_t _Value)
 	{	/* compare and exchange values atomically with
 			relaxed memory order */
-	_Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint8_t _Prev = _INTRIN_RELAXED(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint8_t>(_INTRIN_RELAXED(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
+		static_cast<long long>(_Value), static_cast<long long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -1999,10 +2000,10 @@ inline int _Compare_exchange_acquire_8(volatile _Uint8_t *_Tgt,
 	_Uint8_t *_Exp, _Uint8_t _Value)
 	{	/* compare and exchange values atomically with
 			acquire memory order */
-	_Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint8_t _Prev = _INTRIN_ACQUIRE(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint8_t>(_INTRIN_ACQUIRE(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
+		static_cast<long long>(_Value), static_cast<long long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -2017,10 +2018,10 @@ inline int _Compare_exchange_release_8(volatile _Uint8_t *_Tgt,
 	_Uint8_t *_Exp, _Uint8_t _Value)
 	{	/* compare and exchange values atomically with
 			release memory order */
-	_Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
+	const _Uint8_t _Old_exp = *_Exp;	/* read before atomic operation */
 
-	_Uint8_t _Prev = _INTRIN_RELEASE(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
-		_Value, _Old_exp);
+	const auto _Prev = static_cast<_Uint8_t>(_INTRIN_RELEASE(_InterlockedCompareExchange64)((volatile long long *)_Tgt,
+		static_cast<long long>(_Value), static_cast<long long>(_Old_exp)));
 
 	if (_Prev == _Old_exp)
 		return (1);
@@ -2061,8 +2062,7 @@ inline int _Atomic_compare_exchange_weak_8(
 	volatile _Uint8_t *_Tgt, _Uint8_t *_Exp, _Uint8_t _Value,
 	memory_order _Order1, memory_order _Order2)
 	{	/* compare and exchange values atomically */
-	/* No weak compare-exchange is currently available,
-	   even for ARM, so fall back to strong */
+	/* No weak compare-exchange is currently available, even for ARM, so fall back to strong */
 	return (_Atomic_compare_exchange_strong_8(_Tgt, _Exp, _Value,
 		_Order1, _Order2));
 	}
@@ -2071,29 +2071,29 @@ inline int _Atomic_compare_exchange_weak_8(
 inline _Uint8_t _Fetch_add_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_SEQ_CST(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_add_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELAXED(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_add_acquire_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_ACQUIRE(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_add_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* add _Value to *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELEASE(_InterlockedExchangeAdd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Atomic_fetch_add_8(
@@ -2131,29 +2131,29 @@ inline _Uint8_t _Atomic_fetch_sub_8(
 inline _Uint8_t _Fetch_and_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedAnd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_SEQ_CST(_InterlockedAnd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_and_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedAnd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELAXED(_InterlockedAnd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_and_acquire_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedAnd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_ACQUIRE(_InterlockedAnd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_and_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* and _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedAnd64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELEASE(_InterlockedAnd64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Atomic_fetch_and_8(
@@ -2185,29 +2185,29 @@ inline _Uint8_t _Atomic_fetch_and_8(
 inline _Uint8_t _Fetch_or_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedOr64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_SEQ_CST(_InterlockedOr64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_or_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedOr64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELAXED(_InterlockedOr64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_or_acquire_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedOr64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_ACQUIRE(_InterlockedOr64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_or_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* or _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedOr64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELEASE(_InterlockedOr64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Atomic_fetch_or_8(
@@ -2239,29 +2239,29 @@ inline _Uint8_t _Atomic_fetch_or_8(
 inline _Uint8_t _Fetch_xor_seq_cst_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			sequentially consistent memory order */
-
-	return (_INTRIN_SEQ_CST(_InterlockedXor64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_SEQ_CST(_InterlockedXor64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_xor_relaxed_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			relaxed memory order */
-
-	return (_INTRIN_RELAXED(_InterlockedXor64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELAXED(_InterlockedXor64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_xor_acquire_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			acquire memory order */
-
-	return (_INTRIN_ACQUIRE(_InterlockedXor64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_ACQUIRE(_InterlockedXor64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Fetch_xor_release_8(volatile _Uint8_t *_Tgt, _Uint8_t _Value)
 	{	/* xor _Value with *_Tgt atomically with
 			release memory order */
-
-	return (_INTRIN_RELEASE(_InterlockedXor64)((volatile long long *)_Tgt, _Value));
+	return (static_cast<_Uint8_t>(
+		_INTRIN_RELEASE(_InterlockedXor64)((volatile long long *)_Tgt, static_cast<long long>(_Value))));
 	}
 
 inline _Uint8_t _Atomic_fetch_xor_8(
@@ -2505,6 +2505,7 @@ _STD_END
  #endif /* defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64) */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

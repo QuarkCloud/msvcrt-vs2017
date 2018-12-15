@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * psmapp.h - ApiSet Contract for api-ms-win-core-psm-app-l1                     *
@@ -19,22 +18,6 @@
 #define PSM_APP_API_HOST
 #endif
 
-/* APISET_NAME: api-ms-win-core-psm-appnotify-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_PSM_APP_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_PSM_APP_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,7 +30,6 @@ extern "C" {
 #endif
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 
 typedef
@@ -59,7 +41,6 @@ VOID
 
 typedef struct _APPSTATE_REGISTRATION *PAPPSTATE_REGISTRATION;
 
-
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
 
 APICONTRACT
@@ -68,7 +49,7 @@ NTAPI
 RegisterAppStateChangeNotification(
     _In_ PAPPSTATE_CHANGE_ROUTINE Routine,
     _In_opt_ PVOID Context,
-    _Out_ PAPPSTATE_REGISTRATION * Registration
+    _Out_ PAPPSTATE_REGISTRATION* Registration
     );
 
 

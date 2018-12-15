@@ -1408,6 +1408,7 @@ typedef EXCEPTION_ROUTINE *PEXCEPTION_ROUTINE;
 #define VER_SUITE_STORAGE_SERVER            0x00002000
 #define VER_SUITE_COMPUTE_SERVER            0x00004000
 #define VER_SUITE_WH_SERVER                 0x00008000
+#define VER_SUITE_MULTIUSERTS               0x00020000
 
 
 //
@@ -1519,7 +1520,6 @@ typedef EXCEPTION_ROUTINE *PEXCEPTION_ROUTINE;
 #define PRODUCT_CORE_SINGLELANGUAGE                 0x00000064
 #define PRODUCT_CORE                                0x00000065
 #define PRODUCT_PROFESSIONAL_WMC                    0x00000067
-#define PRODUCT_MOBILE_CORE                         0x00000068
 #define PRODUCT_EMBEDDED_INDUSTRY_EVAL              0x00000069
 #define PRODUCT_EMBEDDED_INDUSTRY_E_EVAL            0x0000006A
 #define PRODUCT_EMBEDDED_EVAL                       0x0000006B
@@ -1571,6 +1571,12 @@ typedef EXCEPTION_ROUTINE *PEXCEPTION_ROUTINE;
 #define PRODUCT_SERVERRDSH                          0x000000AF
 #define PRODUCT_CLOUD                               0x000000B2
 #define PRODUCT_CLOUDN                              0x000000B3
+#define PRODUCT_HUBOS                               0x000000B4
+#define PRODUCT_ONECOREUPDATEOS                     0x000000B6
+#define PRODUCT_CLOUDE                              0x000000B7
+#define PRODUCT_ANDROMEDA                           0x000000B8
+#define PRODUCT_IOTOS                               0x000000B9
+#define PRODUCT_CLOUDEN                             0x000000BA
 
 #define PRODUCT_UNLICENSED                          0xABCDABCD
 
@@ -2498,6 +2504,7 @@ inline ENUMTYPE &operator ^= (ENUMTYPE &a, ENUMTYPE b) throw() { return (ENUMTYP
 #define STATUS_STACK_BUFFER_OVERRUN      ((DWORD   )0xC0000409L)    
 #define STATUS_INVALID_CRUNTIME_PARAMETER ((DWORD   )0xC0000417L)    
 #define STATUS_ASSERTION_FAILURE         ((DWORD   )0xC0000420L)    
+#define STATUS_ENCLAVE_VIOLATION         ((DWORD   )0xC00004A2L)    
 #if defined(STATUS_SUCCESS) || (_WIN32_WINNT > 0x0500) || (_WIN32_FUSION >= 0x0100) 
 #define STATUS_SXS_EARLY_DEACTIVATION    ((DWORD   )0xC015000FL)    
 #define STATUS_SXS_INVALID_DEACTIVATION  ((DWORD   )0xC0150010L)    
@@ -2559,6 +2566,15 @@ typedef struct DECLSPEC_ALIGN(16) _XSAVE_FORMAT {
 } XSAVE_FORMAT, *PXSAVE_FORMAT;
 
 // end_ntoshvp
+
+//
+// Format for CET_U XSTATE component.
+//
+
+typedef struct _XSAVE_CET_U_FORMAT {
+    DWORD64 Ia32CetUMsr;
+    DWORD64 Ia32Pl3SspMsr;
+} XSAVE_CET_U_FORMAT, *PXSAVE_CET_U_FORMAT;
 
 typedef struct DECLSPEC_ALIGN(8) _XSAVE_AREA_HEADER {
     DWORD64 Mask;
@@ -3216,6 +3232,7 @@ _ReadWriteBarrier (
 #define LoadFence _mm_lfence
 #define MemoryFence _mm_mfence
 #define StoreFence _mm_sfence
+#define SpeculationFence LoadFence
 
 // begin_sdfwdm
 // begin_wudfpwdm
@@ -5763,6 +5780,11 @@ WriteNoFence64 (
           ((crm & 15) << 3) | \
           ((op2 & 7) << 0) )
 
+#define ARM64_SYSREG_OP1(_Reg_) (((_Reg_) >> 11) & 7)
+#define ARM64_SYSREG_CRN(_Reg_) (((_Reg_) >> 7) & 15)
+#define ARM64_SYSREG_CRM(_Reg_) (((_Reg_) >> 3) & 15)
+#define ARM64_SYSREG_OP2(_Reg_) ((_Reg_) & 7)
+
 #define ARM64_CNTVCT            ARM64_SYSREG(3,3,14, 0,2)  // Generic Timer counter register
 #define ARM64_PMCCNTR_EL0       ARM64_SYSREG(3,3, 9,13,0)  // Cycle Count Register [CP15_PMCCNTR]
 #define ARM64_PMSELR_EL0        ARM64_SYSREG(3,3, 9,12,5)  // Event Counter Selection Register [CP15_PMSELR]
@@ -5798,7 +5820,7 @@ extern DWORD64 (*_os_wowa64_rdtsc) (VOID);
 
 #if defined(_M_HYBRID_X86_ARM64)
 
-DECLSPEC_GUARDNOCF 
+DECLSPEC_GUARDNOCF
 
 #endif
 
@@ -5869,7 +5891,7 @@ YieldProcessor (
     )
 {
 }
-#endif
+#endif // defined(_M_CEE_PURE)
 
 //
 // The following values specify the type of access in the first parameter
@@ -5907,9 +5929,16 @@ YieldProcessor (
 #define CONTEXT_ARM64_INTEGER (CONTEXT_ARM64 | 0x2L)
 #define CONTEXT_ARM64_FLOATING_POINT  (CONTEXT_ARM64 | 0x4L)
 #define CONTEXT_ARM64_DEBUG_REGISTERS (CONTEXT_ARM64 | 0x8L)
+#define CONTEXT_ARM64_X18 (CONTEXT_ARM64 | 0x10L)
+
+//
+// CONTEXT_ARM64_X18 is not part of CONTEXT_ARM64_FULL because in NT user-mode
+// threads, x18 contains a pointer to the TEB and should generally not be set
+// without intending to.
+//
 
 #define CONTEXT_ARM64_FULL (CONTEXT_ARM64_CONTROL | CONTEXT_ARM64_INTEGER | CONTEXT_ARM64_FLOATING_POINT)
-#define CONTEXT_ARM64_ALL  (CONTEXT_ARM64_CONTROL | CONTEXT_ARM64_INTEGER | CONTEXT_ARM64_FLOATING_POINT | CONTEXT_ARM64_DEBUG_REGISTERS)
+#define CONTEXT_ARM64_ALL  (CONTEXT_ARM64_CONTROL | CONTEXT_ARM64_INTEGER | CONTEXT_ARM64_FLOATING_POINT | CONTEXT_ARM64_DEBUG_REGISTERS | CONTEXT_ARM64_X18)
 
 #if defined(_ARM64_)
 
@@ -5977,11 +6006,11 @@ YieldProcessor (
 // context of a thread, then only those portions of the thread's context
 // corresponding to set flags will be returned.
 //
-// CONTEXT_CONTROL specifies Sp, Lr, Pc, and Cpsr
+// CONTEXT_CONTROL specifies FP, LR, SP, PC, and CPSR
 //
-// CONTEXT_INTEGER specifies R0-R12
+// CONTEXT_INTEGER specifies X0-X28
 //
-// CONTEXT_FLOATING_POINT specifies Q0-Q15 / D0-D31 / S0-S31
+// CONTEXT_FLOATING_POINT specifies Fpcr, Fpsr and Q0-Q31 / D0-D31 / S0-S31
 //
 // CONTEXT_DEBUG_REGISTERS specifies up to 16 of DBGBVR, DBGBCR, DBGWVR,
 //      DBGWCR.
@@ -9232,6 +9261,10 @@ typedef struct _SID_AND_ATTRIBUTES_HASH {
 
 #define SECURITY_VIRTUALACCOUNT_ID_RID_COUNT   (6L)
 
+//
+// Virtual account logon is not limited to inbox callers.  Reserve base RID 0x6F for application usage.
+//
+
 #define SECURITY_MAX_BASE_RID           (0x0000006FL)
 #define SECURITY_MAX_ALWAYS_FILTERED    (0x000003E7L)
 #define SECURITY_MIN_NEVER_FILTERED     (0x000003E8L)
@@ -9340,6 +9373,7 @@ typedef struct _SID_AND_ATTRIBUTES_HASH {
 #define DOMAIN_ALIAS_RID_REMOTE_MANAGEMENT_USERS        (0x00000244L)
 #define DOMAIN_ALIAS_RID_DEFAULT_ACCOUNT                (0x00000245L)
 #define DOMAIN_ALIAS_RID_STORAGE_REPLICA_ADMINS         (0x00000246L)
+#define DOMAIN_ALIAS_RID_DEVICE_OWNERS                  (0x00000247L)
 
 //
 // Application Package Authority.
@@ -9434,6 +9468,7 @@ typedef struct _SID_AND_ATTRIBUTES_HASH {
 #define SECURITY_PROCESS_PROTECTION_LEVEL_WINTCB_RID        (0x00002000L)
 #define SECURITY_PROCESS_PROTECTION_LEVEL_WINDOWS_RID       (0x00001000L)
 #define SECURITY_PROCESS_PROTECTION_LEVEL_APP_RID           (0x00000800L)
+#define SECURITY_PROCESS_PROTECTION_LEVEL_ANTIMALWARE_RID   (0x00000600L)
 #define SECURITY_PROCESS_PROTECTION_LEVEL_AUTHENTICODE_RID  (0x00000400L)
 #define SECURITY_PROCESS_PROTECTION_LEVEL_NONE_RID          (0x00000000L)
 
@@ -9576,6 +9611,7 @@ typedef enum {
     WinAuthenticationKeyPropertyMFASid          = 116,
     WinAuthenticationKeyPropertyAttestationSid  = 117,
     WinAuthenticationFreshKeyAuthSid            = 118,
+    WinBuiltinDeviceOwnersSid                   = 119,
 } WELL_KNOWN_SID_TYPE;
 
 //
@@ -9588,6 +9624,7 @@ typedef enum {
 #define LOCALSERVICE_LUID               { 0x3e5, 0x0 }
 #define NETWORKSERVICE_LUID             { 0x3e4, 0x0 }
 #define IUSER_LUID                      { 0x3e3, 0x0 }
+#define PROTECTED_TO_SYSTEM_LUID        { 0x3e2, 0x0 }
 
 // end_ntifs
 
@@ -9770,6 +9807,17 @@ typedef ACE_HEADER *PACE_HEADER;
 //  AceFlags.
 //
 //
+
+//
+// ACCESS_ALLOWED_ACE_TYPE
+//
+// These control whether the ACE is critical and cannot be removed.
+//
+// CRITICAL_ACE_FLAG - used only with access allowed ACE types to
+// indicate that the ACE is critical and cannot be removed.
+//
+
+#define CRITICAL_ACE_FLAG              (0x20)
 
 //
 //  SYSTEM_AUDIT and SYSTEM_ALARM AceFlags
@@ -10685,6 +10733,7 @@ typedef enum _TOKEN_INFORMATION_CLASS {
     TokenSingletonAttributes,
     TokenBnoIsolation,
     TokenChildProcessFlags,
+    TokenIsLessPrivilegedAppContainer,
     MaxTokenInfoClass  // MaxTokenInfoClass should always be the last enum
 } TOKEN_INFORMATION_CLASS, *PTOKEN_INFORMATION_CLASS;
 
@@ -11207,6 +11256,7 @@ typedef BYTE  SE_SIGNING_LEVEL, *PSE_SIGNING_LEVEL;
 #define SE_SIGNING_LEVEL_UNSIGNED          0x00000001
 #define SE_SIGNING_LEVEL_ENTERPRISE        0x00000002
 #define SE_SIGNING_LEVEL_CUSTOM_1          0x00000003
+#define SE_SIGNING_LEVEL_DEVELOPER         SE_SIGNING_LEVEL_CUSTOM_1
 #define SE_SIGNING_LEVEL_AUTHENTICODE      0x00000004
 #define SE_SIGNING_LEVEL_CUSTOM_2          0x00000005
 #define SE_SIGNING_LEVEL_STORE             0x00000006
@@ -11498,6 +11548,7 @@ typedef enum _PROCESS_MITIGATION_POLICY {
     ProcessSystemCallFilterPolicy,
     ProcessPayloadRestrictionPolicy,
     ProcessChildProcessPolicy,
+    ProcessSideChannelIsolationPolicy,
     MaxProcessMitigationPolicy
 } PROCESS_MITIGATION_POLICY, *PPROCESS_MITIGATION_POLICY;
 
@@ -11676,6 +11727,52 @@ typedef struct _PROCESS_MITIGATION_CHILD_PROCESS_POLICY {
     } DUMMYUNIONNAME;
 } PROCESS_MITIGATION_CHILD_PROCESS_POLICY, *PPROCESS_MITIGATION_CHILD_PROCESS_POLICY;
 
+typedef struct _PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY {
+    union {
+        DWORD Flags;
+        struct {
+
+            //
+            // Prevent branch target pollution cross-SMT-thread in user mode.
+            //
+
+            DWORD SmtBranchTargetIsolation : 1;
+
+            //
+            // Isolate this process into a distinct security domain, even from
+            // other processes running as the same security context.  This
+            // prevents branch target injection cross-process (normally such
+            // branch target injection is only inhibited across different
+            // security contexts).
+            //
+            // Page combining is limited to processes within the same security
+            // domain.  This flag thus also effectively limits the process to
+            // only being able to combine internally to the process itself,
+            // except for common pages (unless further restricted by the
+            // DisablePageCombine policy).
+            //
+
+            DWORD IsolateSecurityDomain : 1;
+
+            //
+            // Disable all page combining for this process, even internally to
+            // the process itself, except for common pages (zeroes or ones).
+            //
+
+            DWORD DisablePageCombine : 1;
+
+            //
+            // Memory Disambiguation Disable.
+            //
+
+            DWORD SpeculativeStoreBypassDisable : 1;
+
+            DWORD ReservedFlags : 28;
+
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+} PROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY, *PPROCESS_MITIGATION_SIDE_CHANNEL_ISOLATION_POLICY;
+
 
 typedef struct _JOBOBJECT_BASIC_ACCOUNTING_INFORMATION {
     LARGE_INTEGER TotalUserTime;
@@ -11710,6 +11807,7 @@ typedef struct _JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
 } JOBOBJECT_EXTENDED_LIMIT_INFORMATION, *PJOBOBJECT_EXTENDED_LIMIT_INFORMATION;
 
 
+//@[comment("MVI_tracked")]
 typedef struct _JOBOBJECT_BASIC_PROCESS_ID_LIST {
     DWORD NumberOfAssignedProcesses;
     DWORD NumberOfProcessIdsInList;
@@ -11901,8 +11999,12 @@ typedef struct JOBOBJECT_NET_RATE_CONTROL_INFORMATION {
 typedef enum JOB_OBJECT_IO_RATE_CONTROL_FLAGS {
     JOB_OBJECT_IO_RATE_CONTROL_ENABLE = 0x1,
     JOB_OBJECT_IO_RATE_CONTROL_STANDALONE_VOLUME = 0x2,
+    JOB_OBJECT_IO_RATE_CONTROL_FORCE_UNIT_ACCESS_ALL = 0x4,
+    JOB_OBJECT_IO_RATE_CONTROL_FORCE_UNIT_ACCESS_ON_SOFT_CAP = 0x8,
     JOB_OBJECT_IO_RATE_CONTROL_VALID_FLAGS = JOB_OBJECT_IO_RATE_CONTROL_ENABLE |
-                                             JOB_OBJECT_IO_RATE_CONTROL_STANDALONE_VOLUME
+                                             JOB_OBJECT_IO_RATE_CONTROL_STANDALONE_VOLUME |
+                                             JOB_OBJECT_IO_RATE_CONTROL_FORCE_UNIT_ACCESS_ALL |
+                                             JOB_OBJECT_IO_RATE_CONTROL_FORCE_UNIT_ACCESS_ON_SOFT_CAP
 } JOB_OBJECT_IO_RATE_CONTROL_FLAGS;
 
 #if !defined(SORTPP_PASS) && !defined(MIDL_PASS) && !defined(RC_INVOKED)
@@ -12114,6 +12216,7 @@ typedef struct _JOBOBJECT_IO_ATTRIBUTION_INFORMATION {
 #define JOB_OBJECT_CPU_RATE_CONTROL_VALID_FLAGS 0x1f
 
 
+//@[comment("MVI_tracked")]
 typedef enum _JOBOBJECTINFOCLASS {
     JobObjectBasicAccountingInformation = 1,
     JobObjectBasicLimitInformation,
@@ -12355,7 +12458,12 @@ _Struct_size_bytes_(Size) struct _SYSTEM_CPU_SET_INFORMATION {
                     BYTE  ReservedFlags : 4;
                 } DUMMYSTRUCTNAME;
             } DUMMYUNIONNAME2;
-            DWORD Reserved;
+
+            union {
+                DWORD Reserved;
+                BYTE  SchedulingClass;
+            };
+
             DWORD64 AllocationTag;
         } CpuSet;
     } DUMMYUNIONNAME;
@@ -12444,6 +12552,7 @@ typedef struct _SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION {
 #define PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE 30   
 #define PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE  31   
 #define PF_RDTSCP_INSTRUCTION_AVAILABLE         32   
+#define PF_RDPID_INSTRUCTION_AVAILABLE          33   
 
 //
 // Known extended CPU state feature BITs
@@ -12457,6 +12566,8 @@ typedef struct _SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION {
 // 6    ZMM_H   (ZMM_H[511:256][0-15])
 // 7    ZMM     (ZMM[511:0][16-31])
 // 8    IPT                                 Supervisor
+//
+// 11   CET_U                               Supervisor
 //
 // 62   LWP                                 Persistent
 //
@@ -12473,6 +12584,7 @@ typedef struct _SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION {
 #define XSTATE_AVX512_ZMM_H                 (6)
 #define XSTATE_AVX512_ZMM                   (7)
 #define XSTATE_IPT                          (8)
+#define XSTATE_CET_U                        (11)
 #define XSTATE_LWP                          (62)
 #define MAXIMUM_XSTATE_FEATURES             (64)
 
@@ -12495,6 +12607,7 @@ typedef struct _SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION {
                                              (1ui64 << (XSTATE_AVX512_ZMM)))
 
 #define XSTATE_MASK_IPT                     (1ui64 << (XSTATE_IPT))
+#define XSTATE_MASK_CET_U                   (1ui64 << (XSTATE_CET_U))
 #define XSTATE_MASK_LWP                     (1ui64 << (XSTATE_LWP))
 
 #define XSTATE_MASK_ALLOWED                 (XSTATE_MASK_LEGACY | \
@@ -12502,10 +12615,13 @@ typedef struct _SYSTEM_PROCESSOR_CYCLE_TIME_INFORMATION {
                                              XSTATE_MASK_MPX | \
                                              XSTATE_MASK_AVX512 | \
                                              XSTATE_MASK_IPT | \
+                                             XSTATE_MASK_CET_U | \
                                              XSTATE_MASK_LWP)
 
 #define XSTATE_MASK_PERSISTENT              ((1ui64 << (XSTATE_MPX_BNDCSR)) | \
                                              XSTATE_MASK_LWP)
+
+#define XSTATE_MASK_USER_VISIBLE_SUPERVISOR (XSTATE_MASK_CET_U)
 
 //
 // Flags associated with compaction mask
@@ -12563,8 +12679,11 @@ typedef struct _XSTATE_CONFIGURATION {
     // Total size of the save area for user and supervisor states
     DWORD AllFeatureSize;
 
-    // List which holds size of each user and supervisor state supported by CPU        
+    // List which holds size of each user and supervisor state supported by CPU
     DWORD AllFeatures[MAXIMUM_XSTATE_FEATURES];
+
+    // Mask of all supervisor features that are exposed to user-mode
+    DWORD64 EnabledUserVisibleSupervisorFeatures;
 
 } XSTATE_CONFIGURATION, *PXSTATE_CONFIGURATION;
 
@@ -12673,28 +12792,72 @@ typedef struct _CFG_CALL_TARGET_INFO {
 #define PAGE_GUARD             0x100    
 #define PAGE_NOCACHE           0x200    
 #define PAGE_WRITECOMBINE      0x400    
-#define PAGE_REVERT_TO_FILE_MAP     0x80000000  
 #define PAGE_ENCLAVE_THREAD_CONTROL 0x80000000  
+#define PAGE_REVERT_TO_FILE_MAP     0x80000000  
 #define PAGE_TARGETS_NO_UPDATE      0x40000000  
 #define PAGE_TARGETS_INVALID        0x40000000  
 #define PAGE_ENCLAVE_UNVALIDATED    0x20000000  
-#define MEM_COMMIT                  0x00001000  
-#define MEM_RESERVE                 0x00002000  
-#define MEM_DECOMMIT                0x00004000  
-#define MEM_RELEASE                 0x00008000  
-#define MEM_FREE                    0x00010000  
-#define MEM_PRIVATE                 0x00020000  
-#define MEM_MAPPED                  0x00040000  
-#define MEM_RESET                   0x00080000  
-#define MEM_TOP_DOWN                0x00100000  
-#define MEM_WRITE_WATCH             0x00200000  
-#define MEM_PHYSICAL                0x00400000  
-#define MEM_ROTATE                  0x00800000  
-#define MEM_DIFFERENT_IMAGE_BASE_OK 0x00800000  
-#define MEM_RESET_UNDO              0x01000000  
-#define MEM_LARGE_PAGES             0x20000000  
-#define MEM_4MB_PAGES               0x80000000  
-#define MEM_64K_PAGES               (MEM_LARGE_PAGES | MEM_PHYSICAL)  
+#define PAGE_ENCLAVE_DECOMMIT       0x10000000  
+#define MEM_COMMIT                      0x00001000  
+#define MEM_RESERVE                     0x00002000  
+#define MEM_REPLACE_PLACEHOLDER         0x00004000  
+#define MEM_RESERVE_PLACEHOLDER         0x00040000  
+#define MEM_RESET                       0x00080000  
+#define MEM_TOP_DOWN                    0x00100000  
+#define MEM_WRITE_WATCH                 0x00200000  
+#define MEM_PHYSICAL                    0x00400000  
+#define MEM_ROTATE                      0x00800000  
+#define MEM_DIFFERENT_IMAGE_BASE_OK     0x00800000  
+#define MEM_RESET_UNDO                  0x01000000  
+#define MEM_LARGE_PAGES                 0x20000000  
+#define MEM_4MB_PAGES                   0x80000000  
+#define MEM_64K_PAGES                   (MEM_LARGE_PAGES | MEM_PHYSICAL)  
+#define MEM_UNMAP_WITH_TRANSIENT_BOOST  0x00000001  
+#define MEM_COALESCE_PLACEHOLDERS       0x00000001  
+#define MEM_PRESERVE_PLACEHOLDER        0x00000002  
+#define MEM_DECOMMIT                    0x00004000  
+#define MEM_RELEASE                     0x00008000  
+#define MEM_FREE                        0x00010000  
+// begin_wdm
+
+typedef struct _MEM_ADDRESS_REQUIREMENTS {
+    PVOID LowestStartingAddress;
+    PVOID HighestEndingAddress;
+    SIZE_T Alignment;
+} MEM_ADDRESS_REQUIREMENTS, *PMEM_ADDRESS_REQUIREMENTS;
+
+#define MEM_EXTENDED_PARAMETER_GRAPHICS     0x00000001
+
+typedef enum MEM_EXTENDED_PARAMETER_TYPE {
+    MemExtendedParameterInvalidType = 0,
+    MemExtendedParameterAddressRequirements,
+    MemExtendedParameterNumaNode,
+    MemExtendedParameterPartitionHandle,
+    MemExtendedParameterUserPhysicalHandle,
+    MemExtendedParameterAttributeFlags,
+    MemExtendedParameterMax
+} MEM_EXTENDED_PARAMETER_TYPE, *PMEM_EXTENDED_PARAMETER_TYPE;
+
+#define MEM_EXTENDED_PARAMETER_TYPE_BITS    8
+
+typedef struct DECLSPEC_ALIGN(8) MEM_EXTENDED_PARAMETER {
+
+    struct {
+        DWORD64 Type : MEM_EXTENDED_PARAMETER_TYPE_BITS;
+        DWORD64 Reserved : 64 - MEM_EXTENDED_PARAMETER_TYPE_BITS;
+    } DUMMYSTRUCTNAME;
+
+    union {
+        DWORD64 ULong64;
+        PVOID Pointer;
+        SIZE_T Size;
+        HANDLE Handle;
+        DWORD ULong;
+    } DUMMYUNIONNAME;
+
+} MEM_EXTENDED_PARAMETER, *PMEM_EXTENDED_PARAMETER;
+
+#define SEC_PARTITION_OWNER_HANDLE  0x00040000  
 #define SEC_64K_PAGES               0x00080000  
 #define SEC_FILE                    0x00800000  
 #define SEC_IMAGE                   0x01000000  
@@ -12705,11 +12868,22 @@ typedef struct _CFG_CALL_TARGET_INFO {
 #define SEC_WRITECOMBINE            0x40000000  
 #define SEC_LARGE_PAGES             0x80000000  
 #define SEC_IMAGE_NO_EXECUTE (SEC_IMAGE | SEC_NOCACHE)  
-#define MEM_IMAGE  SEC_IMAGE            
+// begin_wdm
+
+typedef enum MEM_SECTION_EXTENDED_PARAMETER_TYPE {
+    MemSectionExtendedParameterInvalidType = 0,
+    MemSectionExtendedParameterUserPhysicalFlags,
+    MemSectionExtendedParameterNumaNode,
+    MemSectionExtendedParameterMax
+} MEM_SECTION_EXTENDED_PARAMETER_TYPE, *PMEM_SECTION_EXTENDED_PARAMETER_TYPE;
+
+#define MEM_PRIVATE                 0x00020000  
+#define MEM_MAPPED                  0x00040000  
+#define MEM_IMAGE                   0x01000000  
 #define WRITE_WATCH_FLAG_RESET  0x01    
-#define MEM_UNMAP_WITH_TRANSIENT_BOOST  0x01    
 
 #define ENCLAVE_TYPE_SGX            0x00000001
+#define ENCLAVE_TYPE_SGX2           0x00000002
 
 typedef struct _ENCLAVE_CREATE_INFO_SGX {
     BYTE  Secs[4096];
@@ -12834,6 +13008,7 @@ typedef PENCLAVE_TARGET_FUNCTION LPENCLAVE_TARGET_FUNCTION;
 #define TREE_CONNECT_ATTRIBUTE_PRIVACY      0x00004000  
 #define TREE_CONNECT_ATTRIBUTE_INTEGRITY    0x00008000  
 #define TREE_CONNECT_ATTRIBUTE_GLOBAL       0x00000004  
+#define TREE_CONNECT_ATTRIBUTE_PINNED       0x00000002  
 #define FILE_ATTRIBUTE_STRICTLY_SEQUENTIAL  0x20000000  
 #define FILE_NOTIFY_CHANGE_FILE_NAME    0x00000001   
 #define FILE_NOTIFY_CHANGE_DIR_NAME     0x00000002   
@@ -12930,7 +13105,7 @@ typedef union _FILE_SEGMENT_ELEMENT {
 #if (NTDDI_VERSION >= NTDDI_WIN8)
 
 //
-//  Flag defintions for NtFlushBuffersFileEx
+//  Flag definitions for NtFlushBuffersFileEx
 //
 //  If none of the below flags are specified the following will occur for a
 //  given file handle:
@@ -13118,12 +13293,13 @@ typedef struct _REPARSE_GUID_DATA_BUFFER {
 #define IO_REPARSE_TAG_CLOUD_F                  (0x9000F01AL)       
 #define IO_REPARSE_TAG_CLOUD_MASK               (0x0000F000L)       
 #define IO_REPARSE_TAG_APPEXECLINK              (0x8000001BL)       
-#define IO_REPARSE_TAG_GVFS                     (0x9000001CL)       
+#define IO_REPARSE_TAG_PROJFS                   (0x9000001CL)       
 #define IO_REPARSE_TAG_STORAGE_SYNC             (0x8000001EL)       
 #define IO_REPARSE_TAG_WCI_TOMBSTONE            (0xA000001FL)       
 #define IO_REPARSE_TAG_UNHANDLED                (0x80000020L)       
 #define IO_REPARSE_TAG_ONEDRIVE                 (0x80000021L)       
-#define IO_REPARSE_TAG_GVFS_TOMBSTONE           (0xA0000022L)       
+#define IO_REPARSE_TAG_PROJFS_TOMBSTONE         (0xA0000022L)       
+#define IO_REPARSE_TAG_AF_UNIX                  (0x80000023L)       
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
@@ -13133,8 +13309,8 @@ typedef struct _REPARSE_GUID_DATA_BUFFER {
 #define SCRUB_DATA_INPUT_FLAG_SKIP_IN_SYNC                     0x00000002
 #define SCRUB_DATA_INPUT_FLAG_SKIP_NON_INTEGRITY_DATA          0x00000004
 #define SCRUB_DATA_INPUT_FLAG_IGNORE_REDUNDANCY                0x00000008
-#define SCRUB_DATA_INPUT_FLAG_SKIP_DATA                        0x00000010 
-#define SCRUB_DATA_INPUT_FLAG_SCRUB_BY_OBJECT_ID               0x00000020                   
+#define SCRUB_DATA_INPUT_FLAG_SKIP_DATA                        0x00000010
+#define SCRUB_DATA_INPUT_FLAG_SCRUB_BY_OBJECT_ID               0x00000020
 
 #define SCRUB_DATA_OUTPUT_FLAG_INCOMPLETE                      0x00000001
 
@@ -13168,25 +13344,25 @@ typedef struct _SCRUB_DATA_INPUT {
     //
 
     DWORD MaximumIos;
-    
+
     //
     // 16 Byte object id. Only used if SCRUB_DATA_INPUT_FLAG_SCRUB_BY_OBJECT_ID
-    // is specified via FSCTL_SCRUB_UNDISCOVERABLE_ID. Array of DWORDs to 
+    // is specified via FSCTL_SCRUB_UNDISCOVERABLE_ID. Array of DWORDs to
     // preserve previous alignment.
     //
-    
+
     DWORD ObjectId[4];
 
     //
     // Reserved
     //
 
-    DWORD Reserved[13];
+    DWORD Reserved[25];
 
     //
     // Opaque data returned from the previous call to restart the
     // operation. Only valid when SCRUB_DATA_FLAG_RESUME is set
-    // at Flags field.
+    // at Flags field.  This offset needs to match that of SCRUB_DATA_OUTPUT.
     //
 
     BYTE  ResumeContext[816];
@@ -13318,7 +13494,7 @@ typedef struct _SCRUB_DATA_OUTPUT {
     // Reserved
     //
 
-    DWORD Reserved[5];
+    DWORD Reserved[9];
 
 #else /* (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE) */
 
@@ -13326,9 +13502,37 @@ typedef struct _SCRUB_DATA_OUTPUT {
     // Reserved
     //
 
-    DWORD Reserved[6];
+    DWORD Reserved[10];
 
 #endif /* (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE) */
+
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5)
+
+    //
+    // Number of bytes of metadata processed
+    //
+
+    ULONGLONG NumberOfMetadataBytesProcessed;
+
+    //
+    // Number of bytes of data processed
+    //
+
+    ULONGLONG NumberOfDataBytesProcessed;
+
+    //
+    // Total number of bytes of metadata in use
+    //
+
+    ULONGLONG TotalNumberOfMetadataBytesInUse;
+
+    //
+    // Total number of bytes of data in use
+    //
+
+    ULONGLONG TotalNumberOfDataBytesInUse;
+
+#endif
 
     //
     // Opaque data that the file system returns to the user so that
@@ -13340,7 +13544,7 @@ typedef struct _SCRUB_DATA_OUTPUT {
     // resume context if not feasible and start from the beginning.
     //
     // This field is only valid when SCRUB_DATA_OUTPUT_FLAG_INCOMPLETE
-    // is set.
+    // is set.  It has to be last in the structure.
     //
 
     BYTE  ResumeContext[816];
@@ -13427,6 +13631,86 @@ typedef struct _SHARED_VIRTUAL_DISK_SUPPORT {
 #define IsVirtualDiskFileShared(HandleState) (((HandleState) & SharedVirtualDiskHandleStateFileShared) != 0)
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE)
+
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5)
+
+//
+//=============== FSCTL_REARRANGE_FILE ====================
+//
+
+//
+//  Input structure for FSCTL_REARRANGE_FILE
+//
+
+typedef struct _REARRANGE_FILE_DATA {
+
+    //
+    // Cluster-aligned byte offset of the base of the contiguous source region
+    // in the source file to move to the target location of the target file.
+    //
+    ULONGLONG SourceStartingOffset;
+
+    //
+    // Cluster-aligned byte offset of the point to insert the source region.
+    //
+    ULONGLONG TargetOffset;
+
+    //
+    // Alternate file to move the source region clusters from;
+    // if NULL, the source region is from the same file.
+    //
+    HANDLE SourceFileHandle;
+
+    //
+    // Cluster-aligned length (in bytes) of the source region.
+    //
+    DWORD Length;
+
+    //
+    // Flags - reserved for future definition and must be zero.
+    //
+    DWORD Flags;
+
+} REARRANGE_FILE_DATA, *PREARRANGE_FILE_DATA;
+
+#if defined(_WIN64)
+//
+//  32/64 Bit thunking support structure
+//
+
+typedef struct _REARRANGE_FILE_DATA32 {
+
+    ULONGLONG SourceStartingOffset;
+    ULONGLONG TargetOffset;
+    UINT32 SourceFileHandle;
+    DWORD Length;
+    DWORD Flags;
+
+} REARRANGE_FILE_DATA32, *PREARRANGE_FILE_DATA32;
+#endif // defined(_WIN64)
+
+#endif /* (_WIN32_WINNT >= _WIN32_WINNT_WIN10_RS5) */
+
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
+//
+//=============== FSCTL_SHUFFLE_FILE ====================
+//
+
+#define SHUFFLE_FILE_FLAG_SKIP_INITIALIZING_NEW_CLUSTERS                (0x00000001)
+
+//
+//  Input structure for FSCTL_SHUFFLE_FILE
+//
+
+typedef struct _SHUFFLE_FILE_DATA {
+
+    LONGLONG StartingOffset;
+    LONGLONG Length;
+    DWORD Flags;
+
+} SHUFFLE_FILE_DATA, *PSHUFFLE_FILE_DATA;
+
+#endif // (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
 // begin_access
 
@@ -13760,6 +14044,15 @@ DEFINE_GUID( GUID_ALLOW_DISPLAY_REQUIRED, 0xA9CEB8DA, 0xCD46, 0x44FB, 0xA9, 0x8B
 // {8EC4B3A5-6868-48c2-BE75-4F3044BE88A7}
 //
 DEFINE_GUID(GUID_VIDEO_CONSOLE_LOCK_TIMEOUT, 0x8ec4b3a5, 0x6868, 0x48c2, 0xbe, 0x75, 0x4f, 0x30, 0x44, 0xbe, 0x88, 0xa7);
+
+//
+// Specifies power settings which will decide whether to
+// prefer visual quality or battery life for an Advanced
+// Color capable display
+//
+// {684C3E69-A4F7-4014-8754-D45179A56167}
+//
+DEFINE_GUID(GUID_ADVANCED_COLOR_QUALITY_BIAS, 0x684c3e69, 0xa4f7, 0x4014, 0x87, 0x54, 0xd4, 0x51, 0x79, 0xa5, 0x61, 0x67);
 
 
 // Adaptive power behavior settings
@@ -14347,6 +14640,14 @@ DEFINE_GUID(GUID_PROCESSOR_PERF_AUTONOMOUS_MODE,
 DEFINE_GUID(GUID_PROCESSOR_PERF_ENERGY_PERFORMANCE_PREFERENCE,
 0x36687f9e, 0xe3a5, 0x4dbf, 0xb1, 0xdc, 0x15, 0xeb, 0x38, 0x1c, 0x68, 0x63);
 
+//
+// Specifies the tradeoff between performance and energy the processor should
+// make when operating in autonomous mode for class 1 processors.
+//
+// {36687F9E-E3A5-4dbf-B1DC-15EB381C6864}
+DEFINE_GUID(GUID_PROCESSOR_PERF_ENERGY_PERFORMANCE_PREFERENCE_1,
+0x36687f9e, 0xe3a5, 0x4dbf, 0xb1, 0xdc, 0x15, 0xeb, 0x38, 0x1c, 0x68, 0x64);
+
 #define PROCESSOR_PERF_PERFORMANCE_PREFERENCE 0xff
 #define PROCESSOR_PERF_ENERGY_PREFERENCE         0
 
@@ -14782,6 +15083,105 @@ DEFINE_GUID( GUID_PROCESSOR_SHORT_THREAD_SCHEDULING_POLICY,
 //
 DEFINE_GUID( GUID_SYSTEM_COOLING_POLICY, 0x94D3A615, 0xA899, 0x4AC5, 0xAE, 0x2B, 0xE4, 0xD8, 0xF6, 0x34, 0x36, 0x7F);
 
+//
+// Processor responsiveness settings
+//
+// Specifies the number of responsiveness events required to disable
+// responsiveness policy overrides.
+//
+// {38B8383D-CCE0-4c79-9E3E-56A4F17CC480}
+//
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_DISABLE_THRESHOLD,
+0x38b8383d, 0xcce0, 0x4c79, 0x9e, 0x3e, 0x56, 0xa4, 0xf1, 0x7c, 0xc4, 0x80);
+
+//
+// Specifies the number of responsiveness events required to disable
+// responsiveness policy overrides for efficiency class 1 processors.
+//
+// {38B8383D-CCE0-4c79-9E3E-56A4F17CC481}
+//
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_DISABLE_THRESHOLD_1,
+0x38b8383d, 0xcce0, 0x4c79, 0x9e, 0x3e, 0x56, 0xa4, 0xf1, 0x7c, 0xc4, 0x81);
+
+//
+// Specifies the number of responsiveness events required to enable
+// responsiveness policy overrides.
+//
+// {3D44E256-7222-4415-A9ED-9C45FA3DD830}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_ENABLE_THRESHOLD,
+0x3d44e256, 0x7222, 0x4415, 0xa9, 0xed, 0x9c, 0x45, 0xfa, 0x3d, 0xd8, 0x30);
+
+//
+// Specifies the number of responsiveness events required to enable
+// responsiveness policy overrides for efficiency class 1 processors.
+//
+// {3D44E256-7222-4415-A9ED-9C45FA3DD831}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_ENABLE_THRESHOLD_1,
+0x3d44e256, 0x7222, 0x4415, 0xa9, 0xed, 0x9c, 0x45, 0xfa, 0x3d, 0xd8, 0x31);
+
+//
+// Specifies the number of consecutive perf checks with a disable hint before
+// responsivenss overrides will be disabled.
+//
+// {F565999F-3FB0-411a-A226-3F0198DEC130}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_DISABLE_TIME, 
+0xf565999f, 0x3fb0, 0x411a, 0xa2, 0x26, 0x3f, 0x1, 0x98, 0xde, 0xc1, 0x30);
+
+//
+// Specifies the number of consecutive perf checks with a disable hint before
+// responsivenss overrides will be disabled for efficiency class 1 processors.
+//
+// {F565999F-3FB0-411a-A226-3F0198DEC131}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_DISABLE_TIME_1, 
+0xf565999f, 0x3fb0, 0x411a, 0xa2, 0x26, 0x3f, 0x1, 0x98, 0xde, 0xc1, 0x31);
+
+//
+// Specifies the number of consecutive perf checks with a enable hint before
+// responsivenss overrides will be enabled.
+//
+// {3D915188-7830-49ae-A79A-0FB0A1E5A200}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_ENABLE_TIME, 
+0x3d915188, 0x7830, 0x49ae, 0xa7, 0x9a, 0xf, 0xb0, 0xa1, 0xe5, 0xa2, 0x0);
+
+//
+// Specifies the number of consecutive perf checks with a enable hint before
+// responsivenss overrides will be enabled for efficiency class 1 processors.
+//
+// {3D915188-7830-49ae-A79A-0FB0A1E5A201}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_ENABLE_TIME_1, 
+0x3d915188, 0x7830, 0x49ae, 0xa7, 0x9a, 0xf, 0xb0, 0xa1, 0xe5, 0xa2, 0x1);
+
+//
+// Specifies the ceiling placed on EPP when responsiveness hints are enabled.
+//
+// {4427C73B-9756-4a5c-B84B-C7BDA79C7320}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_EPP_CEILING, 
+0x4427c73b, 0x9756, 0x4a5c, 0xb8, 0x4b, 0xc7, 0xbd, 0xa7, 0x9c, 0x73, 0x20);
+
+//
+// Specifies the ceiling placed on EPP when responsiveness hints are enabled
+// for efficiency class 1 processors.
+//
+// {4427C73B-9756-4a5c-B84B-C7BDA79C7321}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_EPP_CEILING_1, 
+0x4427c73b, 0x9756, 0x4a5c, 0xb8, 0x4b, 0xc7, 0xbd, 0xa7, 0x9c, 0x73, 0x21);
+
+//
+// Specifies the floor placed on processor performance when responsiveness hints
+// are enabled.
+//
+// {CE8E92EE-6A86-4572-BFE0-20C21D03CD40}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_PERF_FLOOR, 
+0xce8e92ee, 0x6a86, 0x4572, 0xbf, 0xe0, 0x20, 0xc2, 0x1d, 0x3, 0xcd, 0x40);
+
+//
+// Specifies the floor placed on processor performance when responsiveness hints
+// are enabled for efficiency class 1 processors.
+//
+// {CE8E92EE-6A86-4572-BFE0-20C21D03CD41}
+DEFINE_GUID(GUID_PROCESSOR_RESPONSIVENESS_PERF_FLOOR_1, 
+0xce8e92ee, 0x6a86, 0x4572, 0xbf, 0xe0, 0x20, 0xc2, 0x1d, 0x3, 0xcd, 0x41);
+
 // Lock Console on Wake
 // --------------------
 //
@@ -14987,6 +15387,22 @@ DEFINE_GUID(GUID_INTSTEER_LOAD_PER_PROC_TRIGGER,
 DEFINE_GUID(GUID_INTSTEER_TIME_UNPARK_TRIGGER,
 0xd6ba4903, 0x386f, 0x4c2c, 0x8a, 0xdb, 0x5c, 0x21, 0xb3, 0x32, 0x8d, 0x25);
 
+// Graphics power settings
+// ------------------------
+//
+
+// Specified the subgroup which contains all inbox graphics settings.
+//
+// {5FB4938D-1EE8-4b0f-9A3C-5036B0AB995C}
+//
+DEFINE_GUID(GUID_GRAPHICS_SUBGROUP, 0x5fb4938d, 0x1ee8, 0x4b0f, 0x9a, 0x3c, 0x50, 0x36, 0xb0, 0xab, 0x99, 0x5c);
+
+// Specifies the GPU preference policy.
+//
+// {DD848B2A-8A5D-4451-9AE2-39CD41658F6C}
+//
+DEFINE_GUID(GUID_GPU_PREFERENCE_POLICY, 0xdd848b2a, 0x8a5d, 0x4451, 0x9a, 0xe2, 0x39, 0xcd, 0x41, 0x65, 0x8f, 0x6c);
+
 // Other miscellaneous power notification GUIDs
 // ------------------------
 //
@@ -14998,6 +15414,14 @@ DEFINE_GUID(GUID_INTSTEER_TIME_UNPARK_TRIGGER,
 
 DEFINE_GUID(GUID_MIXED_REALITY_MODE,
 0x1e626b4e, 0xcf04, 0x4f8d, 0x9c, 0xc7, 0xc9, 0x7c, 0x5b, 0xf, 0x23, 0x91);
+
+// Specifies a change (start/end) in System Power Report's Active Session.
+//
+// {0E24CE38-C393-4742-BDB1-744F4B9EE08E}
+//
+
+DEFINE_GUID(GUID_SPR_ACTIVE_SESSION_CHANGE,
+0xe24ce38, 0xc393, 0x4742, 0xbd, 0xb1, 0x74, 0x4f, 0x4b, 0x9e, 0xe0, 0x8e);
 
 
 typedef enum _SYSTEM_POWER_STATE {
@@ -15203,8 +15627,8 @@ typedef enum {
     ExitLatencySamplingPercentage,
     RegisterSpmPowerSettings,
     PlatformIdleStates,
-    ProcessorIdleVeto,
-    PlatformIdleVeto,
+    ProcessorIdleVeto,                              // Deprecated.
+    PlatformIdleVeto,                               // Deprecated.
     SystemBatteryStatePrecise,
     ThermalEvent,
     PowerRequestActionInternal,
@@ -15275,6 +15699,8 @@ typedef struct _POWER_IDLE_RESILIENCY {
 //
 // Monitor on/off reasons
 //
+// N.B. Update power-event mapping when adding new events.
+//
 typedef enum {
     MonitorRequestReasonUnknown,
     MonitorRequestReasonPowerButton,
@@ -15322,6 +15748,8 @@ typedef enum {
     MonitorRequestReasonPdcSignalWindowsMobileShell,            // PDC_SIGNAL_PROVIDER_UM_CS_CONTROL
     MonitorRequestReasonPdcSignalHeyCortana,                    // PDC_SIGNAL_PROVIDER_HEY_CORTANA
     MonitorRequestReasonPdcSignalHolographicShell,              // PDC_SIGNAL_PROVIDER_HOLOSI_CRITICAL_BATTERY_WAKE
+    MonitorRequestReasonPdcSignalFingerprint,                   // PDC_SIGNAL_PROVIDER_WINBIO
+    MonitorRequestReasonDirectedDrips,
     MonitorRequestReasonMax
 } POWER_MONITOR_REQUEST_REASON;
 
@@ -15787,6 +16215,9 @@ typedef struct {
 #define POWER_ACTION_HIBERBOOT          0x00000008
 #define POWER_ACTION_USER_NOTIFY        0x00000010  // Indicate User-mode of an impending action.
 #define POWER_ACTION_DOZE_TO_HIBERNATE  0x00000020
+#define POWER_ACTION_ACPI_CRITICAL      0x01000000
+#define POWER_ACTION_ACPI_USER_NOTIFY   0x02000000
+#define POWER_ACTION_DIRECTED_DRIPS     0x04000000
 #define POWER_ACTION_PSEUDO_TRANSITION  0x08000000
 #define POWER_ACTION_LIGHTEST_FIRST     0x10000000
 #define POWER_ACTION_LOCK_CONSOLE       0x20000000
@@ -16311,7 +16742,7 @@ typedef struct _IMAGE_FILE_HEADER {
 #define IMAGE_FILE_MACHINE_ARM64             0xAA64  // ARM64 Little-Endian
 #define IMAGE_FILE_MACHINE_CEE               0xC0EE
 
- 
+
 //
 // Directory format.
 //
@@ -17153,6 +17584,17 @@ typedef IMAGE_RELOCATION UNALIGNED *PIMAGE_RELOCATION;
 #define IMAGE_REL_AMD64_SREL32          0x000E  // 32 bit signed span-dependent value emitted into object
 #define IMAGE_REL_AMD64_PAIR            0x000F
 #define IMAGE_REL_AMD64_SSPAN32         0x0010  // 32 bit signed span-dependent value applied at link time
+#define IMAGE_REL_AMD64_EHANDLER        0x0011
+#define IMAGE_REL_AMD64_IMPORT_BR       0x0012  // Indirect branch to an import
+#define IMAGE_REL_AMD64_IMPORT_CALL     0x0013  // Indirect call to an import
+#define IMAGE_REL_AMD64_CFG_BR          0x0014  // Indirect branch to a CFG check
+#define IMAGE_REL_AMD64_CFG_BR_REX      0x0015  // Indirect branch to a CFG check, with REX.W prefix
+#define IMAGE_REL_AMD64_CFG_CALL        0x0016  // Indirect call to a CFG check
+#define IMAGE_REL_AMD64_INDIR_BR        0x0017  // Indirect branch to a target in RAX (no CFG)
+#define IMAGE_REL_AMD64_INDIR_BR_REX    0x0018  // Indirect branch to a target in RAX, with REX.W prefix (no CFG)
+#define IMAGE_REL_AMD64_INDIR_CALL      0x0019  // Indirect call to a target in RAX (no CFG)
+#define IMAGE_REL_AMD64_INDIR_BR_SWITCHTABLE_FIRST  0x0020 // Indirect branch for a switch table using Reg 0 (RAX)
+#define IMAGE_REL_AMD64_INDIR_BR_SWITCHTABLE_LAST   0x002F // Indirect branch for a switch table using Reg 15 (R15)
 
 //
 // IA64 relocation types.
@@ -17351,6 +17793,7 @@ typedef IMAGE_LINENUMBER UNALIGNED *PIMAGE_LINENUMBER;
 // Based relocation format.
 //
 
+//@[comment("MVI_tracked")]
 typedef struct _IMAGE_BASE_RELOCATION {
     DWORD   VirtualAddress;
     DWORD   SizeOfBlock;
@@ -17420,6 +17863,7 @@ typedef struct _IMAGE_ARCHIVE_MEMBER_HEADER {
 // Export Format
 //
 
+//@[comment("MVI_tracked")]
 typedef struct _IMAGE_EXPORT_DIRECTORY {
     DWORD   Characteristics;
     DWORD   TimeDateStamp;
@@ -17438,6 +17882,7 @@ typedef struct _IMAGE_EXPORT_DIRECTORY {
 // Import Format
 //
 
+//@[comment("MVI_tracked")]
 typedef struct _IMAGE_IMPORT_BY_NAME {
     WORD    Hint;
     CHAR   Name[1];
@@ -17540,6 +17985,7 @@ typedef IMAGE_TLS_DIRECTORY32           IMAGE_TLS_DIRECTORY;
 typedef PIMAGE_TLS_DIRECTORY32          PIMAGE_TLS_DIRECTORY;
 #endif
 
+////@[comment("MVI_tracked")]
 typedef struct _IMAGE_IMPORT_DESCRIPTOR {
     union {
         DWORD   Characteristics;            // 0 for terminating null import descriptor
@@ -17640,6 +18086,7 @@ typedef struct _IMAGE_RESOURCE_DIRECTORY {
 // field points to a resource data entry.
 //
 
+////@[comment("MVI_tracked")]
 typedef struct _IMAGE_RESOURCE_DIRECTORY_ENTRY {
     union {
         struct {
@@ -17688,6 +18135,7 @@ typedef struct _IMAGE_RESOURCE_DIR_STRING_U {
 // applications the code page would be the unicode code page.
 //
 
+//@[comment("MVI_tracked")]
 typedef struct _IMAGE_RESOURCE_DATA_ENTRY {
     DWORD   OffsetToData;
     DWORD   Size;
@@ -17776,6 +18224,9 @@ typedef PIMAGE_DYNAMIC_RELOCATION32_V2      PIMAGE_DYNAMIC_RELOCATION_V2;
 
 #define IMAGE_DYNAMIC_RELOCATION_GUARD_RF_PROLOGUE   0x00000001
 #define IMAGE_DYNAMIC_RELOCATION_GUARD_RF_EPILOGUE   0x00000002
+#define IMAGE_DYNAMIC_RELOCATION_GUARD_IMPORT_CONTROL_TRANSFER  0x00000003
+#define IMAGE_DYNAMIC_RELOCATION_GUARD_INDIR_CONTROL_TRANSFER   0x00000004
+#define IMAGE_DYNAMIC_RELOCATION_GUARD_SWITCHTABLE_BRANCH       0x00000005
 
 #include "pshpack1.h"
 
@@ -17794,6 +18245,28 @@ typedef struct _IMAGE_EPILOGUE_DYNAMIC_RELOCATION_HEADER {
     // BYTE    BranchDescriptorBitMap[...];
 } IMAGE_EPILOGUE_DYNAMIC_RELOCATION_HEADER;
 typedef IMAGE_EPILOGUE_DYNAMIC_RELOCATION_HEADER UNALIGNED * PIMAGE_EPILOGUE_DYNAMIC_RELOCATION_HEADER;
+
+typedef struct _IMAGE_IMPORT_CONTROL_TRANSFER_DYNAMIC_RELOCATION {
+    DWORD       PageRelativeOffset : 12;
+    DWORD       IndirectCall       : 1;
+    DWORD       IATIndex           : 19;
+} IMAGE_IMPORT_CONTROL_TRANSFER_DYNAMIC_RELOCATION;
+typedef IMAGE_IMPORT_CONTROL_TRANSFER_DYNAMIC_RELOCATION UNALIGNED * PIMAGE_IMPORT_CONTROL_TRANSFER_DYNAMIC_RELOCATION;
+
+typedef struct _IMAGE_INDIR_CONTROL_TRANSFER_DYNAMIC_RELOCATION {
+    WORD        PageRelativeOffset : 12;
+    WORD        IndirectCall       : 1;
+    WORD        RexWPrefix         : 1;
+    WORD        CfgCheck           : 1;
+    WORD        Reserved           : 1;
+} IMAGE_INDIR_CONTROL_TRANSFER_DYNAMIC_RELOCATION;
+typedef IMAGE_INDIR_CONTROL_TRANSFER_DYNAMIC_RELOCATION UNALIGNED * PIMAGE_INDIR_CONTROL_TRANSFER_DYNAMIC_RELOCATION;
+
+typedef struct _IMAGE_SWITCHTABLE_BRANCH_DYNAMIC_RELOCATION {
+    WORD        PageRelativeOffset : 12;
+    WORD        RegisterNumber     : 4;
+} IMAGE_SWITCHTABLE_BRANCH_DYNAMIC_RELOCATION;
+typedef IMAGE_SWITCHTABLE_BRANCH_DYNAMIC_RELOCATION UNALIGNED * PIMAGE_SWITCHTABLE_BRANCH_DYNAMIC_RELOCATION;
 
 #include "poppack.h"                    // Back to 4 byte packing
 
@@ -17843,6 +18316,7 @@ typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY32 {
     DWORD   HotPatchTableOffset;
     DWORD   Reserved3;
     DWORD   EnclaveConfigurationPointer;    // VA
+    DWORD   VolatileMetadataPointer;        // VA
 } IMAGE_LOAD_CONFIG_DIRECTORY32, *PIMAGE_LOAD_CONFIG_DIRECTORY32;
 
 typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY64 {
@@ -17887,9 +18361,10 @@ typedef struct _IMAGE_LOAD_CONFIG_DIRECTORY64 {
     DWORD      HotPatchTableOffset;
     DWORD      Reserved3;
     ULONGLONG  EnclaveConfigurationPointer;     // VA
+    ULONGLONG  VolatileMetadataPointer;         // VA
 } IMAGE_LOAD_CONFIG_DIRECTORY64, *PIMAGE_LOAD_CONFIG_DIRECTORY64;
 
-// end_ntoshvp 
+// end_ntoshvp
 // begin_ntoshvp
 
 #ifdef _WIN64
@@ -17908,7 +18383,8 @@ typedef struct _IMAGE_HOT_PATCH_INFO {
     DWORD SequenceNumber;
     DWORD BaseImageList;
     DWORD BaseImageCount;
-    DWORD BufferOffset; // V2 and later
+    DWORD BufferOffset;             // Version 2 and later
+    DWORD ExtraPatchSize;           // Version 3 and later
 } IMAGE_HOT_PATCH_INFO, *PIMAGE_HOT_PATCH_INFO;
 
 typedef struct _IMAGE_HOT_PATCH_BASE {
@@ -17919,7 +18395,7 @@ typedef struct _IMAGE_HOT_PATCH_BASE {
     DWORD CodeIntegrityInfo;
     DWORD CodeIntegritySize;
     DWORD PatchTable;
-    DWORD BufferOffset; // V2 and later
+    DWORD BufferOffset;             // Version 2 and later
 } IMAGE_HOT_PATCH_BASE, *PIMAGE_HOT_PATCH_BASE;
 
 typedef struct _IMAGE_HOT_PATCH_HASHES {
@@ -17928,6 +18404,7 @@ typedef struct _IMAGE_HOT_PATCH_HASHES {
 } IMAGE_HOT_PATCH_HASHES, *PIMAGE_HOT_PATCH_HASHES;
 
 #define IMAGE_HOT_PATCH_BASE_OBLIGATORY     0x00000001
+#define IMAGE_HOT_PATCH_BASE_CAN_ROLL_BACK  0x00000002
 
 #define IMAGE_HOT_PATCH_CHUNK_INVERSE       0x80000000
 #define IMAGE_HOT_PATCH_CHUNK_OBLIGATORY    0x40000000
@@ -17959,6 +18436,8 @@ typedef struct _IMAGE_HOT_PATCH_HASHES {
 #define IMAGE_GUARD_RF_INSTRUMENTED                    0x00020000 // Module contains return flow instrumentation and metadata
 #define IMAGE_GUARD_RF_ENABLE                          0x00040000 // Module requests that the OS enable return flow protection
 #define IMAGE_GUARD_RF_STRICT                          0x00080000 // Module requests that the OS enable return flow protection in strict mode
+#define IMAGE_GUARD_RETPOLINE_PRESENT                  0x00100000 // Module was built with retpoline support
+
 #define IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_MASK        0xF0000000 // Stride of Guard CF function table encoded in these bits (additional count of bytes per element)
 #define IMAGE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT       28         // Shift to right-justify Guard CF function table stride
 
@@ -18471,9 +18950,7 @@ typedef struct IMAGE_COR20_HEADER
 // begin_ntifs
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION > NTDDI_WINXP)
 
@@ -18484,7 +18961,7 @@ NTAPI
 RtlCaptureStackBackTrace(
     _In_ DWORD FramesToSkip,
     _In_ DWORD FramesToCapture,
-    _Out_writes_to_(FramesToCapture, return) PVOID * BackTrace,
+    _Out_writes_to_(FramesToCapture,return) PVOID* BackTrace,
     _Out_opt_ PDWORD BackTraceHash
     );
 
@@ -18495,9 +18972,7 @@ RtlCaptureStackBackTrace(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION > NTDDI_WIN2K)
 
@@ -18517,7 +18992,6 @@ RtlCaptureContext(
 // end_ntifs
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18534,11 +19008,9 @@ RtlUnwind(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-
 #if defined(_AMD64_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18572,16 +19044,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 DWORD   
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ DWORD EntryCount,
     _In_ DWORD MaximumEntryCount,
@@ -18607,15 +19076,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18632,7 +19097,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18640,7 +19104,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -18648,7 +19112,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18664,13 +19127,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -18680,23 +19136,21 @@ RtlVirtualUnwind(
     _In_ DWORD64 ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PDWORD64 EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _AMD64_
 
 
-
 #if defined(_ARM_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18730,16 +19184,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 DWORD   
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ DWORD EntryCount,
     _In_ DWORD MaximumEntryCount,
@@ -18765,15 +19216,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18790,7 +19237,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18798,7 +19244,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -18806,7 +19252,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18822,13 +19267,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -18838,23 +19276,21 @@ RtlVirtualUnwind(
     _In_ DWORD ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PDWORD EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _ARM_
 
 
-
 #if defined(_ARM64_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18888,16 +19324,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 DWORD   
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ DWORD EntryCount,
     _In_ DWORD MaximumEntryCount,
@@ -18923,15 +19356,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18948,7 +19377,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18956,7 +19384,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -18964,7 +19392,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -18980,13 +19407,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -18996,22 +19416,20 @@ RtlVirtualUnwind(
     _In_ ULONG_PTR ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PULONG_PTR EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _ARM64_
 
-
 #if defined(_CHPE_X86_ARM64_)
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -19031,7 +19449,6 @@ RtlUnwindEx(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -19051,34 +19468,23 @@ RtlLookupFunctionEntryCHPE(
 
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 NTSYSAPI
 PVOID
 NTAPI
 RtlPcToFileHeader(
     _In_ PVOID PcValue,
-    _Out_ PVOID * BaseOfImage
+    _Out_ PVOID* BaseOfImage
     );
 
-
-#endif // !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
-
 
 #if (NTDDI_VERSION >= NTDDI_WIN2K)
 
@@ -19087,15 +19493,13 @@ NTSYSAPI
 SIZE_T
 NTAPI
 RtlCompareMemory(
-    _In_ const VOID * Source1,
-    _In_ const VOID * Source2,
+    _In_ const VOID* Source1,
+    _In_ const VOID* Source2,
     _In_ SIZE_T Length
     );
 
 
 #endif
-
-#endif // !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
@@ -19309,6 +19713,10 @@ typedef struct _RTL_BARRIER {
 //       for compatibility with previous handling of the
 //       STATUS_STACK_BUFFER_OVERRUN exception status code.
 //
+
+// When updating failure codes here, please also update references in
+// the debugger codebase (currently onecore\sdktools\debuggers\ntsd64\util.cpp)
+
 #define FAST_FAIL_LEGACY_GS_VIOLATION               0
 #define FAST_FAIL_VTGUARD_CHECK_FAILURE             1
 #define FAST_FAIL_STACK_COOKIE_CHECK_FAILURE        2
@@ -19361,6 +19769,9 @@ typedef struct _RTL_BARRIER {
 #define FAST_FAIL_LOW_LABEL_ACCESS_DENIED           52         // Telemetry, nonfatal
 #define FAST_FAIL_ENCLAVE_CALL_FAILURE              53
 #define FAST_FAIL_UNHANDLED_LSS_EXCEPTON            54
+#define FAST_FAIL_ADMINLESS_ACCESS_DENIED           55         // Telemetry, nonfatal
+#define FAST_FAIL_UNEXPECTED_CALL                   56
+#define FAST_FAIL_CONTROL_INVALID_RETURN_ADDRESS    57
 #define FAST_FAIL_INVALID_FAST_FAIL_CODE            0xFFFFFFFF
 
 #if _MSC_VER >= 1610
@@ -19525,6 +19936,7 @@ RtlSecureZeroMemory(
 #define SEF_MACL_NO_EXECUTE_UP            0x400
 #define SEF_AI_USE_EXTRA_PARAMS           0x800
 #define SEF_AVOID_OWNER_RESTRICTION       0x1000
+#define SEF_FORCE_USER_MODE               0x2000
 
 #define SEF_MACL_VALID_FLAGS              (SEF_MACL_NO_WRITE_UP   | \
                                            SEF_MACL_NO_READ_UP    | \
@@ -19872,7 +20284,8 @@ RtlOsDeploymentState(
 // Flush routines for DAX mapped files
 //
 
-#if (NTDDI_VERSION >= NTDDI_WIN10_RS2) && defined(_AMD64_)
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
+
 typedef struct _NV_MEMORY_RANGE {
     VOID *BaseAddress;
     SIZE_T Length;
@@ -19891,6 +20304,46 @@ typedef struct _NV_MEMORY_RANGE {
 //
 
 #define FLUSH_NV_MEMORY_DEFAULT_TOKEN       (ULONG_PTR)(-1)
+
+//
+// Flags for RtlWriteNonVolatileMemory
+//
+// WRITE_NV_MEMORY_FLAG_FLUSH - The destination range is flushed
+// after writing the data from the source.  By default the flush
+// is followed by a drain, unless WRITE_NV_MEMORY_FLAG_NO_DRAIN
+// is passed. This flag makes sure that the data is durable even
+// in case of system powerloss.
+//
+// WRITE_NV_MEMORY_FLAG_NON_TEMPORAL - Performs a non-temporal
+// copy when available.  Non-temporal means that data caching
+// is not required.  Few notes:
+//   - Some processors do not support non-temporal copy for range
+//     smaller than address bus size, and issues regular copy. In
+//     such case RtlWriteNonVolatileMemory peforms regular copy
+//     followed by flush and drain.
+//   - Some processors may ignore non-temporal copy altogether.
+//     RtlWriteNonVolatileMemory doesn't replace it with flush
+//     and drain in that case.
+//
+// WRITE_NV_MEMORY_FLAG_PERSIST - Makes sure that the write are
+// persisted either by flushing or using non-temporal writes.
+// The caller can make no assumptions on what's used.  Typically
+// the approach that's less costly to persist the write is used.
+// This flag makes sure that the data is durable even in case of
+// system powerloss.  WRITE_NV_MEMORY_FLAG_NO_DRAIN is ignored
+// when WRITE_NV_MEMORY_FLAG_PERSIST is used.
+//
+// WRITE_NV_MEMORY_FLAG_NO_DRAIN - Tells the routine to not wait
+// for the flush to complete.
+//
+
+#define WRITE_NV_MEMORY_FLAG_FLUSH          (0x00000001)
+#define WRITE_NV_MEMORY_FLAG_NON_TEMPORAL   (0x00000002)
+#define WRITE_NV_MEMORY_FLAG_PERSIST        (WRITE_NV_MEMORY_FLAG_FLUSH \
+                                              | WRITE_NV_MEMORY_FLAG_NON_TEMPORAL)
+#define WRITE_NV_MEMORY_FLAG_NO_DRAIN       (0x00000100)
+
+#if defined(_WIN64)
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSYSAPI
@@ -19936,7 +20389,7 @@ NTAPI
 RtlWriteNonVolatileMemory (
     _In_ PVOID NvToken,
     _Out_writes_bytes_(Size) VOID UNALIGNED *NvDestination,
-    _In_reads_bytes_(Size) VOID UNALIGNED *Source,
+    _In_reads_bytes_(Size) CONST VOID UNALIGNED *Source,
     _In_ SIZE_T Size,
     _In_ DWORD Flags
     );
@@ -19951,7 +20404,30 @@ RtlFlushNonVolatileMemoryRanges (
     _In_ SIZE_T NumRanges,
     _In_ DWORD Flags
     );
-#endif // (NTDDI_VERSION >= NTDDI_RS2) && defined(_AMD64_)
+
+#else // defined(_WIN64)
+
+#define RtlGetNonVolatileToken() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#define RtlFreeNonVolatileToken() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#define RtlFlushNonVolatileMemory() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#define RtlDrainNonVolatileFlush() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#define RtlWriteNonVolatileMemory() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#define RtlFlushNonVolatileMemoryRanges() \
+    (ASSERT(!"Call not expected in 32-bit architecture"), STATUS_NOT_IMPLEMENTED)
+
+#endif // defined(_WIN64)
+
+#endif // (NTDDI_VERSION >= NTDDI_RS2)
 
 
 //
@@ -20015,6 +20491,47 @@ RtlValidateCorrelationVector(
 #endif // NTDDI_VERSION >= NTDDI_RS2
 
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+typedef struct _CUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG {
+    //
+    // Size of the structure in bytes
+    //
+    DWORD Size;
+
+    //
+    // Guid used to identify background task to trigger
+    //
+    PCWSTR TriggerId;
+
+} CUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG, *PCUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG;
+
+#if !defined(MIDL_PASS)
+FORCEINLINE
+VOID
+CUSTOM_SYSTEM_EVENT_TRIGGER_INIT(
+    _Out_    PCUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG Config,
+    _In_opt_ PCWSTR TriggerId
+    )
+{
+    RtlZeroMemory(Config, sizeof(CUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG));
+
+    Config->Size = sizeof(CUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG);
+    Config->TriggerId = TriggerId;
+}
+#endif // !defined(MIDL_PASS)
+
+_Must_inspect_result_
+_IRQL_requires_max_(PASSIVE_LEVEL)
+DWORD   
+NTAPI
+RtlRaiseCustomSystemEventTrigger(
+    _In_ PCUSTOM_SYSTEM_EVENT_TRIGGER_CONFIG TriggerConfig
+    );
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4
+
+
 //
 // Support for process policy settings embedded into executable image.
 //
@@ -20036,6 +20553,7 @@ typedef enum _IMAGE_POLICY_ENTRY_TYPE {
     ImagePolicyEntryTypeUInt64,
     ImagePolicyEntryTypeAnsiString,
     ImagePolicyEntryTypeUnicodeString,
+    ImagePolicyEntryTypeOverride,
     ImagePolicyEntryTypeMaximum
 } IMAGE_POLICY_ENTRY_TYPE;
 
@@ -20133,6 +20651,9 @@ __pragma(const_seg(pop))
 
 #define IMAGE_POLICY_UNICODE_STRING(_PolicyId_, _Value_)   \
     {ImagePolicyEntryTypeUnicodeString, _PolicyId_, _Value_},
+
+#define IMAGE_POLICY_OVERRIDE(_PolicyId_)   \
+    {ImagePolicyEntryTypeOverride, _PolicyId_, 0},
 
 
 typedef struct _RTL_CRITICAL_SECTION_DEBUG {
@@ -20466,8 +20987,10 @@ typedef struct _PERFORMANCE_DATA {
 #define DEVICEFAMILYINFOENUM_XBOXERA                    0x0000000C
 #define DEVICEFAMILYINFOENUM_SERVER_NANO                0x0000000D
 #define DEVICEFAMILYINFOENUM_8828080                    0x0000000E
+#define DEVICEFAMILYINFOENUM_7067329                    0x0000000F
+#define DEVICEFAMILYINFOENUM_WINDOWS_CORE               0x00000010
 
-#define DEVICEFAMILYINFOENUM_MAX                        0x0000000E
+#define DEVICEFAMILYINFOENUM_MAX                        0x00000010
 
 #define DEVICEFAMILYDEVICEFORM_UNKNOWN                  0x00000000
 #define DEVICEFAMILYDEVICEFORM_PHONE                    0x00000001
@@ -20939,6 +21462,9 @@ typedef enum _CM_ERROR_CONTROL_TYPE {
 // CM_SERVICE_WINPE_BOOT_LOAD - Specified if a driver should be promoted
 // on WinPE boot.
 //
+// CM_SERVICE_RAM_DISK_BOOT_LOAD - Specified if a driver should be promoted
+// when booting from a RAM disk.
+//
 
 #define CM_SERVICE_NETWORK_BOOT_LOAD      0x00000001
 #define CM_SERVICE_VIRTUAL_DISK_BOOT_LOAD 0x00000002
@@ -20948,6 +21474,7 @@ typedef enum _CM_ERROR_CONTROL_TYPE {
 #define CM_SERVICE_MEASURED_BOOT_LOAD     0x00000020
 #define CM_SERVICE_VERIFIER_BOOT_LOAD     0x00000040
 #define CM_SERVICE_WINPE_BOOT_LOAD        0x00000080
+#define CM_SERVICE_RAM_DISK_BOOT_LOAD     0x00000100
 
 //
 // Mask defining the legal promotion flag values.
@@ -20960,7 +21487,8 @@ typedef enum _CM_ERROR_CONTROL_TYPE {
                                          CM_SERVICE_USB3_DISK_BOOT_LOAD |     \
                                          CM_SERVICE_MEASURED_BOOT_LOAD |      \
                                          CM_SERVICE_VERIFIER_BOOT_LOAD |      \
-                                         CM_SERVICE_WINPE_BOOT_LOAD)
+                                         CM_SERVICE_WINPE_BOOT_LOAD |         \
+                                         CM_SERVICE_RAM_DISK_BOOT_LOAD)
 
 
 #ifndef _NTDDTAPE_WINNT_

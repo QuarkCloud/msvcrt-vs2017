@@ -61,7 +61,7 @@ namespace details
         // Returns the new reference count.
         long _Reference()
         {
-            long _Refcount = _InterlockedIncrement(&_M_refCount);
+            const long _Refcount = _InterlockedIncrement(&_M_refCount);
 
             // 0 - 1 transition is illegal
             _ASSERTE(_Refcount > 1);
@@ -72,7 +72,7 @@ namespace details
         // Returns the new reference count
         long _Release()
         {
-            long _Refcount = _InterlockedDecrement(&_M_refCount);
+            const long _Refcount = _InterlockedDecrement(&_M_refCount);
             _ASSERTE(_Refcount >= 0);
 
             if (_Refcount == 0)
@@ -118,7 +118,7 @@ namespace details
             _RefCounter(_InitialRefs),
             _M_state(_STATE_CALLED),
             _M_signaled(false),
-            _M_pTokenState(NULL)
+            _M_pTokenState(nullptr)
         {
         }
 
@@ -142,7 +142,7 @@ namespace details
 
         void _Invoke()
         {
-            long _Tid = ::Concurrency::details::platform::GetCurrentThreadId();
+            const long _Tid = ::Concurrency::details::platform::GetCurrentThreadId();
             _ASSERTE((_Tid & 0x3) == 0); // If this ever fires, we need a different encoding for this.
 
             long _Result = atomic_compare_exchange(_M_state, _Tid, _STATE_CLEAR);
@@ -184,7 +184,7 @@ namespace details
 
     protected:
 
-        virtual void _Exec()
+        virtual void _Exec() override
         {
             _M_function();
         }
@@ -205,7 +205,7 @@ namespace details
 
     protected:
 
-        virtual void _Exec()
+        virtual void _Exec() override
         {
             _M_proc(_M_pData);
         }
@@ -336,7 +336,7 @@ namespace details
 
         static bool _IsValid(_In_opt_ _CancellationTokenState *_PToken)
         {
-            return (_PToken != NULL && _PToken != _None());
+            return (_PToken != nullptr && _PToken != _None());
         }
 
         _CancellationTokenState() :
@@ -449,7 +449,7 @@ namespace details
             //
             if (_Synchronize)
             {
-                long _Result = atomic_compare_exchange(
+                const long _Result = atomic_compare_exchange(
                     _PRegistration->_M_state,
                     _CancellationTokenRegistration::_STATE_DEFER_DELETE,
                     _CancellationTokenRegistration::_STATE_CLEAR
@@ -476,7 +476,7 @@ namespace details
                             break;
                         }
 
-                        long _Result_1 = atomic_exchange(_PRegistration->_M_state, _CancellationTokenRegistration::_STATE_SYNCHRONIZE);
+                        const long _Result_1 = atomic_exchange(_PRegistration->_M_state, _CancellationTokenRegistration::_STATE_SYNCHRONIZE);
 
                         if (_Result_1 != _CancellationTokenRegistration::_STATE_CALLED)
                         {
@@ -522,7 +522,7 @@ class cancellation_token_registration
 public:
 
     cancellation_token_registration() :
-        _M_pRegistration(NULL)
+        _M_pRegistration(nullptr)
     {
     }
 
@@ -582,16 +582,16 @@ private:
 
     void _Clear()
     {
-        if (_M_pRegistration != NULL)
+        if (_M_pRegistration != nullptr)
         {
             _M_pRegistration->_Release();
         }
-        _M_pRegistration = NULL;
+        _M_pRegistration = nullptr;
     }
 
     void _Assign(_In_ details::_CancellationTokenRegistration *_PRegistration)
     {
-        if (_PRegistration != NULL)
+        if (_PRegistration != nullptr)
         {
             _PRegistration->_Reference();
         }
@@ -601,7 +601,7 @@ private:
     void _Move(_In_ details::_CancellationTokenRegistration *&_PRegistration)
     {
         _M_pRegistration = _PRegistration;
-        _PRegistration = NULL;
+        _PRegistration = nullptr;
     }
 
     details::_CancellationTokenRegistration *_M_pRegistration;
@@ -683,7 +683,7 @@ public:
     /// </returns>
     bool is_cancelable() const
     {
-        return (_M_Impl != NULL);
+        return (_M_Impl != nullptr);
     }
 
     /// <summary>
@@ -694,7 +694,7 @@ public:
     /// </returns>
     bool is_canceled() const
     {
-        return (_M_Impl != NULL && _M_Impl->_IsCanceled());
+        return (_M_Impl != nullptr && _M_Impl->_IsCanceled());
     }
 
     /// <summary>
@@ -716,7 +716,7 @@ public:
     template<typename _Function>
     ::Concurrency::cancellation_token_registration register_callback(const _Function& _Func) const
     {
-        if (_M_Impl == NULL)
+        if (_M_Impl == nullptr)
         {
             // A callback cannot be registered if the token does not have an associated source.
             throw invalid_operation();
@@ -747,7 +747,7 @@ public:
 
     _ImplType _GetImplValue() const
     {
-        return (_M_Impl == NULL) ? ::Concurrency::details::_CancellationTokenState::_None() : _M_Impl;
+        return (_M_Impl == nullptr) ? ::Concurrency::details::_CancellationTokenState::_None() : _M_Impl;
     }
 
     static cancellation_token _FromImpl(_ImplType _Impl)
@@ -763,16 +763,16 @@ private:
 
     void _Clear()
     {
-        if (_M_Impl != NULL)
+        if (_M_Impl != nullptr)
         {
             _M_Impl->_Release();
         }
-        _M_Impl = NULL;
+        _M_Impl = nullptr;
     }
 
     void _Assign(_ImplType _Impl)
     {
-        if (_Impl != NULL)
+        if (_Impl != nullptr)
         {
             _Impl->_Reference();
         }
@@ -782,11 +782,11 @@ private:
     void _Move(_ImplType &_Impl)
     {
         _M_Impl = _Impl;
-        _Impl = NULL;
+        _Impl = nullptr;
     }
 
     cancellation_token() :
-        _M_Impl(NULL)
+        _M_Impl(nullptr)
     {
     }
 
@@ -795,10 +795,10 @@ private:
     {
         if (_M_Impl == ::Concurrency::details::_CancellationTokenState::_None())
         {
-            _M_Impl = NULL;
+            _M_Impl = nullptr;
         }
 
-        if (_M_Impl != NULL)
+        if (_M_Impl != nullptr)
         {
             _M_Impl->_Reference();
         }
@@ -864,7 +864,7 @@ public:
 
     ~cancellation_token_source()
     {
-        if (_M_Impl != NULL)
+        if (_M_Impl != nullptr)
         {
             _M_Impl->_Release();
         }
@@ -949,16 +949,16 @@ private:
 
     void _Clear()
     {
-        if (_M_Impl != NULL)
+        if (_M_Impl != nullptr)
         {
             _M_Impl->_Release();
         }
-        _M_Impl = NULL;
+        _M_Impl = nullptr;
     }
 
     void _Assign(_ImplType _Impl)
     {
-        if (_Impl != NULL)
+        if (_Impl != nullptr)
         {
             _Impl->_Reference();
         }
@@ -968,7 +968,7 @@ private:
     void _Move(_ImplType &_Impl)
     {
         _M_Impl = _Impl;
-        _Impl = NULL;
+        _Impl = nullptr;
     }
 
     cancellation_token_source(_ImplType _Impl) :
@@ -976,10 +976,10 @@ private:
     {
         if (_M_Impl == ::Concurrency::details::_CancellationTokenState::_None())
         {
-            _M_Impl = NULL;
+            _M_Impl = nullptr;
         }
 
-        if (_M_Impl != NULL)
+        if (_M_Impl != nullptr)
         {
             _M_Impl->_Reference();
         }

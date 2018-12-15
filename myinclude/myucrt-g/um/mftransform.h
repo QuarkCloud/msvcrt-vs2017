@@ -53,6 +53,13 @@ typedef interface IMFDeviceTransform IMFDeviceTransform;
 #endif 	/* __IMFDeviceTransform_FWD_DEFINED__ */
 
 
+#ifndef __IMFDeviceTransformCallback_FWD_DEFINED__
+#define __IMFDeviceTransformCallback_FWD_DEFINED__
+typedef interface IMFDeviceTransformCallback IMFDeviceTransformCallback;
+
+#endif 	/* __IMFDeviceTransformCallback_FWD_DEFINED__ */
+
+
 /* header files for imported files */
 #include "mfobjects.h"
 
@@ -1095,6 +1102,103 @@ EXTERN_C const IID IID_IMFDeviceTransform;
 /* [local] */ 
 
 #endif // (WINVER >= _WIN32_WINNT_WINTHRESHOLD ) 
+#if (WINVER >= _WIN32_WINNT_WIN10) 
+EXTERN_GUID( MF_DMFT_FRAME_BUFFER_INFO,  0x396CE1C9, 0x67A9, 0x454C, 0x87, 0x97, 0x95, 0xA4, 0x57, 0x99, 0xD8, 0x04);
+
+
+extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0002_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0002_v0_0_s_ifspec;
+
+#ifndef __IMFDeviceTransformCallback_INTERFACE_DEFINED__
+#define __IMFDeviceTransformCallback_INTERFACE_DEFINED__
+
+/* interface IMFDeviceTransformCallback */
+/* [local][helpstring][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IMFDeviceTransformCallback;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("6D5CB646-29EC-41FB-8179-8C4C6D750811")
+    IMFDeviceTransformCallback : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE OnBufferSent( 
+            /* [annotation][in] */ 
+            _In_  IMFAttributes *pCallbackAttributes,
+            /* [annotation][in] */ 
+            _In_  DWORD pinId) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IMFDeviceTransformCallbackVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IMFDeviceTransformCallback * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IMFDeviceTransformCallback * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IMFDeviceTransformCallback * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnBufferSent )( 
+            IMFDeviceTransformCallback * This,
+            /* [annotation][in] */ 
+            _In_  IMFAttributes *pCallbackAttributes,
+            /* [annotation][in] */ 
+            _In_  DWORD pinId);
+        
+        END_INTERFACE
+    } IMFDeviceTransformCallbackVtbl;
+
+    interface IMFDeviceTransformCallback
+    {
+        CONST_VTBL struct IMFDeviceTransformCallbackVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IMFDeviceTransformCallback_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IMFDeviceTransformCallback_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IMFDeviceTransformCallback_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IMFDeviceTransformCallback_OnBufferSent(This,pCallbackAttributes,pinId)	\
+    ( (This)->lpVtbl -> OnBufferSent(This,pCallbackAttributes,pinId) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IMFDeviceTransformCallback_INTERFACE_DEFINED__ */
+
+
+/* interface __MIDL_itf_mftransform_0000_0003 */
+/* [local] */ 
+
+#endif // (WINVER >= _WIN32_WINNT_WIN10 ) 
 #if (WINVER >= _WIN32_WINNT_WIN8) 
 #pragma region Application Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
@@ -1197,8 +1301,8 @@ typedef struct _MFT_STREAM_STATE_PARAM *PMFT_STREAM_STATE_PARAM;
 #pragma endregion
 
 
-extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0002_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0002_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0003_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_mftransform_0000_0003_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 

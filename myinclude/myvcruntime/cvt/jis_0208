@@ -9,6 +9,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -27,7 +28,7 @@ template<class _Elem,
 	: public _STD codecvt<_Elem, char, _Statype>
 	{	// facet for converting between JIS-X0208 _Elem and JIS bytes
 public:
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -39,7 +40,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~codecvt_jis_0208() _NOEXCEPT
+	virtual ~codecvt_jis_0208() noexcept
 		{	// destroy the object
 		}
 
@@ -58,45 +59,65 @@ protected:
 			unsigned char _By = (unsigned char)*_Mid1;
 			unsigned short _Ch;
 
-			if (_By != _ESC_CODE)
-				;
-			else if (_Last1 - _Mid1 < 4)
-				break;
-			else if (_Mid1[1] == '('
-				&& (_Mid1[2] == 'B' || _Mid1[2] == 'J')
-				&& _Mid1[3] != _ESC_CODE)
-				{	// shift to 1-byte mode
-				_By = *(_Mid1 += 3);
-				*_Pstate = 0;
-				continue;
-				}
-			else if (_Mid1[1] == '$'
-				&& (_Mid1[2] == 'B' || _Mid1[2] == '@'))
-				if (_Last1 - _Mid1 < 5)
-					break;	// not enough bytes for escape plus 2-byte code
-				else
-					{	// enough bytes, shift and convert
-				_By = *(_Mid1 += 3);
+			if (_By == _ESC_CODE)
+				{
+				if (_Last1 - _Mid1 < 4)
+					{
+					break;
+					}
+
+				if (_Mid1[1] == '('
+					&& (_Mid1[2] == 'B' || _Mid1[2] == 'J')
+					&& _Mid1[3] != _ESC_CODE)
+					{	// shift to 1-byte mode
+					_By = static_cast<unsigned char>(*(_Mid1 += 3));
+					*_Pstate = 0;
+					continue;
+					}
+
+				if (_Mid1[1] == '$'
+					&& (_Mid1[2] == 'B' || _Mid1[2] == '@'))
+					{
+					if (_Last1 - _Mid1 < 5)
+						{
+						break;	// not enough bytes for escape plus 2-byte code
+						}
+
+					// enough bytes, shift and convert
+					_By = static_cast<unsigned char>(*(_Mid1 += 3));
 					*_Pstate = 1;
 					continue;
 					}
-			else
+
 				return (_Mybase::error);	// bad escape sequence
+				}
 
 			_Ch = _By;
-			if (*_Pstate == 0)
-				;
-			else if (_By < 0x21 || 0x7e < _By)
-				return (_Mybase::error);	// bad first byte
-			else if (_Last1 - _Mid1 < 2)
-				break;
-			else if ((_By = *++_Mid1) < 0x21 || 0x7e < _By)
-				return (_Mybase::error);	// bad second byte
-			else
+			if (*_Pstate != 0)
+				{
+				if (_By < 0x21 || 0x7e < _By)
+					{
+					return (_Mybase::error);	// bad first byte
+					}
+
+				if (_Last1 - _Mid1 < 2)
+					{
+					break;
+					}
+
+				if ((_By = static_cast<unsigned char>(*++_Mid1)) < 0x21 || 0x7e < _By)
+					{
+					return (_Mybase::error);	// bad second byte
+					}
+
 				_Ch = (unsigned short)(_Ch << 8 | _By);
+				}
 
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);	// code too large
+				}
+
 			++_Mid1;
 			*_Mid2++ = (_Elem)_Ch;
 			_Ans = _Mybase::ok;
@@ -123,18 +144,24 @@ protected:
 			if (_Ch <= 0xff)
 				{	// put a 1-byte code
 				if (_Ch == _ESC_CODE)
+					{
 					return (_Mybase::error);	// can't output bald ESC
-				else if (*_Pstate == 0)
-					;	// already in proper state
-				else if (_Last2 - _Mid2 < 4)
-					break;
-				else
-					{	// put shift to 1-byte state
+					}
+
+				if (*_Pstate != 0)
+					{	// not in proper state
+					if (_Last2 - _Mid2 < 4)
+						{
+						break;
+						}
+
+					// put shift to 1-byte state
 					*_Mid2++ = _ESC_CODE;
 					*_Mid2++ = '(';
 					*_Mid2++ = 'B';
 					*_Pstate = 0;
 					}
+
 				*_Mid2++ = (_Byte)_Ch;
 				}
 			else
@@ -142,10 +169,14 @@ protected:
 				if (*_Pstate != 0)
 					{	// already in proper state, check room
 					if (_Last2 - _Mid2 < 2)
+						{
 						break;
+						}
 					}
 				else if (_Last2 - _Mid2 < 5)
+					{
 					break;
+					}
 				else
 					{	// put shift to 2-byte state
 					*_Mid2++ = _ESC_CODE;
@@ -157,12 +188,18 @@ protected:
 				unsigned char _By = (unsigned char)(_Ch >> 8);
 
 				if (_By < 0x21 || 0x7e < _By)
+					{
 					return (_Mybase::error);	// bad first byte
+					}
+
 				*_Mid2++ = (_Byte)_By;
 
 				_By = (unsigned char)_Ch;
 				if (_By < 0x21 || 0x7e < _By)
+					{
 					return (_Mybase::error);	// bad first byte
+					}
+
 				*_Mid2++ = (_Byte)_By;
 				}
 			++_Mid1;
@@ -199,7 +236,7 @@ protected:
 		}
 
 	virtual int do_length(_Statype& _State, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
 		size_t _Wchars = 0;
 		_Statype _Mystate = _State;
@@ -216,7 +253,7 @@ protected:
 			case _Mybase::noconv:
 				return ((int)(_Wchars + (_Last1 - _First1)));
 
-			case  _Mybase::ok:
+			case _Mybase::ok:
 				if (_Mid2 == &_Ch + 1)
 					++_Wchars;	// replacement do_in might not convert one
 				_First1 = _Mid1;
@@ -230,17 +267,17 @@ protected:
 		return ((int)_Wchars);
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
 		return (5);
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
 		return (0);	// 0 => varying length
 		}
@@ -258,6 +295,7 @@ protected:
  #endif /* _TEST_IT */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

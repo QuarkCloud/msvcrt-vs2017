@@ -46,7 +46,7 @@
         enum : size_t
         {
             element_size      = sizeof(element_type),
-            //elements_per_pack = pack_size / element_size
+            elements_per_pack = pack_size / element_size
         };
     };
 

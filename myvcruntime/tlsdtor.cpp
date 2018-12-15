@@ -1,5 +1,5 @@
 /***
-*tlsdtor.c - Thread Local Storage dynamic destruction run-time support module
+*tlsdtor.cpp - Thread Local Storage dynamic destruction run-time support module
 *
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *

@@ -7,9 +7,9 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
-
-  #undef new
+ #undef new
 
  #if !defined(MRTDLL) || !defined(_CRTBLD)
  #ifndef _M_CEE_PURE
@@ -72,6 +72,7 @@ _END_EXTERN_C
  #endif /* !MRTDLL || !_CRTBLD */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

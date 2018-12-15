@@ -2536,7 +2536,7 @@ NdrFreeBuffer(
     );
 
 RPCRTAPI
-RPC_STATUS
+HRESULT
 RPC_ENTRY
 NdrGetDcomProtocolVersion(
     PMIDL_STUB_MESSAGE      pStubMsg,

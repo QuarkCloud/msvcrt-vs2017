@@ -13,6 +13,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -47,7 +48,7 @@ inline int _Check_C_return(int _Res, int _Other)
 	// C++ WRAPPERS FOR C FUNCTIONS (SAME NAMES, IN NAMESPACE std)
 inline int _Thrd_startX(_Thrd_imp_t *_Thr, _Thrd_callback_t _Fp, void *_Arg)
 	{	// throw exception on failure
-	int _Res = _Thrd_start(_Thr, _Fp, _Arg);
+	const int _Res = _Thrd_start(_Thr, _Fp, _Arg);
 	return (_Check_C_return(_Res != _Thrd_error ? _Res : _Thrd_nomem));
 	}
 
@@ -120,11 +121,11 @@ public:
 		{	// construct from condition variable pointer
 		}
 
-	~_Auto_cnd() _NOEXCEPT
+	~_Auto_cnd() noexcept
 		{	// destroy the object
 		if (_Active)
 			_Cnd_destroy(_MyCndp);
-			}
+		}
 
 	void _Release()
 		{	// release the condition variable
@@ -144,7 +145,7 @@ public:
 		{	// construct from mutex
 		}
 
-	~_Auto_mtx() _NOEXCEPT
+	~_Auto_mtx() noexcept
 		{	// destroy the object
 		if (_Active)
 			_Mtx_destroy(_MyMtxp);
@@ -162,7 +163,7 @@ private:
 
 #pragma warning(push)
 #pragma warning(disable: 4265)	// class has virtual functions, but destructor is not virtual
-class _Pad
+class __declspec(novtable) _Pad
 	{	// base class for launching threads
 public:
 	_Pad()
@@ -177,7 +178,7 @@ public:
 		_Cnd_cleaner._Release();
 		}
 
-	~_Pad() _NOEXCEPT
+	~_Pad() noexcept
 		{	// clean up handshake; non-virtual due to type-erasure
 		_Auto_cnd _Cnd_cleaner(_Cond);
 		_Auto_mtx _Mtx_cleaner(_Mtx);
@@ -202,10 +203,7 @@ public:
 	virtual void _Go() = 0;
 
 private:
-typedef unsigned int _Call_func_ret;
-#define _CALL_FUNC_MODIFIER	_STDCALL
-
-	static _Call_func_ret _STDCALL _Call_func(void *_Data)
+	static unsigned int __stdcall _Call_func(void *_Data)
 		{	// entry point for new thread
 		static_cast<_Pad *>(_Data)->_Go();
 		return (0);
@@ -240,7 +238,7 @@ private:
 		_STD invoke(_STD move(_STD get<_Idxs>(_Tup))...);
 		}
 
-	static void _Run(_LaunchPad *_Ln) _NOEXCEPT	// enforces termination
+	static void _Run(_LaunchPad *_Ln) noexcept	// enforces termination
 		{	// construct local unique_ptr and call function object within
 		_Target _Local(_STD forward<_Target>(_Ln->_MyTarget));
 		_Ln->_Release();
@@ -262,6 +260,7 @@ template<class _Target> inline
 _STD_END
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

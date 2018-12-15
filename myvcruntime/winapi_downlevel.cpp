@@ -115,14 +115,15 @@
 
 
 
-    static __forceinline void* __cdecl invalid_function_sentinel() throw()
+    static __forceinline void* __cdecl invalid_function_sentinel() noexcept
     {
         return reinterpret_cast<void*>(static_cast<uintptr_t>(-1));
     }
 
 
 
-    static HMODULE __cdecl try_load_library_from_system_directory(wchar_t const* const name) throw()
+    static HMODULE __cdecl try_load_library_from_system_directory(
+        wchar_t const* const name) noexcept
     {
         HMODULE const handle = LoadLibraryExW(name, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         if (handle)
@@ -147,7 +148,7 @@
 
 
 
-    static HMODULE __cdecl try_get_module(module_id const id) throw()
+    static HMODULE __cdecl try_get_module(module_id const id) noexcept
     {
         // First check to see if we've cached the module handle:
         if (HMODULE const cached_handle = __crt_interlocked_read_pointer(module_handles + id))
@@ -192,7 +193,7 @@
     static HMODULE __cdecl try_get_first_available_module(
         module_id const* const first,
         module_id const* const last
-        ) throw()
+        ) noexcept
     {
         for (module_id const* it = first; it != last; ++it)
         {
@@ -212,7 +213,7 @@
         char      const* const name,
         module_id const* const first_module_id,
         module_id const* const last_module_id
-        ) throw()
+        ) noexcept
     {
         HMODULE const module_handle = try_get_first_available_module(first_module_id, last_module_id);
         if (!module_handle)
@@ -230,7 +231,7 @@
         char      const* const name,
         module_id const* const first_module_id,
         module_id const* const last_module_id
-        ) throw()
+        ) noexcept
     {
         // First check to see if we've cached the function pointer:
         {
@@ -292,7 +293,7 @@
     // passing the correct set of candidate modules and returning a function pointer
     // of the correct type:
     #define APPLY(_FUNCTION, _MODULES)                                                                    \
-        static _CRT_CONCATENATE(_FUNCTION, _pft) __cdecl _CRT_CONCATENATE(try_get_, _FUNCTION)() throw()  \
+        static _CRT_CONCATENATE(_FUNCTION, _pft) __cdecl _CRT_CONCATENATE(try_get_, _FUNCTION)() noexcept \
         {                                                                                                 \
             static module_id const candidate_modules[] = _CRT_UNPARENTHESIZE(_MODULES);                   \
                                                                                                           \

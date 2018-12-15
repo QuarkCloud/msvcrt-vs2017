@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * UtilApiSet.h -- ApiSet Contract for api-ms-win-core-util-l1-1-0               *
@@ -18,30 +17,11 @@
 #include <apisetcconv.h>
 #include <minwindef.h>
 
-/* APISET_NAME: api-ms-win-core-util-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_UTIL_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_UTIL_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_UTIL_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -66,7 +46,6 @@ DecodePointer(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -87,16 +66,13 @@ DecodeSystemPointer(
     );
 
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_UTIL_VER >= 0x0101)
-
 WINBASEAPI
 HRESULT
 WINAPI
 EncodeRemotePointer(
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID Ptr,
-    _Out_ PVOID * EncodedPtr
+    _Out_ PVOID* EncodedPtr
     );
 
 
@@ -106,17 +82,14 @@ WINAPI
 DecodeRemotePointer(
     _In_ HANDLE ProcessHandle,
     _In_opt_ PVOID Ptr,
-    _Out_ PVOID * DecodedPtr
+    _Out_ PVOID* DecodedPtr
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_UTIL_VER >= 0x0101)
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region PC Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PC_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI

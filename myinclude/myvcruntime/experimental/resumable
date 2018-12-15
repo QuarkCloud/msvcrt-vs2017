@@ -6,7 +6,7 @@
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *
 *       Purpose: Library support of coroutines
-*       https://wg21.link/n4680
+*       https://wg21.link/p0057
 *
 *       [Public]
 *
@@ -26,6 +26,7 @@
 #pragma pack(push,_CRT_PACKING)
 #pragma warning(push,_STL_WARNING_LEVEL)
 #pragma warning(disable: _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
@@ -63,44 +64,44 @@ namespace experimental {
 	template <>
 	struct coroutine_handle<void>
 	{	// no promise access
-		coroutine_handle() _NOEXCEPT
+		coroutine_handle() noexcept
 		{
 		}
 
-		coroutine_handle(nullptr_t) _NOEXCEPT
+		coroutine_handle(nullptr_t) noexcept
 		{
 		}
 
-		coroutine_handle &operator=(nullptr_t) _NOEXCEPT
+		coroutine_handle &operator=(nullptr_t) noexcept
 		{
 			_Ptr = nullptr;
 			return *this;
 		}
 
-		static coroutine_handle from_address(void *_Addr) _NOEXCEPT
+		static coroutine_handle from_address(void *_Addr) noexcept
 		{
 			coroutine_handle _Result;
 			_Result._Ptr = static_cast<_Resumable_frame_prefix *>(_Addr);
 			return _Result;
 		}
 
-		void *address() const _NOEXCEPT
+		void *address() const noexcept
 		{
 			return _Ptr;
 		}
 
 		__declspec(deprecated("is deprecated. Use coroutine_handle::address() instead"))
-		void *to_address() const _NOEXCEPT
+		void *to_address() const noexcept
 		{
 			return _Ptr;
 		}
 
-		void operator()() const _NOEXCEPT
+		void operator()() const noexcept
 		{
 			resume();
 		}
 
-		explicit operator bool() const _NOEXCEPT
+		explicit operator bool() const noexcept
 		{
 			return _Ptr != nullptr;
 		}
@@ -140,12 +141,12 @@ namespace experimental {
 		using coroutine_handle<>::coroutine_handle;
 
 		__declspec(deprecated("with pointer parameter is deprecated. Use coroutine_handle::from_promise(T&) instead"))
-		static coroutine_handle from_promise(_PromiseT *_Prom) _NOEXCEPT
+		static coroutine_handle from_promise(_PromiseT *_Prom) noexcept
 		{
 			return from_promise(*_Prom);
 		}
 
-		static coroutine_handle from_promise(_PromiseT &_Prom) _NOEXCEPT
+		static coroutine_handle from_promise(_PromiseT &_Prom) noexcept
 		{
 			auto _FramePtr = reinterpret_cast<char *>(_STD addressof(_Prom)) + _ALIGNED_SIZE;
 			coroutine_handle<_PromiseT> _Result;
@@ -154,14 +155,14 @@ namespace experimental {
 			return _Result;
 		}
 
-		static coroutine_handle from_address(void *_Addr) _NOEXCEPT
+		static coroutine_handle from_address(void *_Addr) noexcept
 		{
 			coroutine_handle _Result;
 			_Result._Ptr = static_cast<_Resumable_frame_prefix *>(_Addr);
 			return _Result;
 		}
 
-		coroutine_handle &operator=(nullptr_t) _NOEXCEPT
+		coroutine_handle &operator=(nullptr_t) noexcept
 		{
 			_Ptr = nullptr;
 			return *this;
@@ -174,39 +175,39 @@ namespace experimental {
 				? 0
 				: ((sizeof(_PromiseT) + _ALIGN_REQ - 1) & ~(_ALIGN_REQ - 1));
 
-		_PromiseT &promise() const _NOEXCEPT
+		_PromiseT &promise() const noexcept
 		{
 			return *const_cast<_PromiseT *>(reinterpret_cast<_PromiseT const *>(
 				reinterpret_cast<char const *>(_Ptr) - _ALIGNED_SIZE));
 		}
 	};
 
-	inline bool operator==(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator==(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return _Left.address() == _Right.address();
 	}
 
-	inline bool operator<(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator<(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return less<void*>()(_Left.address(), _Right.address());
 	}
 
-	inline bool operator!=(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator!=(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return !(_Left == _Right);
 	}
 
-	inline bool operator>(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator>(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return _Right < _Left;
 	}
 
-	inline bool operator<=(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator<=(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return !(_Left > _Right);
 	}
 
-	inline bool operator>=(coroutine_handle<> _Left, coroutine_handle<> _Right) _NOEXCEPT
+	_NODISCARD inline bool operator>=(coroutine_handle<> _Left, coroutine_handle<> _Right) noexcept
 	{
 		return !(_Left < _Right);
 	}
@@ -216,20 +217,20 @@ namespace experimental {
 	{
 		bool _Ready;
 
-		explicit suspend_if(bool _Condition) _NOEXCEPT : _Ready(!_Condition)
+		explicit suspend_if(bool _Condition) noexcept : _Ready(!_Condition)
 		{
 		}
 
-		bool await_ready() _NOEXCEPT
+		bool await_ready() noexcept
 		{
 			return _Ready;
 		}
 
-		void await_suspend(coroutine_handle<>) _NOEXCEPT
+		void await_suspend(coroutine_handle<>) noexcept
 		{
 		}
 
-		void await_resume() _NOEXCEPT
+		void await_resume() noexcept
 		{
 		}
 	};
@@ -237,16 +238,16 @@ namespace experimental {
 	// STRUCT suspend_always
 	struct suspend_always
 	{
-		bool await_ready() _NOEXCEPT
+		bool await_ready() noexcept
 		{
 			return false;
 		}
 
-		void await_suspend(coroutine_handle<>) _NOEXCEPT
+		void await_suspend(coroutine_handle<>) noexcept
 		{
 		}
 
-		void await_resume() _NOEXCEPT
+		void await_resume() noexcept
 		{
 		}
 	};
@@ -254,16 +255,16 @@ namespace experimental {
 	// STRUCT suspend_never
 	struct suspend_never
 	{
-		bool await_ready() _NOEXCEPT
+		bool await_ready() noexcept
 		{
 			return true;
 		}
 
-		void await_suspend(coroutine_handle<>) _NOEXCEPT
+		void await_suspend(coroutine_handle<>) noexcept
 		{
 		}
 
-		void await_resume() _NOEXCEPT
+		void await_resume() noexcept
 		{
 		}
 	};
@@ -278,13 +279,13 @@ namespace experimental {
 		using _PromiseT = typename _Traits::promise_type;
 		using _Handle_type = coroutine_handle<_PromiseT>;
 
-		static _PromiseT *_Promise_from_frame(void *_Addr) _NOEXCEPT
+		static _PromiseT *_Promise_from_frame(void *_Addr) noexcept
 		{
 			return reinterpret_cast<_PromiseT *>(
 				reinterpret_cast<char *>(_Addr) - _Handle_type::_ALIGNED_SIZE);
 		}
 
-		static _Handle_type _Handle_from_frame(void *_Addr) _NOEXCEPT
+		static _Handle_type _Handle_from_frame(void *_Addr) noexcept
 		{
 			return _Handle_type::from_promise(*_Promise_from_frame(_Addr));
 		}
@@ -335,6 +336,7 @@ extern "C" void _coro_resume_block();
 #pragma intrinsic(_coro_resume_block)
 
 #pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 

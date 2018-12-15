@@ -66,8 +66,7 @@ static errno_t copy_string_into_buffer(
     size_t      const max_count
     ) throw()
 {
-    //return mbstowcs_s(nullptr, buffer, buffer_count, string, max_count);
-	return 0 ;
+    return mbstowcs_s(nullptr, buffer, buffer_count, string, max_count);
 }
 
 

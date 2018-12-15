@@ -1533,6 +1533,7 @@ typedef struct _DUMP_DRIVER {
 #define MPIO_IOCTL_FLAG_USE_SCSIADDRESS 2
 #define MPIO_IOCTL_FLAG_INVOLVE_DSM     4
 
+
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif

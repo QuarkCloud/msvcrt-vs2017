@@ -218,9 +218,42 @@ typedef struct _USE_INFO_5 {
 
 #define USE_DEFAULT_CREDENTIALS 0x4  // No explicit credentials passed to NetUseAdd
 
+//
+// Enforce connection level integrity and privacy.
+//
 
 #define CREATE_REQUIRE_CONNECTION_INTEGRITY 0x8
 #define CREATE_REQUIRE_CONNECTION_PRIVACY   0x10
+
+//
+// Persist the mapping in the registry. (Only valid for global mappings.)
+//
+
+#define CREATE_PERSIST_MAPPING   0x20
+
+//
+// Enables write-through semantics on all files opened via this mapping.
+//
+
+#define CREATE_WRITE_THROUGH_SEMANTICS 0x40
+
+//
+// Use options
+//
+
+
+typedef struct _USE_OPTION_GENERIC {
+    ULONG  Tag;
+    USHORT Length;
+    USHORT Reserved;
+} USE_OPTION_GENERIC, *PUSE_OPTION_GENERIC;
+
+typedef struct _USE_OPTION_DEFFERED_CONNECTION_PARAMETERS {
+    ULONG  Tag;      // 'CfeD'
+    USHORT Length;   // sizeof(USE_OPTION_DEFFERED_CONNECTION_PARAMETERS) + sizeof(FILE_REMOTE_PROTOCOL_INFO)
+    USHORT Reserved; // 0
+    // Followed by FILE_REMOTE_PROTOCOL_INFO
+} USE_OPTION_DEFFERED_CONNECTION_PARAMETERS, *PUSE_OPTION_DEFFERED_CONNECTION_PARAMETERS ;
 
 #ifdef __cplusplus
 }

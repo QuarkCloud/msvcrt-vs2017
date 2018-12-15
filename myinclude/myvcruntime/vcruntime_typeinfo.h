@@ -60,7 +60,8 @@ _VCRTIMP const char* __cdecl __std_type_info_name(
 _CRT_END_C_HEADER
 
 
-
+#pragma warning(push)
+#pragma warning(disable: 4577) // 'noexcept' used with no exception handling mode specified
 class type_info
 {
 public:
@@ -68,27 +69,27 @@ public:
     type_info(const type_info&) = delete;
     type_info& operator=(const type_info&) = delete;
 
-    size_t hash_code() const throw()
+    size_t hash_code() const noexcept
     {
         return __std_type_info_hash(&_Data);
     }
 
-    bool operator==(const type_info& _Other) const throw()
+    bool operator==(const type_info& _Other) const noexcept
     {
         return __std_type_info_compare(&_Data, &_Other._Data) == 0;
     }
 
-    bool operator!=(const type_info& _Other) const throw()
+    bool operator!=(const type_info& _Other) const noexcept
     {
         return __std_type_info_compare(&_Data, &_Other._Data) != 0;
     }
 
-    bool before(const type_info& _Other) const throw()
+    bool before(const type_info& _Other) const noexcept
     {
         return __std_type_info_compare(&_Data, &_Other._Data) < 0;
     }
 
-    const char* name() const throw()
+    const char* name() const noexcept
     {
         #ifdef _M_CEE_PURE
         return __std_type_info_name(&_Data, static_cast<__type_info_node*>(__type_info_root_node.ToPointer()));
@@ -97,17 +98,18 @@ public:
         #endif
     }
 
-    const char* raw_name() const throw()
+    const char* raw_name() const noexcept
     {
         return _Data._DecoratedName;
     }
 
-    virtual ~type_info() throw();
+    virtual ~type_info() noexcept;
 
 private:
 
     mutable __std_type_info_data _Data;
 };
+#pragma warning(pop)
 
 namespace std {
 	using ::type_info;
@@ -117,24 +119,26 @@ namespace std {
 
 namespace std {
 
+#pragma warning(push)
+#pragma warning(disable: 4577) // 'noexcept' used with no exception handling mode specified
 class bad_cast
     : public exception
 {
 public:
 
-    bad_cast() throw()
+    bad_cast() noexcept
         : exception("bad cast", 1)
     {
     }
 
-    static bad_cast __construct_from_string_literal(const char* const _Message) throw()
+    static bad_cast __construct_from_string_literal(const char* const _Message) noexcept
     {
         return bad_cast(_Message, 1);
     }
 
 private:
 
-    bad_cast(const char* const _Message, int) throw()
+    bad_cast(const char* const _Message, int) noexcept
         : exception(_Message, 1)
     {
     }
@@ -145,12 +149,12 @@ class bad_typeid
 {
 public:
 
-    bad_typeid() throw()
+    bad_typeid() noexcept
         : exception("bad typeid", 1)
     {
     }
 
-    static bad_typeid __construct_from_string_literal(const char* const _Message) throw()
+    static bad_typeid __construct_from_string_literal(const char* const _Message) noexcept
     {
         return bad_typeid(_Message, 1);
     }
@@ -159,7 +163,7 @@ private:
 
     friend class __non_rtti_object;
 
-    bad_typeid(const char* const _Message, int) throw()
+    bad_typeid(const char* const _Message, int) noexcept
         : exception(_Message, 1)
     {
     }
@@ -170,19 +174,20 @@ class __non_rtti_object
 {
 public:
 
-    static __non_rtti_object __construct_from_string_literal(const char* const _Message) throw()
+    static __non_rtti_object __construct_from_string_literal(const char* const _Message) noexcept
     {
         return __non_rtti_object(_Message, 1);
     }
 
 private:
 
-    __non_rtti_object(const char* const _Message, int) throw()
+    __non_rtti_object(const char* const _Message, int) noexcept
         : bad_typeid(_Message, 1)
     {
     }
 };
 
+#pragma warning(pop)
 } // namespace std
 
 #endif // _HAS_EXCEPTIONS

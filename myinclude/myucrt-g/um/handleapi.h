@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * handleapi.h -- ApiSet Contract for api-ms-win-core-handle-l1-1-0              *
@@ -18,22 +17,6 @@
 #include <apisetcconv.h>
 #include <minwindef.h>
 
-/* APISET_NAME: api-ms-win-core-handle-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_HANDLE_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_HANDLE_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,7 +27,6 @@ extern "C" {
 #define INVALID_HANDLE_VALUE ((HANDLE)(LONG_PTR)-1)
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 //
@@ -85,7 +67,6 @@ CompareObjectHandles(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI

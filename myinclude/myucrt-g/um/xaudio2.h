@@ -1198,8 +1198,56 @@ __inline float XAudio2CutoffFrequencyToOnePoleCoefficient(float CutoffFrequency,
     #define XAUDIO2_STDAPI extern "C" __declspec(dllimport) HRESULT __stdcall
 #endif
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+XAUDIO2_STDAPI XAudio2CreateWithVersionInfo(_Outptr_ IXAudio2** ppXAudio2,
+    UINT32 Flags X2DEFAULT(0),
+    XAUDIO2_PROCESSOR XAudio2Processor X2DEFAULT(XAUDIO2_DEFAULT_PROCESSOR),
+    DWORD ntddiVersion X2DEFAULT(NTDDI_VERSION));
+
+inline HRESULT XAudio2Create(_Outptr_ IXAudio2** ppXAudio2,
+    UINT32 Flags X2DEFAULT(0),
+    XAUDIO2_PROCESSOR XAudio2Processor X2DEFAULT(XAUDIO2_DEFAULT_PROCESSOR))
+{
+    // When compiled for RS5 or later, try to invoke XAudio2CreateWithVersionInfo.
+    // Need to use LoadLibrary in case the app is running on an older OS.
+    typedef HRESULT(__stdcall *XAudio2CreateWithVersionInfoFunc)(_Outptr_ IXAudio2**, UINT32, XAUDIO2_PROCESSOR, DWORD);
+    typedef HRESULT(__stdcall *XAudio2CreateInfoFunc)(_Outptr_ IXAudio2**, UINT32, XAUDIO2_PROCESSOR);
+
+    static HMODULE s_dllInstance = nullptr;
+    static XAudio2CreateWithVersionInfoFunc s_pfnAudio2CreateWithVersion = nullptr;
+    static XAudio2CreateInfoFunc s_pfnAudio2Create = nullptr;
+
+    if (s_dllInstance == nullptr)
+    {
+        s_dllInstance = LoadLibraryEx(XAUDIO2_DLL, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        if (s_dllInstance == nullptr)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        s_pfnAudio2CreateWithVersion = (XAudio2CreateWithVersionInfoFunc)(void*)GetProcAddress(s_dllInstance, "XAudio2CreateWithVersionInfo");
+        if (s_pfnAudio2CreateWithVersion == nullptr)
+        {
+            s_pfnAudio2Create = (XAudio2CreateInfoFunc)(void*)GetProcAddress(s_dllInstance, "XAudio2Create");
+            if (s_pfnAudio2Create == nullptr)
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+        }
+    }
+
+    if (s_pfnAudio2CreateWithVersion != nullptr)
+    {
+        return (*s_pfnAudio2CreateWithVersion)(ppXAudio2, Flags, XAudio2Processor, NTDDI_VERSION);
+    }
+    return (*s_pfnAudio2Create)(ppXAudio2, Flags, XAudio2Processor);
+}
+#else
+// RS4 or older, or not a desktop app
 XAUDIO2_STDAPI XAudio2Create(_Outptr_ IXAudio2** ppXAudio2, UINT32 Flags X2DEFAULT(0),
-                             XAUDIO2_PROCESSOR XAudio2Processor X2DEFAULT(XAUDIO2_DEFAULT_PROCESSOR));
+    XAUDIO2_PROCESSOR XAudio2Processor X2DEFAULT(XAUDIO2_DEFAULT_PROCESSOR));
+#endif
+
 // Undo the #pragma pack(push, 1) directive at the top of this file
 #pragma pack(pop)
 

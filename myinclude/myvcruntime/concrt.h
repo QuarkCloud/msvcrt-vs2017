@@ -18,7 +18,7 @@
 
 #include <crtdefs.h>
 
-#if defined(BUILD_WINDOWS)
+#if defined(_CRT_WINDOWS)
 #error Must not be included during CRT build with _CRT_WINDOWS flag enabled
 #endif
 
@@ -289,13 +289,13 @@ namespace details
         }
 
         // Standard operator delete
-        void operator delete(void * _Ptr) throw()
+        void operator delete(void * _Ptr) noexcept
         {
             ::Concurrency::Free(_Ptr);
         }
 
         // Standard operator new, no-throw version
-        void * operator new(size_t _Size, const std::nothrow_t&) throw()
+        void * operator new(size_t _Size, const std::nothrow_t&) noexcept
         {
             void * _Ptr;
 
@@ -305,14 +305,14 @@ namespace details
             }
             catch(...)
             {
-                _Ptr = NULL;
+                _Ptr = nullptr;
             }
 
             return (_Ptr);
         }
 
         // Standard operator delete, no-throw version
-        void operator delete(void * _Ptr, const std::nothrow_t&) throw()
+        void operator delete(void * _Ptr, const std::nothrow_t&) noexcept
         {
             operator delete(_Ptr);
         }
@@ -324,42 +324,42 @@ namespace details
         }
 
         // Standard operator delete array
-        void operator delete[](void * _Ptr) throw()
+        void operator delete[](void * _Ptr) noexcept
         {
             operator delete(_Ptr);
         }
 
         // Standard operator new array, no-throw version
-        void * operator new[](size_t _Size, const std::nothrow_t& _No_throw) throw ()
+        void * operator new[](size_t _Size, const std::nothrow_t& _No_throw) noexcept
         {
             return operator new(_Size, _No_throw);
         }
 
         // Standard operator delete array, no-throw version
-        void operator delete[](void * _Ptr, const std::nothrow_t& _No_throw) throw()
+        void operator delete[](void * _Ptr, const std::nothrow_t& _No_throw) noexcept
         {
             operator delete(_Ptr, _No_throw);
         }
 
         // Standard operator new with void* placement
-        void * operator new(size_t, void * _Location) throw()
+        void * operator new(size_t, void * _Location) noexcept
         {
             return _Location;
         }
 
         // Standard operator delete with void* placement
-        void operator delete(void *, void *) throw()
+        void operator delete(void *, void *) noexcept
         {
         }
 
         // Standard operator new array with void* placement
-        void * __cdecl operator new[](size_t, void * _Location) throw()
+        void * __cdecl operator new[](size_t, void * _Location) noexcept
         {
             return _Location;
         }
 
         // Standard operator delete array with void* placement
-        void __cdecl operator delete[](void *, void *) throw()
+        void __cdecl operator delete[](void *, void *) noexcept
         {
         }
     };
@@ -368,7 +368,7 @@ namespace details
     class _Context
     {
     public:
-        _CONCRTIMP _Context(::Concurrency::Context * _PContext = NULL) : _M_pContext(_PContext) {}
+        _CONCRTIMP _Context(::Concurrency::Context * _PContext = nullptr) : _M_pContext(_PContext) {}
         _CONCRTIMP static _Context __cdecl _CurrentContext();
         _CONCRTIMP static void __cdecl _Yield();
         _CONCRTIMP static void __cdecl _Oversubscribe(bool _BeginOversubscription);
@@ -380,7 +380,7 @@ namespace details
     class _Scheduler
     {
     public:
-        _CONCRTIMP _Scheduler(::Concurrency::Scheduler * _PScheduler = NULL) : _M_pScheduler(_PScheduler) {}
+        _CONCRTIMP _Scheduler(::Concurrency::Scheduler * _PScheduler = nullptr) : _M_pScheduler(_PScheduler) {}
         _CONCRTIMP unsigned int _Reference();
         _CONCRTIMP unsigned int _Release();
         _CONCRTIMP ::Concurrency::Scheduler * _GetScheduler() { return _M_pScheduler; }
@@ -706,7 +706,7 @@ namespace details
 #pragma warning ( pop )
             if (_ShouldYield)
             {
-                _CONCRT_ASSERT(_M_yieldFunction != NULL);
+                _CONCRT_ASSERT(_M_yieldFunction != nullptr);
                 _M_yieldFunction();
             }
             else
@@ -1049,13 +1049,13 @@ namespace details
     {
     public:
 
-        _MallocaArrayHolder() : _M_ElemArray(NULL), _M_ElemsConstructed(0) {}
+        _MallocaArrayHolder() : _M_ElemArray(nullptr), _M_ElemsConstructed(0) {}
 
         // _Initialize takes the pointer to the memory allocated by the user using _malloca
         void _Initialize(_ElemType * _Elem)
         {
             // The object must be initialized exactly once
-            _CONCRT_ASSERT(_M_ElemArray == NULL && _M_ElemsConstructed == 0);
+            _CONCRT_ASSERT(_M_ElemArray == nullptr && _M_ElemsConstructed == 0);
             _M_ElemArray = _Elem;
             _M_ElemsConstructed = 0;
         }
@@ -1075,7 +1075,7 @@ namespace details
         // this method must be called sequentially from 0 to N where N < _ElemCount.
         void _IncrementConstructedElemsCount()
         {
-            _CONCRT_ASSERT(_M_ElemArray != NULL); // must already be initialized
+            _CONCRT_ASSERT(_M_ElemArray != nullptr); // must already be initialized
             _M_ElemsConstructed++;
         }
 
@@ -1110,7 +1110,7 @@ namespace details
             return sizeof(_ElemNodeType);
         }
 
-        _MallocaListHolder() : _M_FirstNode(NULL)
+        _MallocaListHolder() : _M_FirstNode(nullptr)
         {
         }
 
@@ -1136,7 +1136,7 @@ namespace details
         // Walk the list and destruct, then free each element
         _At_(this->_M_FirstNode, _Pre_valid_) virtual ~_MallocaListHolder()
         {
-            for( _ElemNodeType * _Node = _M_FirstNode; _Node != NULL; )
+            for( _ElemNodeType * _Node = _M_FirstNode; _Node != nullptr; )
             {
                 auto _M_Next = _Node->_M_Next;
                 _Node->_M_Elem._ElemType::~_ElemType();
@@ -1202,7 +1202,7 @@ public:
     ///     The <c>HRESULT</c> value of the error that caused the exception.
     /// </param>
     /**/
-    _CONCRTIMP scheduler_resource_allocation_error(_In_z_ const char * _Message, HRESULT _Hresult) throw();
+    _CONCRTIMP scheduler_resource_allocation_error(_In_z_ const char * _Message, HRESULT _Hresult) noexcept;
 
     /// <summary>
     ///     Constructs a <c>scheduler_resource_allocation_error</c> object.
@@ -1211,7 +1211,7 @@ public:
     ///     The <c>HRESULT</c> value of the error that caused the exception.
     /// </param>
     /**/
-    explicit _CONCRTIMP scheduler_resource_allocation_error(HRESULT _Hresult) throw();
+    explicit _CONCRTIMP scheduler_resource_allocation_error(HRESULT _Hresult) noexcept;
 
     /// <summary>
     ///     Returns the error code that caused the exception.
@@ -1220,7 +1220,7 @@ public:
     ///     The <c>HRESULT</c> value of the error that caused the exception.
     /// </returns>
     /**/
-    _CONCRTIMP HRESULT get_error_code() const throw();
+    _CONCRTIMP HRESULT get_error_code() const noexcept;
 
 private:
     HRESULT _Hresult;
@@ -1249,7 +1249,7 @@ public:
     ///     The <c>HRESULT</c> value of the error that caused the exception.
     /// </param>
     /**/
-    _CONCRTIMP scheduler_worker_creation_error(_In_z_ const char * _Message, HRESULT _Hresult) throw();
+    _CONCRTIMP scheduler_worker_creation_error(_In_z_ const char * _Message, HRESULT _Hresult) noexcept;
 
     /// <summary>
     ///     Constructs a <c>scheduler_worker_creation_error</c> object.
@@ -1258,7 +1258,7 @@ public:
     ///     The <c>HRESULT</c> value of the error that caused the exception.
     /// </param>
     /**/
-    explicit _CONCRTIMP scheduler_worker_creation_error(HRESULT _Hresult) throw();
+    explicit _CONCRTIMP scheduler_worker_creation_error(HRESULT _Hresult) noexcept;
 };
 
 /// <summary>
@@ -1275,13 +1275,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP unsupported_os(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP unsupported_os(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>unsupported_os</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP unsupported_os() throw();
+    _CONCRTIMP unsupported_os() noexcept;
 };
 
 /// <summary>
@@ -1301,13 +1301,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP scheduler_not_attached(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP scheduler_not_attached(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>scheduler_not_attached</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP scheduler_not_attached() throw();
+    _CONCRTIMP scheduler_not_attached() noexcept;
 };
 
 /// <summary>
@@ -1327,13 +1327,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP improper_scheduler_attach(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP improper_scheduler_attach(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>improper_scheduler_attach</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP improper_scheduler_attach() throw();
+    _CONCRTIMP improper_scheduler_attach() noexcept;
 };
 
 /// <summary>
@@ -1355,13 +1355,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP improper_scheduler_detach(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP improper_scheduler_detach(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>improper_scheduler_detach</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP improper_scheduler_detach() throw();
+    _CONCRTIMP improper_scheduler_detach() noexcept;
 };
 
 /// <summary>
@@ -1382,13 +1382,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP improper_scheduler_reference(_In_z_ const char* _Message) throw();
+    explicit _CONCRTIMP improper_scheduler_reference(_In_z_ const char* _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>improper_scheduler_reference</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP improper_scheduler_reference() throw();
+    _CONCRTIMP improper_scheduler_reference() noexcept;
 };
 
 /// <summary>
@@ -1407,13 +1407,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP default_scheduler_exists(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP default_scheduler_exists(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>default_scheduler_exists</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP default_scheduler_exists() throw();
+    _CONCRTIMP default_scheduler_exists() noexcept;
 };
 
 /// <summary>
@@ -1440,13 +1440,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP context_unblock_unbalanced(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP context_unblock_unbalanced(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>context_unblock_unbalanced</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP context_unblock_unbalanced() throw();
+    _CONCRTIMP context_unblock_unbalanced() noexcept;
 };
 
 /// <summary>
@@ -1466,13 +1466,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP context_self_unblock(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP context_self_unblock(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>context_self_unblock</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP context_self_unblock() throw();
+    _CONCRTIMP context_self_unblock() noexcept;
 };
 
 /// <summary>
@@ -1502,13 +1502,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP missing_wait(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP missing_wait(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>missing_wait</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP missing_wait() throw();
+    _CONCRTIMP missing_wait() noexcept;
 };
 
 /// <summary>
@@ -1531,13 +1531,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP bad_target(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP bad_target(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>bad_target</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP bad_target() throw();
+    _CONCRTIMP bad_target() noexcept;
 };
 
 /// <summary>
@@ -1555,13 +1555,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP message_not_found(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP message_not_found(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>message_not_found</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP message_not_found() throw();
+    _CONCRTIMP message_not_found() noexcept;
 };
 
 /// <summary>
@@ -1581,13 +1581,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_link_target(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_link_target(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_link_target</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_link_target() throw();
+    _CONCRTIMP invalid_link_target() noexcept;
 };
 
 /// <summary>
@@ -1610,13 +1610,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_scheduler_policy_key(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_scheduler_policy_key(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_scheduler_policy_key</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_scheduler_policy_key() throw();
+    _CONCRTIMP invalid_scheduler_policy_key() noexcept;
 };
 
 /// <summary>
@@ -1638,13 +1638,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_scheduler_policy_value(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_scheduler_policy_value(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_scheduler_policy_value</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_scheduler_policy_value() throw();
+    _CONCRTIMP invalid_scheduler_policy_value() noexcept;
 };
 
 /// <summary>
@@ -1666,13 +1666,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_scheduler_policy_thread_specification(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_scheduler_policy_thread_specification(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_scheduler_policy_value</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_scheduler_policy_thread_specification() throw();
+    _CONCRTIMP invalid_scheduler_policy_thread_specification() noexcept;
 };
 
 /// <summary>
@@ -1700,13 +1700,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP nested_scheduler_missing_detach(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP nested_scheduler_missing_detach(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs a <c>nested_scheduler_missing_detach</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP nested_scheduler_missing_detach() throw();
+    _CONCRTIMP nested_scheduler_missing_detach() noexcept;
 };
 
 /// <summary>
@@ -1723,13 +1723,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP operation_timed_out(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP operation_timed_out(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>operation_timed_out</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP operation_timed_out() throw();
+    _CONCRTIMP operation_timed_out() noexcept;
 };
 
 /// <summary>
@@ -1757,13 +1757,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_multiple_scheduling(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_multiple_scheduling(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_multiple_scheduling</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_multiple_scheduling() throw();
+    _CONCRTIMP invalid_multiple_scheduling() noexcept;
 };
 
 /// <summary>
@@ -1783,13 +1783,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP invalid_oversubscribe_operation(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP invalid_oversubscribe_operation(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>invalid_oversubscribe_operation</c> object.
     /// </summary>
     /**/
-    _CONCRTIMP invalid_oversubscribe_operation() throw();
+    _CONCRTIMP invalid_oversubscribe_operation() noexcept;
 };
 
 /// <summary>
@@ -1813,13 +1813,13 @@ public:
     ///     A descriptive message of the error.
     /// </param>
     /**/
-    explicit _CONCRTIMP improper_lock(_In_z_ const char * _Message) throw();
+    explicit _CONCRTIMP improper_lock(_In_z_ const char * _Message) noexcept;
 
     /// <summary>
     ///     Constructs an <c>improper_lock</c> exception.
     /// </summary>
     /**/
-    _CONCRTIMP improper_lock() throw();
+    _CONCRTIMP improper_lock() noexcept;
 };
 
 /// <summary>
@@ -1841,8 +1841,8 @@ public:
         _M_type(_System),
         _M_reserved(0),
         _M_bindingId(0),
-        _M_ptr(NULL),
-        _M_pBinding(NULL)
+        _M_ptr(nullptr),
+        _M_pBinding(nullptr)
     {
     }
 
@@ -1968,7 +1968,7 @@ public:
     ///     Constructs a specific location.
     /// </summary>
     /**/
-    location(_Type _LocationType, unsigned int _Id, unsigned int _BindingId = 0, _Inout_opt_ void *_PBinding = NULL);
+    location(_Type _LocationType, unsigned int _Id, unsigned int _BindingId = 0, _Inout_opt_ void *_PBinding = nullptr);
 
     /// <summary>
     ///     Determines whether two locations have an intersection. This is a fast intersection which avoids certain checks by knowing that
@@ -4203,7 +4203,7 @@ namespace details
     public:
         // Constructor for an unrealized chore.
         _UnrealizedChore() :
-            _M_pTaskCollection(NULL)
+            _M_pTaskCollection(nullptr)
         {
         }
         virtual ~_UnrealizedChore() {}
@@ -4316,10 +4316,10 @@ namespace details
         // Constructs a new task collection.
         _TaskCollectionBase() :
             _M_inliningDepth(_S_notInlined),
-            _M_pTokenState(NULL),
+            _M_pTokenState(nullptr),
             _M_unpoppedChores(0),
             _M_completedStolenChores(_CollectionNotInitialized),
-            _M_pException(NULL)
+            _M_pException(nullptr)
         {
         }
         _TaskCollectionBase(const _TaskCollectionBase&) = delete;
@@ -4330,7 +4330,7 @@ namespace details
             _M_pTokenState(_PTokenState),
             _M_unpoppedChores(0),
             _M_completedStolenChores(_CollectionNotInitialized),
-            _M_pException(NULL)
+            _M_pException(nullptr)
         {
         }
 
@@ -4361,7 +4361,7 @@ namespace details
         }
 
         // Returns the token state associated with this task collection
-        _CancellationTokenState *_GetTokenState(_CancellationTokenRegistration **_PRegistration = NULL);
+        _CancellationTokenState *_GetTokenState(_CancellationTokenRegistration **_PRegistration = nullptr);
 
     protected:
 
@@ -4384,7 +4384,7 @@ namespace details
         // Indicates whether or not this task collection has an abnormal exit.
         bool _IsAbnormalExit() const
         {
-            return _M_pException != NULL;
+            return _M_pException != nullptr;
         }
 
         // Returns the cancel flags.
@@ -4415,7 +4415,7 @@ namespace details
         // Returns the parent collection safely.
         _TaskCollectionBase *_SafeGetParent()
         {
-            return ((_M_inliningDepth != _S_notInlined) ? _M_pParent : NULL);
+            return ((_M_inliningDepth != _S_notInlined) ? _M_pParent : nullptr);
         }
 
         // Called in order to determine whether this task collection will interrupt for a pending cancellation at or above it.
@@ -4507,7 +4507,7 @@ namespace details
         _StructuredTaskCollection()
         {
             _Construct();
-            _M_pTokenState = NULL;
+            _M_pTokenState = nullptr;
         }
 
         _StructuredTaskCollection(const _StructuredTaskCollection&) = delete;
@@ -4593,7 +4593,7 @@ namespace details
         ///     An indication of the status of the wait.
         /// </returns>
         /**/
-        _CONCRTIMP _TaskCollectionStatus __stdcall _RunAndWait(_UnrealizedChore * _PChore = NULL);
+        _CONCRTIMP _TaskCollectionStatus __stdcall _RunAndWait(_UnrealizedChore * _PChore = nullptr);
 
         /// <summary>
         ///     Waits for all chores running in the _StructuredTaskCollection to finish (normally or abnormally). This method encapsulates
@@ -4622,7 +4622,7 @@ namespace details
 
         void _Construct()
         {
-            _M_pOwningContext = NULL;
+            _M_pOwningContext = nullptr;
             _M_inlineFlags = _S_structured;
         }
 
@@ -4797,7 +4797,7 @@ namespace details
         /// </returns>
         /// </summary>
         /**/
-        _CONCRTIMP _TaskCollectionStatus __stdcall _RunAndWait(_UnrealizedChore * _PChore = NULL);
+        _CONCRTIMP _TaskCollectionStatus __stdcall _RunAndWait(_UnrealizedChore * _PChore = nullptr);
 
         /// <summary>
         ///     Waits for all chores running in the _TaskCollection to finish (normally or abnormally). This method encapsulates
@@ -4934,7 +4934,7 @@ namespace details
         ///     An _UnrealizedChore which will be freed if its lifetime is owned by the Runtime.
         /// </param>
         /**/
-        void _NotifyCompletedChoreAndFree(_UnrealizedChore * _PChore = NULL);
+        void _NotifyCompletedChoreAndFree(_UnrealizedChore * _PChore = nullptr);
 
         /// <summary>
         ///     Waits on the given task collection and every alias.

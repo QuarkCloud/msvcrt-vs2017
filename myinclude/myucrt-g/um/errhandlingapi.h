@@ -1,8 +1,3 @@
- 
-// begin_1_0
-// begin_1_1
-// begin_1_2
-// begin_1_3
 /********************************************************************************
 *                                                                               *
 * errhandlingapi.h - ApiSet Contract for api-ms-win-core-errorhandling-l1       *
@@ -22,41 +17,11 @@
 #include <apisetcconv.h>
 #include <minwindef.h>
 
-/* APISET_NAME: api-ms-win-core-errorhandling-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_ERRORHANDLING_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_ERRORHANDLING_VER 0x0103
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINPHONEBLUE
-#define _APISET_ERRORHANDLING_VER 0x0102
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_ERRORHANDLING_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_ERRORHANDLING_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// end_1_0
-// end_1_1
-// end_1_2
-// end_1_3
-
-// begin_1_0
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 //
@@ -81,7 +46,7 @@ RaiseException(
     _In_ DWORD dwExceptionCode,
     _In_ DWORD dwExceptionFlags,
     _In_ DWORD nNumberOfArguments,
-    _In_reads_opt_(nNumberOfArguments) CONST ULONG_PTR * lpArguments
+    _In_reads_opt_(nNumberOfArguments) CONST ULONG_PTR* lpArguments
     );
 
 
@@ -89,7 +54,6 @@ RaiseException(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 __callback
@@ -97,7 +61,7 @@ WINBASEAPI
 LONG
 WINAPI
 UnhandledExceptionFilter(
-    _In_ struct _EXCEPTION_POINTERS * ExceptionInfo
+    _In_ struct _EXCEPTION_POINTERS* ExceptionInfo
     );
 
 
@@ -105,7 +69,6 @@ UnhandledExceptionFilter(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -119,7 +82,8 @@ SetUnhandledExceptionFilter(
 #ifndef _M_CEE_PURE
 
 WINBASEAPI
-_Check_return_ _Post_equals_last_error_
+_Check_return_
+_Post_equals_last_error_
 DWORD
 WINAPI
 GetLastError(
@@ -141,9 +105,7 @@ SetLastError(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= 0x0600)
 
@@ -161,7 +123,6 @@ GetErrorMode(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -175,16 +136,10 @@ SetErrorMode(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-
-// begin_1_1
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
-
-#if ((_WIN32_WINNT >= 0x0501) && !defined(_CONTRACT_GEN)) || (_APISET_ERRORHANDLING_VER > 0x0100)
+#if (_WIN32_WINNT >= 0x0501)
 
 WINBASEAPI
 _Ret_maybenull_
@@ -222,15 +177,11 @@ RemoveVectoredContinueHandler(
     );
 
 
-#endif // ((_WIN32_WINNT >= 0x0501) && !defined(_CONTRACT_GEN)) || (_APISET_ERRORHANDLING_VER > 0x0100)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER > 0x0100)
+#endif // (_WIN32_WINNT >= 0x0501)
 
 // RC warns because "WINBASE_DECLARE_RESTORE_LAST_ERROR" is a bit long.
 #if !defined(RC_INVOKED)
 //#if _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_RESTORE_LAST_ERROR)
-
 #if defined(WINBASE_DECLARE_RESTORE_LAST_ERROR)
 
 WINBASEAPI
@@ -249,21 +200,11 @@ typedef VOID (WINAPI* PRESTORE_LAST_ERROR)(DWORD);
 #endif 
 #endif
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER > 0x0100)
-
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_1
-
-// begin_1_2
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER > 0x0101)
 
 WINBASEAPI
 VOID
@@ -275,21 +216,11 @@ RaiseFailFastException(
     );
 
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER > 0x0101)
-
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_2
-
-// begin_1_3
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
 
 WINBASEAPI
 VOID
@@ -313,17 +244,11 @@ FatalAppExitW(
 #define FatalAppExit  FatalAppExitA
 #endif // !UNICODE
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
 
 WINBASEAPI
 DWORD
@@ -342,17 +267,11 @@ SetThreadErrorMode(
     );
 
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
 
 WINBASEAPI
 VOID
@@ -362,24 +281,11 @@ TerminateProcessOnMemoryExhaustion(
     );
 
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_ERRORHANDLING_VER >= 0x0103)
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
-
-// end_1_3
-
-// begin_1_0
-// begin_1_1
-// begin_1_2
-// begin_1_3
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // _ERRHANDLING_H_
-// end_1_0
-// end_1_1
-// end_1_2
-// end_1_3

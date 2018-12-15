@@ -11,6 +11,7 @@
 #include <corecrt_internal.h>
 #include <mbctype.h>
 #include <mbstring.h>
+#include <uchar.h>
 
 _CRT_BEGIN_C_HEADER
 
@@ -18,9 +19,6 @@ _CRT_BEGIN_C_HEADER
 
  // Multibyte full-width-latin upper/lower info
 #define NUM_ULINFO 6
-
-
-#define _ismbbtruelead(_lb,_ch) (!(_lb) && _ismbblead((_ch)))
 
 /* internal use macros since tolower/toupper are locale-dependent */
 #define _mbbisupper(_c) ((_mbctype.value()[(_c) + 1] & _SBUP) == _SBUP)
@@ -58,24 +56,27 @@ _CRT_BEGIN_C_HEADER
 #define _MBKIGOUEXCEPT  0x817f  // Exception
 
 // Macros used in the implementation of the classification functions.
-#define _ismbbalnum_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & \
+// These accesses of _locale_pctype are internal and guarded by bounds checks when used.
+#define _ismbbalnum_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[_c] & \
                                 (_ALPHA|_DIGIT)) || \
-                                (((pt)->mbcinfo->mbctype+1)[(unsigned char)(_c)] & _MS))
-#define _ismbbalpha_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & \
+                                (((pt)->mbcinfo->mbctype+1)[_c] & _MS))
+#define _ismbbalpha_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[_c] & \
                             (_ALPHA)) || \
-                            (((pt)->mbcinfo->mbctype+1)[(unsigned char)(_c)] & _MS))
-#define _ismbbgraph_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & \
+                            (((pt)->mbcinfo->mbctype+1)[_c] & _MS))
+#define _ismbbgraph_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[_c] & \
                             (_PUNCT|_ALPHA|_DIGIT)) || \
-                            (((pt)->mbcinfo->mbctype+1)[(unsigned char)(_c)] & (_MS|_MP)))
-#define _ismbbprint_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & \
+                            (((pt)->mbcinfo->mbctype+1)[_c] & (_MS|_MP)))
+#define _ismbbprint_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[_c] & \
                             (_BLANK|_PUNCT|_ALPHA|_DIGIT)) || \
-                            (((pt)->mbcinfo->mbctype + 1)[(unsigned char)(_c)] & (_MS|_MP)))
-#define _ismbbpunct_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & _PUNCT) || \
-                                (((pt)->mbcinfo->mbctype+1)[(unsigned char)(_c)] & _MP))
-#define _ismbbblank_l(_c, pt)  (((_c) == '\t') ? _BLANK : (((pt)->locinfo->_public._locale_pctype)[(unsigned char)(_c)] & _BLANK) || \
-                               (((pt)->mbcinfo->mbctype+1)[(unsigned char)(_c)] & _MP))
-#define _ismbblead_l(_c, p)   ((p->mbcinfo->mbctype + 1)[(unsigned char)(_c)] & _M1)
-#define _ismbbtrail_l(_c, p)  ((p->mbcinfo->mbctype + 1)[(unsigned char)(_c)] & _M2)
+                            (((pt)->mbcinfo->mbctype + 1)[_c] & (_MS|_MP)))
+#define _ismbbpunct_l(_c, pt)  ((((pt)->locinfo->_public._locale_pctype)[_c] & _PUNCT) || \
+                                (((pt)->mbcinfo->mbctype+1)[_c] & _MP))
+#define _ismbbblank_l(_c, pt)  (((_c) == '\t') ? _BLANK : (((pt)->locinfo->_public._locale_pctype)[_c] & _BLANK) || \
+                               (((pt)->mbcinfo->mbctype+1)[_c] & _MP))
+// Note that these are intended for double byte character sets (DBCS) and so UTF-8 doesn't consider either to be true for any bytes
+// (for UTF-8 we never set _M1 or _M2 in this array)
+#define _ismbblead_l(_c, p)   ((p->mbcinfo->mbctype + 1)[_c] & _M1)
+#define _ismbbtrail_l(_c, p)  ((p->mbcinfo->mbctype + 1)[_c] & _M2)
 
 
 
@@ -93,7 +94,7 @@ extern "C" inline int __cdecl __dcrt_multibyte_check_type(
 
     int const code_page = locale->mbcinfo->mbcodepage;
 
-    char const bytes[] = { (c >> 8) & 0xff, c & 0xff };
+    char const bytes[] = { static_cast<char>((c >> 8) & 0xff), static_cast<char>(c & 0xff) };
 
     // The 'c' "character" could be two one-byte multibyte characters, so we
     // need room in the type array to handle this.  If 'c' is two one-byte
@@ -116,3 +117,31 @@ extern "C" inline int __cdecl __dcrt_multibyte_check_type(
 
 
 _CRT_END_C_HEADER
+
+namespace __crt_mbstring
+{
+    size_t __cdecl __c16rtomb_utf8(char* s, char16_t c16, mbstate_t* ps);
+    size_t __cdecl __c32rtomb_utf8(char* s, char32_t c32, mbstate_t* ps);
+    size_t __cdecl __mbrtoc16_utf8(char16_t* pc32, const char* s, size_t n, mbstate_t* ps);
+    size_t __cdecl __mbrtoc32_utf8(char32_t* pc32, const char* s, size_t n, mbstate_t* ps);
+
+    size_t __cdecl __mbrtowc_utf8(wchar_t* pwc, const char* s, size_t n, mbstate_t* ps);
+    size_t __cdecl __mbsrtowcs_utf8(wchar_t* dst, const char** src, size_t len, mbstate_t* ps);
+    size_t __cdecl __wcsrtombs_utf8(char* dst, const wchar_t** src, size_t len, mbstate_t* ps);
+
+    constexpr size_t INVALID = static_cast<size_t>(-1);
+    constexpr size_t INCOMPLETE = static_cast<size_t>(-2);
+
+    inline size_t return_illegal_sequence(mbstate_t* ps)
+    {
+        *ps = {};
+        errno = EILSEQ;
+        return INVALID;
+    }
+
+    inline size_t reset_and_return(size_t retval, mbstate_t* ps)
+    {
+        *ps = {};
+        return retval;
+    }
+}

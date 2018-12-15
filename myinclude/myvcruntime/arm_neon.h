@@ -6417,7 +6417,11 @@ __n128x2 __vzipq_u8(__n128 _Qd, __n128 _Qm);
 #define vmlaq_n_f32                 __vmlaq_n_f32
 #define vmlsq_n_f32                 __vmlsq_n_f32
 #define vmla_f32                    __vmla_f32
+#define vfma_f32                    __vmla_f32
+#define vfmaq_f32                   __vmlaq_f32
 #define vmls_f32                    __vmls_f32
+#define vfms_f32                    __vmls_f32
+#define vfmsq_f32                   __vmlsq_f32
 #define vmlaq_f32                   __vmlaq_f32
 #define vmlsq_f32                   __vmlsq_f32
 #define vmla_s16                    __vmla_s16
@@ -7691,6 +7695,21 @@ __n128x2 __vzipq_u8(__n128 _Qd, __n128 _Qm);
 #define vdupq_lane_u64              __vdupq_lane_u64
 
 #endif // !defined(_ARM_ISO_COMPATIBLE_INTRINSIC_NAMES)
+
+#define vceqz_f32             vceq_z_f32_ex
+#define vceqz_s16             vceq_z_s16_ex
+#define vceqz_s32             vceq_z_s32_ex
+#define vceqz_s8              vceq_z_s8_ex
+#define vceqz_u16             vceq_z_u16_ex
+#define vceqz_u32             vceq_z_u32_ex
+#define vceqz_u8              vceq_z_u8_ex
+#define vceqqz_f32            vceqq_z_f32_ex
+#define vceqqz_s16            vceqq_z_s16_ex
+#define vceqqz_s32            vceqq_z_s32_ex
+#define vceqqz_s8             vceqq_z_s8_ex
+#define vceqqz_u16            vceqq_z_u16_ex
+#define vceqqz_u32            vceqq_z_u32_ex
+#define vceqqz_u8             vceqq_z_u8_ex
 
 #if defined (__cplusplus)
 }

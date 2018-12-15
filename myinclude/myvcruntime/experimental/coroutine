@@ -6,7 +6,7 @@
 *       Copyright (c) Microsoft Corporation. All rights reserved.
 *
 *       Purpose: Library support of coroutines
-*       https://isocpp.org/files/papers/N4663.pdf
+*       https://wg21.link/p0057
 *
 *       [Public]
 *

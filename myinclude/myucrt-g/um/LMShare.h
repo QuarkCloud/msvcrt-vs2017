@@ -248,9 +248,11 @@ typedef struct _SHARE_INFO_1501 {
     PSECURITY_DESCRIPTOR  shi1501_security_descriptor;
 } SHARE_INFO_1501, *PSHARE_INFO_1501, *LPSHARE_INFO_1501;
 
-typedef struct _SHARE_INFO_1503 {
-    GUID       shi1503_sharefilter;
+typedef struct _SHARE_INFO_1503 
+{
+    GUID shi1503_sharefilter;
 } SHARE_INFO_1503, *PSHARE_INFO_1503, *LPSHARE_INFO_1503;
+
 
 //
 // NetShareAlias functions

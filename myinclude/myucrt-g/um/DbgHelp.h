@@ -634,8 +634,11 @@ typedef struct _KDHELP64 {
     // Target OS build number. Added in API version 12.
     //
     DWORD     BuildVersion;
-    DWORD     Reserved0;
-    DWORD64   Reserved1[4];
+    DWORD     RetpolineStubFunctionTableSize;
+    DWORD64   RetpolineStubFunctionTable;
+    DWORD     RetpolineStubOffset;
+    DWORD     RetpolineStubSize;
+    DWORD64   Reserved0[2];
 
 } KDHELP64, *PKDHELP64;
 
@@ -1412,6 +1415,7 @@ typedef struct _SOURCEFILEW {
 #define CBA_ENGINE_PRESENT                      0x60000000
 #define CBA_CHECK_ENGOPT_DISALLOW_NETWORK_PATHS 0x70000000
 #define CBA_CHECK_ARM_MACHINE_THUMB_TYPE_OVERRIDE 0x80000000
+#define CBA_XML_LOG                             0x90000000
 
 
 typedef struct _IMAGEHLP_CBA_READ_MEMORY {
@@ -3461,6 +3465,7 @@ typedef BOOL (WINAPI *PSYMBOLSERVERSETHTTPAUTHHEADER)(_In_ PCWSTR pszAuthHeader)
 #define SSRVACTION_EVENTW       4
 #define SSRVACTION_SIZE         5
 #define SSRVACTION_HTTPSTATUS   6
+#define SSRVACTION_XMLOUTPUT    7
 
 #define SYMSTOREOPT_COMPRESS        0x01
 #define SYMSTOREOPT_OVERWRITE       0x02

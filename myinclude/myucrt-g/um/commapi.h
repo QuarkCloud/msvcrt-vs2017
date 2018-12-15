@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * commapi.h - ApiSet Contract for api-ms-win-core-comm-l1                       *
@@ -21,30 +20,11 @@
 #include <winbase.h>
 #include <winapifamily.h>
 
-/* APISET_NAME: api-ms-win-core-comm-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_COMM_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS3
-#define _APISET_COMM_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_COMM_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Desktop Family or OneCore or App Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 
 WINBASEAPI
@@ -213,9 +193,6 @@ WaitCommEvent(
     );
 
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_COMM_VER >= 0x0101)
-
 WINBASEAPI
 HANDLE
 WINAPI
@@ -226,7 +203,15 @@ OpenCommPort(
     );
 
 
-#endif
+WINBASEAPI
+ULONG
+WINAPI
+GetCommPorts(
+    _Out_writes_(uPortNumbersCount) PULONG lpPortNumbers,
+    _In_ ULONG uPortNumbersCount,
+    _Out_ PULONG puPortNumbersFound
+    );
+
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 #pragma endregion

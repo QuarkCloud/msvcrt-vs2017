@@ -816,6 +816,42 @@
 #define BG_E_BLOCKED_BY_GAME_MODE        0x8020006FL
 
 //
+// MessageId: BG_E_BLOCKED_BY_SYSTEM_POLICY
+//
+// MessageText:
+//
+// The job was paused due to system resource constraints. The job will automatically resume once system conditions change.
+//
+#define BG_E_BLOCKED_BY_SYSTEM_POLICY    0x80200070L
+
+//
+// MessageId: BG_E_NOT_SUPPORTED_WITH_CUSTOM_HTTP_METHOD
+//
+// MessageText:
+//
+// The requested action is not supported by jobs configured with a custom HTTP method.
+//
+#define BG_E_NOT_SUPPORTED_WITH_CUSTOM_HTTP_METHOD 0x80200071L
+
+//
+// MessageId: BG_E_UNSUPPORTED_JOB_CONFIGURATION
+//
+// MessageText:
+//
+// The current job configuration is not compatible with the requested action.
+//
+#define BG_E_UNSUPPORTED_JOB_CONFIGURATION 0x80200072L
+
+//
+// MessageId: BG_E_REMOTE_FILE_CHANGED
+//
+// MessageText:
+//
+// The remote file was changed during the transfer. If this is expected, call Resume on the job to initiate a retry.
+//
+#define BG_E_REMOTE_FILE_CHANGED         0x80200073L
+
+//
 // MessageId: BG_E_HTTP_ERROR_100
 //
 // MessageText:

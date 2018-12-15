@@ -1,5 +1,3 @@
- 
-// begin_1_0
 /********************************************************************************
 *                                                                               *
 * rtlsupportapi.h -- ApiSet Contract for api-ms-win-core-rtlsupport-l1          *
@@ -24,25 +22,6 @@
 
 #include <winapifamily.h>
 
-/* APISET_NAME: api-ms-win-core-rtlsupport-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_RTLSUPPORT_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_RTLSUPPORT_VER 0x0200
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_RTLSUPPORT_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
-
 #if _MSC_VER >= 1200
 #pragma warning(push)
 #pragma warning(disable:4668) // #if not_defined treated as #if 0
@@ -51,10 +30,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// end_1_0
-
-// begin_1_0
 
 // begin_winnt
 
@@ -65,9 +40,7 @@ extern "C" {
 // begin_ntifs
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION > NTDDI_WINXP)
 
@@ -78,7 +51,7 @@ NTAPI
 RtlCaptureStackBackTrace(
     _In_ ULONG FramesToSkip,
     _In_ ULONG FramesToCapture,
-    _Out_writes_to_(FramesToCapture, return) PVOID * BackTrace,
+    _Out_writes_to_(FramesToCapture,return) PVOID* BackTrace,
     _Out_opt_ PULONG BackTraceHash
     );
 
@@ -89,9 +62,7 @@ RtlCaptureStackBackTrace(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION > NTDDI_WIN2K)
 
@@ -111,7 +82,6 @@ RtlCaptureContext(
 // end_ntifs
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -128,11 +98,9 @@ RtlUnwind(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-
 #if defined(_AMD64_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -166,16 +134,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ ULONG EntryCount,
     _In_ ULONG MaximumEntryCount,
@@ -201,15 +166,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -226,7 +187,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -234,7 +194,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -242,7 +202,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -258,13 +217,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -274,13 +226,13 @@ RtlVirtualUnwind(
     _In_ ULONG64 ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PULONG64 EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _AMD64_
@@ -289,11 +241,9 @@ RtlVirtualUnwind(
 
 // begin_winnt
 
-
 #if defined(_ARM_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -327,16 +277,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ ULONG EntryCount,
     _In_ ULONG MaximumEntryCount,
@@ -362,15 +309,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -387,7 +330,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -395,7 +337,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -403,7 +345,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -419,13 +360,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -435,13 +369,13 @@ RtlVirtualUnwind(
     _In_ ULONG ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PULONG EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _ARM_
@@ -450,11 +384,9 @@ RtlVirtualUnwind(
 
 // begin_winnt
 
-
 #if defined(_ARM64_)
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -488,16 +420,13 @@ RtlInstallFunctionTableCallback(
     );
 
 
-// end_1_0
-
-
-#if ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
+#if (NTDDI_VERSION >= NTDDI_WIN8)
 
 NTSYSAPI
 NTSTATUS
 NTAPI
 RtlAddGrowableFunctionTable(
-    _Out_ PVOID * DynamicTable,
+    _Out_ PVOID* DynamicTable,
     _In_reads_(MaximumEntryCount) PRUNTIME_FUNCTION FunctionTable,
     _In_ ULONG EntryCount,
     _In_ ULONG MaximumEntryCount,
@@ -523,15 +452,11 @@ RtlDeleteGrowableFunctionTable(
     );
 
 
-#endif // ((NTDDI_VERSION >= NTDDI_WIN8) && !defined(_CONTRACT_GEN)) || (_APISET_RTLSUPPORT_VER > 0x0100)
-
-// begin_1_0
-
+#endif// (NTDDI_VERSION >= NTDDI_WIN8)
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -548,7 +473,6 @@ RtlLookupFunctionEntry(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -556,7 +480,7 @@ VOID
 __cdecl
 RtlRestoreContext(
     _In_ PCONTEXT ContextRecord,
-    _In_opt_ struct _EXCEPTION_RECORD * ExceptionRecord
+    _In_opt_ struct _EXCEPTION_RECORD* ExceptionRecord
     );
 
 
@@ -564,7 +488,6 @@ RtlRestoreContext(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -580,13 +503,6 @@ RtlUnwindEx(
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 NTSYSAPI
 PEXCEPTION_ROUTINE
 NTAPI
@@ -596,22 +512,20 @@ RtlVirtualUnwind(
     _In_ ULONG_PTR ControlPc,
     _In_ PRUNTIME_FUNCTION FunctionEntry,
     _Inout_ PCONTEXT ContextRecord,
-    _Out_ PVOID * HandlerData,
+    _Out_ PVOID* HandlerData,
     _Out_ PULONG_PTR EstablisherFrame,
     _Inout_opt_ PKNONVOLATILE_CONTEXT_POINTERS ContextPointers
     );
 
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #endif // _ARM64_
 
-
 #if defined(_CHPE_X86_ARM64_)
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -631,7 +545,6 @@ RtlUnwindEx(
 #pragma endregion
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 NTSYSAPI
@@ -652,11 +565,7 @@ RtlLookupFunctionEntryCHPE(
 // end_winnt
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 NTSYSAPI
 __analysis_noreturn
@@ -667,30 +576,22 @@ RtlRaiseException(
     );
 
 
-#endif // !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
-
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 // begin_winnt
 
 #pragma region Application or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 NTSYSAPI
 PVOID
 NTAPI
 RtlPcToFileHeader(
     _In_ PVOID PcValue,
-    _Out_ PVOID * BaseOfImage
+    _Out_ PVOID* BaseOfImage
     );
 
-
-#endif // !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
@@ -700,12 +601,7 @@ RtlPcToFileHeader(
 // begin_winnt begin_ntndis begin_wdm
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
-
 
 #if (NTDDI_VERSION >= NTDDI_WIN2K)
 
@@ -714,32 +610,26 @@ NTSYSAPI
 SIZE_T
 NTAPI
 RtlCompareMemory(
-    _In_ const VOID * Source1,
-    _In_ const VOID * Source2,
+    _In_ const VOID* Source1,
+    _In_ const VOID* Source2,
     _In_ SIZE_T Length
     );
 
 
 #endif
 
-#endif // !(defined(_CONTRACT_GEN) && (_APISET_RTLSUPPORT_VER <= 0x0100) && defined(_X86_))
-
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 // end_ntndis end_winnt end_wdm
 
-// end_1_0
-// begin_1_0
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif
 
 #endif // _APISETRTLSUPPORT_
-// end_1_0

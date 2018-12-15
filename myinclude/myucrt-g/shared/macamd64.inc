@@ -661,3 +661,29 @@ Yield   macro
 
         endm
 
+;++
+;
+; RetpolineIgnore
+;
+; Macro Description:
+;
+;   This macro generates a retpoline ignore directive which informs tools that
+;   retpoline instrumentation is not required.
+;
+; Arguments:
+;
+;   None.
+;
+;--
+
+RetpolineIgnore macro
+
+ifdef _RETPOLINE
+
+        .retpolineignore                ; mark branch as retpoline-ignored
+
+endif
+
+        endm
+
+

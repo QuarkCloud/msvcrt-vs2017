@@ -602,9 +602,9 @@ _STLCLR_FIELD_ACCESS:
 		_Myvector_t^ _Newvector = gcnew _Myvector_t(_Newsize);
 
 		for (; _Idx < _Oldsize; ++_Idx)
-			 _Newvector[_Idx] = _Myvector[_Idx];
+			_Newvector[_Idx] = _Myvector[_Idx];
 		for (; _Idx < _Newvector->Length; ++_Idx)
-			 _Newvector[_Idx] = _Pad;
+			_Newvector[_Idx] = _Pad;
 		_Myvector = _Newvector;
 		}
 

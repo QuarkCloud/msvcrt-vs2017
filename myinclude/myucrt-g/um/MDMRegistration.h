@@ -270,7 +270,7 @@ HRESULT WINAPI
 IsDeviceRegisteredWithManagement(
     _Out_ BOOL *pfIsDeviceRegisteredWithManagement,
     _In_ DWORD cchUPN,
-    _Out_z_cap_(cchUPN) LPWSTR pszUPN
+    _Out_opt_z_cap_(cchUPN) LPWSTR pszUPN
     );
 
 

@@ -151,20 +151,15 @@ C_ASSERT(STRSAFE_MAX_CCH > 1);
 #define STRSAFE_E_INVALID_PARAMETER             ((HRESULT)0x80070057L)  // 0x57 =  87L = ERROR_INVALID_PARAMETER
 #define STRSAFE_E_END_OF_FILE                   ((HRESULT)0x80070026L)  // 0x26 =  38L = ERROR_HANDLE_EOF
 
-//
-// These typedefs are used in places where the string is guaranteed to
-// be null terminated.
-//
+// Deprecated, use the non STRSAFE_ prefixed types instead (e.g. LPSTR or PSTR) as they are the same as these.
 typedef _Null_terminated_ char* STRSAFE_LPSTR;
 typedef _Null_terminated_ const char* STRSAFE_LPCSTR;
 typedef _Null_terminated_ wchar_t* STRSAFE_LPWSTR;
 typedef _Null_terminated_ const wchar_t* STRSAFE_LPCWSTR;
 typedef _Null_terminated_ const wchar_t UNALIGNED* STRSAFE_LPCUWSTR;
 
-//
-// These typedefs are used in places where the string is NOT guaranteed to
-// be null terminated.
-//
+// Deprecated, use the base types instead.
+// Strings where the string is NOT guaranteed to be null terminated (does not have _Null_terminated_).
 typedef  const char* STRSAFE_PCNZCH;
 typedef  const wchar_t* STRSAFE_PCNZWCH;
 typedef  const wchar_t UNALIGNED* STRSAFE_PCUNZWCH;

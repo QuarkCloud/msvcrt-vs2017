@@ -27,6 +27,7 @@
 //               |new_array_nothrow|
 //               +-----------------+
 
+_CRT_SECURITYCRITICAL_ATTRIBUTE
 void* __CRTDECL operator new(size_t const size)
 {
     for (;;)

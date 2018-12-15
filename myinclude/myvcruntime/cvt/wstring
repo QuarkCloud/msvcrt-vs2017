@@ -11,6 +11,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -27,7 +28,7 @@ template<class _Codecvt,
 	void _Init(_Codecvt *_Pcvt_arg = new _Codecvt)
 		{	// initialize the object
 		_Pcvt = _Pcvt_arg;
-		_Loc = _STD _ADDFAC(_Loc, _Pcvt);
+		_Loc = _STD locale(_Loc, _Pcvt);
 		_Nconv = 0;
 		}
 
@@ -69,40 +70,40 @@ public:
 		_Init();
 		}
 
-	virtual ~wstring_convert() _NOEXCEPT
+	virtual ~wstring_convert() noexcept
 		{	// destroy the object
 		}
 
 	wstring_convert(const wstring_convert&) = delete;
 	wstring_convert& operator=(const wstring_convert&) = delete;
 
-	size_t converted() const _NOEXCEPT
+	_NODISCARD size_t converted() const noexcept
 		{	// get conversion count
 		return (_Nconv);
 		}
 
-	state_type state() const
+	_NODISCARD state_type state() const
 		{	// get state
 		return (_State);
 		}
 
-	wide_string from_bytes(char _Byte)
+	_NODISCARD wide_string from_bytes(char _Byte)
 		{	// convert a byte to a wide string
 		return (from_bytes(&_Byte, &_Byte + 1));
 		}
 
-	wide_string from_bytes(const char *_Ptr)
+	_NODISCARD wide_string from_bytes(const char *_Ptr)
 		{	// convert a NTBS to a wide string
 		return (from_bytes(_Ptr, _Ptr + _CSTD strlen(_Ptr)));
 		}
 
-	wide_string from_bytes(const byte_string& _Bstr)
+	_NODISCARD wide_string from_bytes(const byte_string& _Bstr)
 		{	// convert a byte string to a wide string
 		const char *_Ptr = _Bstr.c_str();
 		return (from_bytes(_Ptr, _Ptr + _Bstr.size()));
 		}
 
-	wide_string from_bytes(const char *_First, const char *_Last)
+	_NODISCARD wide_string from_bytes(const char *_First, const char *_Last)
 		{	// convert byte sequence [_First, _Last) to a wide string
 		static state_type _State0;
 		wide_string _Wbuf, _Wstr;
@@ -134,8 +135,7 @@ public:
 
 			case _Codecvt::noconv:
 				for (; _First != _Last; ++_First)
-					_Wstr.append((_CSTD size_t)1,
-						(_Elem)(unsigned char)*_First);
+					_Wstr.push_back((_Elem)(unsigned char)*_First);
 				break;	// no conversion, just copy code values
 
 			default:
@@ -148,26 +148,29 @@ public:
 		return (_Wstr);
 		}
 
-	byte_string to_bytes(_Elem _Char)
+	_NODISCARD byte_string to_bytes(_Elem _Char)
 		{	// convert a wide char to a byte string
 		return (to_bytes(&_Char, &_Char + 1));
 		}
 
-	byte_string to_bytes(const _Elem *_Wptr)
+	_NODISCARD byte_string to_bytes(const _Elem *_Wptr)
 		{	// convert a NTWCS to a byte string
 		const _Elem *_Next = _Wptr;
-		for (; (int_type)*_Next != 0; ++_Next)
-			;
+		while ((int_type)*_Next != 0)
+			{
+			++_Next;
+			}
+
 		return (to_bytes(_Wptr, _Next));
 		}
 
-	byte_string to_bytes(const wide_string& _Wstr)
+	_NODISCARD byte_string to_bytes(const wide_string& _Wstr)
 		{	// convert a wide string to a byte string
 		const _Elem *_Wptr = _Wstr.c_str();
 		return (to_bytes(_Wptr, _Wptr + _Wstr.size()));
 		}
 
-	byte_string to_bytes(const _Elem *_First, const _Elem *_Last)
+	_NODISCARD byte_string to_bytes(const _Elem *_First, const _Elem *_Last)
 		{	// convert wide sequence [_First, _Last) to a byte string
 		static state_type _State0;
 		byte_string _Bbuf, _Bstr;
@@ -199,8 +202,7 @@ public:
 
 			case _Codecvt::noconv:
 				for (; _First != _Last; ++_First)
-					_Bstr.append((_CSTD size_t)1,
-						(char)(int_type)*_First);
+					_Bstr.push_back((char)(int_type)*_First);
 				break;	// no conversion, just copy code values
 
 			default:
@@ -227,6 +229,7 @@ private:
 		}	// namespace cvt
 	}	// namespace stdext
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

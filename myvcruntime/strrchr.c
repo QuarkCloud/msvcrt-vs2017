@@ -151,10 +151,12 @@ char * __cdecl strrchr (
                 // RETURN the bit position of the LAST character match
 
                 if (zero_lword0 != 0) {
-                    ch_lword0 = ch_lword0 & (~0ull >> (64 - zero_bitoffset));
+                    // Found zero match in first lword. 1 <= zero_bitoffset <= 63
+                    ch_lword0 = ch_lword0 & ((1ull << zero_bitoffset) - 1);
                     ch_bitoffset = (124 - 64) - _CountLeadingZeros64(ch_lword0);
                 } else {
-                    ch_lword1 = ch_lword1 & (~0ull >> (128 - zero_bitoffset));
+                    // Found zero match in second lword. 64 <= zero_bitoffset <= 127
+                    ch_lword1 = ch_lword1 & ((1ull << (zero_bitoffset - 64)) - 1);
                     ch_bitoffset = 124 - _CountLeadingZeros128(ch_lword1, ch_lword0);
                 }
 

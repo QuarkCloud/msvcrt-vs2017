@@ -15,15 +15,16 @@
 
 #pragma once
 
-#include <crtdefs.h>
 #include <concrt.h>
-#include <stdexcept>
-#include <iterator>
-#include <functional>
-#include <memory>
-#include <type_traits>
-#include <algorithm>
+#include <crtdefs.h>
 #include <malloc.h>
+
+#include <algorithm>
+#include <functional>
+#include <iterator>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
 
 #include <pplwin.h>
 
@@ -113,7 +114,7 @@ public:
         // We only need to perform a liveness check if the client owns the lifetime of the handle. Doing this for runtime owned handles
         // is not only unnecessary -- it is also dangerous.
         //
-        if (_OwningCollection() != NULL && !_GetRuntimeOwnsLifetime())
+        if (_OwningCollection() != nullptr && !_GetRuntimeOwnsLifetime())
         {
             _CheckTaskCollection();
         }
@@ -234,7 +235,7 @@ public:
     /// <seealso cref="Task Parallelism"/>
     /**/
     structured_task_group(cancellation_token _CancellationToken) :
-        _M_task_collection(_CancellationToken._GetImpl() != NULL ? _CancellationToken._GetImpl() : ::Concurrency::details::_CancellationTokenState::_None())
+        _M_task_collection(_CancellationToken._GetImpl() != nullptr ? _CancellationToken._GetImpl() : ::Concurrency::details::_CancellationTokenState::_None())
     {
     }
 
@@ -518,7 +519,7 @@ public:
     /// <seealso cref="Task Parallelism"/>
     /**/
     task_group(cancellation_token _CancellationToken) :
-        _M_task_collection(_CancellationToken._GetImpl() != NULL ? _CancellationToken._GetImpl() : ::Concurrency::details::_CancellationTokenState::_None())
+        _M_task_collection(_CancellationToken._GetImpl() != nullptr ? _CancellationToken._GetImpl() : ::Concurrency::details::_CancellationTokenState::_None())
     {
     }
 
@@ -849,7 +850,7 @@ private:
 ///     The type of the function object that will be invoked.
 /// </typeparam>
 /// <param name="_Func">
-///     The function object which will be executed. This object must support the function call operator with a signature of void(void).
+///     The function object which will be executed. This object must support the function call operator with a signature of void().
 /// </param>
 /// <param name="_Ct">
 ///     The cancellation token which will control implicit cancellation of the function object. Use <c>cancellation_token::none()</c> if you want the
@@ -1726,7 +1727,7 @@ public:
     ///     Constructs an <c>affinity_partitioner</c> object.
     /// </summary>
     /**/
-    affinity_partitioner() : _M_num_chunks(0), _M_pChunk_locations(NULL)
+    affinity_partitioner() : _M_num_chunks(0), _M_pChunk_locations(nullptr)
     {
     }
 
@@ -1805,8 +1806,9 @@ class _Range
 public:
 
     // Construct an object for the range [_Current_iteration, _Last_iteration)
-    _Range(_Index_type _Current_iteration, _Index_type _Last_iteration) :
-      _M_current(_Current_iteration), _M_last(_Last_iteration)
+    _Range(_Index_type _Current_iteration, _Index_type _Last_iteration)
+        : _M_current(_Current_iteration),
+        _M_last(_Last_iteration)
     {
         // On creation, the range shall have at least 1 iteration.
         _CONCRT_ASSERT(_Number_of_iterations() > 0);
@@ -1894,8 +1896,14 @@ template<typename _Index_type>
 class _Worker_proxy
 {
 public:
-    _Worker_proxy(_Worker_proxy *_PParent_worker = NULL) :
-      _M_pHelper_range(NULL), _M_pParent_worker(_PParent_worker), _M_pWorker_range(NULL), _M_completion_count(0), _M_stop_iterating(0)
+    _Worker_proxy(_Worker_proxy *_PParent_worker = nullptr)
+        : _M_pHelper_range(nullptr),
+        _M_pParent_worker(_PParent_worker),
+        _M_beacon(),
+        _M_context(),
+        _M_completion_count(0),
+        _M_pWorker_range(nullptr),
+        _M_stop_iterating(0)
     {
         _M_context = ::Concurrency::details::_Context::_CurrentContext();
     }
@@ -1922,7 +1930,7 @@ public:
             return false;
         }
 
-        _CONCRT_ASSERT(_Helper_range != NULL);
+        _CONCRT_ASSERT(_Helper_range != nullptr);
 
         // There are two special values for _M_current_iteration that are not valid: one is the
         // initial value of the working class which it will never share, and the other is
@@ -1935,7 +1943,7 @@ public:
         // time to elapse before that information has made it over to the worker. The idea
         // is not to disturb the worker if it is not necessary. It is possible to add interlocked
         // operation in the future if the time spent in the busy wait loop is too big.
-        _CONCRT_ASSERT(_M_pHelper_range == NULL);
+        _CONCRT_ASSERT(_M_pHelper_range == nullptr);
         _M_pHelper_range = _Helper_range;
 
         ::Concurrency::details::_SpinWaitBackoffNone spinWait(::Concurrency::details::_Context::_Yield);
@@ -1944,7 +1952,7 @@ public:
         // changing _M_current_iteration in the helper's range.
         while ((_Helper_range->_M_current_iteration == _Cached_first_iteration) && !_M_completion_count)
         {
-            if ((_M_pWorker_range != NULL) && _M_context._IsSynchronouslyBlocked())
+            if ((_M_pWorker_range != nullptr) && _M_context._IsSynchronouslyBlocked())
             {
                 // Attempt to steal the entire range from the worker if it is synchronously blocked.
 
@@ -1962,12 +1970,12 @@ public:
                 // it cannot send a range (because _M_stop_iterating is already set). If it sent a range
                 // before being synchronously blocked, then we are no longer the helper. Refrain
                 // from intrusively stealing the range.
-                if ((_Worker_range != NULL) && _M_context._IsSynchronouslyBlocked()
+                if ((_Worker_range != nullptr) && _M_context._IsSynchronouslyBlocked()
                     && (_Helper_range->_M_current_iteration == _Cached_first_iteration) && !_M_completion_count)
                 {
                     _CONCRT_ASSERT(_M_pHelper_range == _Helper_range);
 
-                    _M_pHelper_range = NULL;
+                    _M_pHelper_range = nullptr;
                     _Worker_range->_Steal_range(_Helper_range);
 
                     _CONCRT_ASSERT(_Helper_range->_M_current_iteration != _Cached_first_iteration);
@@ -2001,16 +2009,16 @@ public:
     bool _Send_range(_Range<_Index_type> * _Worker_range)
     {
         // Worker range shall not be available for stealing at this time.
-        _CONCRT_ASSERT(_M_pWorker_range == NULL);
+        _CONCRT_ASSERT(_M_pWorker_range == nullptr);
 
         // Helper shall be registered.
-        _CONCRT_ASSERT(_M_pHelper_range != NULL);
+        _CONCRT_ASSERT(_M_pHelper_range != nullptr);
 
         // Send the range
         _Worker_range->_Send_range(_M_pHelper_range);
 
         // Notify the helper. The fence ensures that the prior updates are visible.
-        _InterlockedExchangePointer(reinterpret_cast<void * volatile *>(&_M_pHelper_range), NULL);
+        _InterlockedExchangePointer(reinterpret_cast<void * volatile *>(&_M_pHelper_range), nullptr);
 
         // The current iteration should still be left
         _CONCRT_ASSERT(_Worker_range->_Number_of_iterations() >= 1);
@@ -2029,13 +2037,13 @@ public:
     // Prevent the helper from intrusively stealing range from the worker
     void _Disable_intrusive_steal()
     {
-        _M_pWorker_range = NULL;
+        _M_pWorker_range = nullptr;
         _Wait_on_intrusive_steal();
     }
 
     bool _Is_helper_registered()
     {
-        return (_M_pHelper_range != NULL);
+        return (_M_pHelper_range != nullptr);
     }
 
     bool _Is_done()
@@ -2091,7 +2099,7 @@ private:
 
     void _Propagate_cancel()
     {
-        if (_M_pParent_worker != NULL)
+        if (_M_pParent_worker != nullptr)
         {
             _M_pParent_worker->_NotifyCancel();
         }
@@ -2133,18 +2141,26 @@ class _Parallel_chunk_helper
 {
 public:
     _Parallel_chunk_helper(_Index_type, const _Random_iterator& _First, _Index_type _First_iteration, _Index_type _Last_iteration, const _Index_type& _Step,
-        const _Function& _Func, const _Partitioner&, _Worker_proxy<_Index_type> * const _Parent_data = NULL) :
-        _M_first(_First), _M_first_iteration(_First_iteration), _M_last_iteration(_Last_iteration), _M_step(_Step), _M_function(_Func),
-        _M_parent_worker(_Parent_data)
+        const _Function& _Func, const _Partitioner&, _Worker_proxy<_Index_type> * const _Parent_data = nullptr)
+            : _M_first(_First),
+            _M_step(_Step),
+            _M_function(_Func),
+            _M_first_iteration(_First_iteration),
+            _M_last_iteration(_Last_iteration),
+            _M_parent_worker(_Parent_data)
     {
         // Empty constructor because members are already assigned
     }
 
         // Constructor overload that accepts a range
     _Parallel_chunk_helper(const _Random_iterator& _First,  const _Index_type& _Step, const _Function& _Func,
-        const _Range<_Index_type>& _Worker_range, _Worker_proxy<_Index_type> * const _Parent_data = NULL) :
-        _M_first(_First), _M_first_iteration(_Worker_range._M_current_iteration), _M_last_iteration(_Worker_range._M_last_iteration), _M_step(_Step), _M_function(_Func),
-        _M_parent_worker(_Parent_data)
+        const _Range<_Index_type>& _Worker_range, _Worker_proxy<_Index_type> * const _Parent_data = nullptr)
+            : _M_first(_First),
+            _M_step(_Step),
+            _M_function(_Func),
+            _M_first_iteration(_Worker_range._M_current_iteration),
+            _M_last_iteration(_Worker_range._M_last_iteration),
+            _M_parent_worker(_Parent_data)
     {
         // Empty constructor because members are already assigned
     }
@@ -2162,7 +2178,7 @@ public:
         // worker, while any subsequent class spawned from this class is in the helper
         // mode, which is signified using a link to the worker class through _M_pOwning_worker
         // handle. So, it will wait for work to be dished out by the working class while in helper mode.
-        if (_M_parent_worker != NULL && !_M_parent_worker->_Receive_range(&_Worker_range))
+        if (_M_parent_worker != nullptr && !_M_parent_worker->_Receive_range(&_Worker_range))
         {
             // If the worker class rejected the help, simply return
             return;
@@ -2276,8 +2292,12 @@ class _Parallel_fixed_chunk_helper
 {
 public:
     _Parallel_fixed_chunk_helper(_Index_type, const _Random_iterator& _First, _Index_type _First_iteration,
-         _Index_type _Last_iteration, const _Index_type& _Step, const _Function& _Func, const _Partitioner&) :
-        _M_first(_First), _M_first_iteration(_First_iteration), _M_last_iteration(_Last_iteration), _M_step(_Step), _M_function(_Func)
+         _Index_type _Last_iteration, const _Index_type& _Step, const _Function& _Func, const _Partitioner&)
+            : _M_first(_First),
+            _M_step(_Step),
+            _M_function(_Func),
+            _M_first_iteration(_First_iteration),
+            _M_last_iteration(_Last_iteration)
     {
         // Empty constructor because members are already assigned
     }
@@ -2312,9 +2332,9 @@ public:
     typedef _Parallel_fixed_chunk_helper<_Random_iterator, _Index_type, _Function, static_partitioner, _Is_iterator> _Base;
 
     _Parallel_localized_chunk_helper(_Index_type _Chunk_index, const _Random_iterator& _First, _Index_type _First_iteration, _Index_type _Last_iteration, const _Index_type& _Step,
-        const _Function& _Func, affinity_partitioner& _Part) :
-        _M_fixed_helper(_Chunk_index, _First, _First_iteration, _Last_iteration, _Step, _Func, static_partitioner()),
-        _M_chunk_location(_Part._Get_chunk_location(static_cast<unsigned int>(_Chunk_index)))
+        const _Function& _Func, affinity_partitioner& _Part)
+            : _M_chunk_location(_Part._Get_chunk_location(static_cast<unsigned int>(_Chunk_index))),
+            _M_fixed_helper(_Chunk_index, _First, _First_iteration, _Last_iteration, _Step, _Func, static_partitioner())
     {
         // Empty constructor because members are already assigned
     }
@@ -2489,7 +2509,7 @@ void _Parallel_for_impl(_Index_type _First, _Index_type _Last, _Index_type _Step
         return;
     }
 
-    using _Diff_type = std::conditional_t<std::is_integral<_Index_type>::value,
+    using _Diff_type = std::conditional_t<std::is_integral_v<_Index_type>,
         std::conditional_t<sizeof(_Index_type) <= sizeof(long), unsigned long, unsigned long long>,
         decltype(_Last - _First)>;
 
@@ -2773,7 +2793,7 @@ public:
     _Parallel_for_each_helper(_Forward_iterator& _First, const _Forward_iterator& _Last, const _Function& _Func) :
         _M_function(_Func), _M_len(0)
     {
-        static_assert(std::is_lvalue_reference<decltype(*_First)>::value, "lvalue required for forward iterator operator *");
+        static_assert(std::is_lvalue_reference_v<decltype(*_First)>, "lvalue required for forward iterator operator *");
         // Add a batch of work items to this functor's array
         for (unsigned int _Index=0; (_Index < _Size) && (_First != _Last); _Index++)
         {
@@ -3006,8 +3026,10 @@ struct _Reduce_functor_helper
     typedef _Reduce_type _Reduce_type;
     typedef typename _Combinable_type::_Bucket _Bucket_type;
 
-    _Reduce_functor_helper(const _Reduce_type &_Identity, const _Sub_function &_Sub_fun, _Combinable_type &&_Comb):
-        _Sub_fun(_Sub_fun), _Combinable(_Comb), _Identity_value(_Identity)
+    _Reduce_functor_helper(const _Reduce_type &_Identity, const _Sub_function &_Sub_fun, _Combinable_type &&_Comb)
+        : _Sub_fun(_Sub_fun),
+        _Identity_value(_Identity),
+        _Combinable(_Comb)
     {
     }
 
@@ -3028,8 +3050,9 @@ public:
         _Bucket * _Next;
 
         _Bucket(_Bucket *_N)
+            : // _Value(), intentionally garbage-init
+            _Next(_N)
         {
-            _Next = _N;
         }
 
         void _Insert(_Bucket *_Item)
@@ -3059,10 +3082,11 @@ public:
         return new(_Ret)_Bucket(_Par);
     }
 
-    _Order_combinable(const _Sym_fun &_Fun): _M_fun(_Fun)
+    _Order_combinable(const _Sym_fun &_Fun)
+        : _M_fun(_Fun),
+        _M_number(0),
+        _M_root(0)
     {
-        _M_root = 0;
-        _M_number = 0;
     }
 
     ~_Order_combinable()
@@ -3169,8 +3193,8 @@ inline _Reduce_type parallel_reduce(_Forward_iterator _Begin, _Forward_iterator 
 {
     typedef typename std::iterator_traits<_Forward_iterator>::value_type _Value_type;
 
-    static_assert(!std::is_same<typename std::iterator_traits<_Forward_iterator>::iterator_category, std::input_iterator_tag>::value
-        && !std::is_same<typename std::iterator_traits<_Forward_iterator>::iterator_category, std::output_iterator_tag>::value,
+    static_assert(!std::is_same_v<typename std::iterator_traits<_Forward_iterator>::iterator_category, std::input_iterator_tag>
+        && !std::is_same_v<typename std::iterator_traits<_Forward_iterator>::iterator_category, std::output_iterator_tag>,
         "iterator can not be input_iterator or output_iterator.");
 
     return _Parallel_reduce_impl(_Begin, _End,
@@ -3230,7 +3254,7 @@ template<typename _Forward_iterator, typename _Sym_reduce_fun>
 inline typename std::iterator_traits<_Forward_iterator>::value_type parallel_reduce(_Forward_iterator _Begin, _Forward_iterator _End,
     const typename std::iterator_traits<_Forward_iterator>::value_type &_Identity, _Sym_reduce_fun _Sym_fun)
 {
-    typedef typename std::remove_cv<typename std::iterator_traits<_Forward_iterator>::value_type>::type _Reduce_type;
+    typedef std::remove_cv_t<typename std::iterator_traits<_Forward_iterator>::value_type> _Reduce_type;
 
     return parallel_reduce(_Begin, _End, _Identity,
         [_Sym_fun](_Forward_iterator _Begin, _Forward_iterator _End, _Reduce_type _Init)->_Reduce_type
@@ -3317,8 +3341,11 @@ class _Parallel_reduce_fixed_worker
 {
 public:
     // The bucket allocation order will depend on the worker construction order
-    _Parallel_reduce_fixed_worker(_Forward_iterator _Begin, _Forward_iterator _End, const _Functor &_Fun):
-        _M_begin(_Begin), _M_end(_End), _M_fun(_Fun), _M_bucket(_M_fun._Combinable._Unsafe_push_back())
+    _Parallel_reduce_fixed_worker(_Forward_iterator _Begin, _Forward_iterator _End, const _Functor &_Fun)
+        : _M_fun(_Fun),
+        _M_begin(_Begin),
+        _M_end(_End),
+        _M_bucket(_M_fun._Combinable._Unsafe_push_back())
     {
     }
 
@@ -3411,10 +3438,11 @@ struct _Parallel_reduce_forward_executor_helper
     mutable task_handle<_Worker_class> * _Workers;
     int _Worker_size;
 
-    _Parallel_reduce_forward_executor_helper(_Forward_iterator &_First, _Forward_iterator _Last, const _Function& _Func):
-        _Workers(static_cast<task_handle<_Worker_class> *>(::Concurrency::Alloc(sizeof(task_handle<_Worker_class>) * _Default_worker_size)))
+    _Parallel_reduce_forward_executor_helper(_Forward_iterator &_First, _Forward_iterator _Last, const _Function& _Func)
+        : _Workers(static_cast<task_handle<_Worker_class> *>(
+            ::Concurrency::Alloc(sizeof(task_handle<_Worker_class>) * _Default_worker_size))),
+        _Worker_size(0)
     {
-        _Worker_size = 0;
         while (_Worker_size < _Default_worker_size && _First != _Last)
         {
             // Copy the range _Head
@@ -3589,15 +3617,15 @@ public:
 
     _Iterator_helper()
     {
-        static_assert(!std::is_same<_Iterator_kind, std::input_iterator_tag>::value
-            && !std::is_same<_Iterator_kind, std::output_iterator_tag>::value,
+        static_assert(!std::is_same_v<_Iterator_kind, std::input_iterator_tag>
+            && !std::is_same_v<_Iterator_kind, std::output_iterator_tag>,
             "iterator can not be input_iterator or output_iterator.");
     }
 
     size_t _Populate(_Forward_iterator& _First, _Forward_iterator _Last)
     {
         size_t _Length = 0;
-        static_assert(std::is_lvalue_reference<decltype(*_First)>::value, "lvalue required for forward iterator operator *");
+        static_assert(std::is_lvalue_reference_v<decltype(*_First)>, "lvalue required for forward iterator operator *");
 
         for (size_t _Index=0; (_Index < _Size) && (_First != _Last); _Index++)
         {
@@ -3685,10 +3713,13 @@ class _Parallel_transform_binary_helper
 {
 public:
     _Parallel_transform_binary_helper(_Input_iterator1& _First1, _Input_iterator1 _Last1, _Input_iterator2& _First2,
-        _Output_iterator& _Result, const _Binary_operator& _Binary_op) :
-        _M_binary_op(_Binary_op), _M_len(0)
+        _Output_iterator& _Result, const _Binary_operator& _Binary_op)
+            : _M_input_helper1(),
+            _M_input_helper2(),
+            _M_output_helper(),
+            _M_binary_op(_Binary_op),
+            _M_len(_M_input_helper1._Populate(_First1, _Last1))
         {
-            _M_len = _M_input_helper1._Populate(_First1, _Last1);
             _M_input_helper2._Populate(_First2, _M_len);
             _M_output_helper._Populate(_Result, _M_len);
         }
@@ -3739,10 +3770,12 @@ template <typename _Input_iterator, typename _Output_iterator, typename _Unary_o
 class _Parallel_transform_unary_helper
 {
 public:
-    _Parallel_transform_unary_helper(_Input_iterator& _First, _Input_iterator _Last, _Output_iterator &_Result, const _Unary_operator& _Unary_op) :
-        _M_unary_op(_Unary_op), _M_len(0)
+    _Parallel_transform_unary_helper(_Input_iterator& _First, _Input_iterator _Last, _Output_iterator &_Result, const _Unary_operator& _Unary_op)
+            : _M_input_helper(),
+            _M_output_helper(),
+            _M_unary_op(_Unary_op),
+            _M_len(_M_input_helper._Populate(_First, _Last))
         {
-            _M_len = _M_input_helper._Populate(_First, _Last);
             _M_output_helper._Populate(_Result, _M_len);
         }
 
@@ -4196,7 +4229,9 @@ private:
         _Node* _M_chain;
 
         _Node(unsigned long _Key, _Ty _InitialValue)
-            : _M_key(_Key), _M_value(_InitialValue), _M_chain(NULL)
+            : _M_key(_Key),
+            _M_value(std::move(_InitialValue)),
+            _M_chain(nullptr)
         {
         }
     };
@@ -4220,7 +4255,9 @@ public:
     /// <seealso cref="Parallel Containers and Objects"/>
     /**/
     combinable()
-        : _M_fnInitialize(_DefaultInit)
+        : _M_buckets(),
+        _M_size(),
+        _M_fnInitialize(_DefaultInit)
     {
         _InitNew();
     }
@@ -4245,7 +4282,9 @@ public:
     /**/
     template <typename _Function>
     explicit combinable(_Function _FnInitialize)
-        : _M_fnInitialize(_FnInitialize)
+        : _M_buckets(),
+        _M_size(),
+        _M_fnInitialize(std::move(_FnInitialize))
     {
         _InitNew();
     }
@@ -4253,7 +4292,7 @@ public:
     /// <summary>
     ///     Constructs a new <c>combinable</c> object.
     /// </summary>
-    /// <param name="_Copy">
+    /// <param name="_Other">
     ///     An existing <c>combinable</c> object to be copied into this one.
     /// </param>
     /// <remarks>
@@ -4264,29 +4303,34 @@ public:
     /// </remarks>
     /// <seealso cref="Parallel Containers and Objects"/>
     /**/
-    combinable(const combinable& _Copy)
-        : _M_size(_Copy._M_size), _M_fnInitialize(_Copy._M_fnInitialize)
+    combinable(const combinable& _Other)
+        : _M_buckets(),
+        _M_size(_Other._M_size),
+        _M_fnInitialize(_Other._M_fnInitialize) // throws
     {
-        _InitCopy(_Copy);
+        _M_buckets = _InitCopy(_Other);
     }
 
     /// <summary>
     ///     Assigns to a <c>combinable</c> object from another <c>combinable</c> object.
     /// </summary>
-    /// <param name="_Copy">
+    /// <param name="_Other">
     ///     An existing <c>combinable</c> object to be copied into this one.
     /// </param>
     /// <returns>
     ///     A reference to this <c>combinable</c> object.
     /// </returns>
     /**/
-    combinable& operator=(const combinable& _Copy)
+    combinable& operator=(const combinable& _Other)
     {
+        auto _Fn_initialize_copy = _Other._M_fnInitialize; // throws
+        auto _New_buckets = _InitCopy(_Other); // throws
+        // remaining ops cannot throw
         clear();
         delete [] _M_buckets;
-        _M_fnInitialize = _Copy._M_fnInitialize;
-        _M_size = _Copy._M_size;
-        _InitCopy(_Copy);
+        _M_buckets = _New_buckets;
+        _M_fnInitialize.swap(_Fn_initialize_copy);
+        _M_size = _Other._M_size;
 
         return *this;
     }
@@ -4314,12 +4358,12 @@ public:
         unsigned long _Key = ::Concurrency::details::platform::GetCurrentThreadId();
         size_t _Index;
         _Node* _ExistingNode = _FindLocalItem(_Key, &_Index);
-        if (_ExistingNode == NULL)
+        if (_ExistingNode == nullptr)
         {
             _ExistingNode = _AddLocalItem(_Key, _Index);
         }
 
-        _CONCRT_ASSERT(_ExistingNode != NULL);
+        _CONCRT_ASSERT(_ExistingNode != nullptr);
         return _ExistingNode->_M_value;
     }
 
@@ -4341,7 +4385,7 @@ public:
         unsigned long _Key = ::Concurrency::details::platform::GetCurrentThreadId();
         size_t _Index;
         _Node* _ExistingNode = _FindLocalItem(_Key, &_Index);
-        if (_ExistingNode == NULL)
+        if (_ExistingNode == nullptr)
         {
             _Exists = false;
             _ExistingNode = _AddLocalItem(_Key, _Index);
@@ -4351,7 +4395,7 @@ public:
             _Exists = true;
         }
 
-        _CONCRT_ASSERT(_ExistingNode != NULL);
+        _CONCRT_ASSERT(_ExistingNode != nullptr);
         return _ExistingNode->_M_value;
     }
 
@@ -4364,7 +4408,7 @@ public:
         for (size_t _Index = 0; _Index < _M_size; ++_Index)
         {
             _Node* _CurrentNode = _M_buckets[_Index];
-            while (_CurrentNode != NULL)
+            while (_CurrentNode != nullptr)
             {
                 _Node* _NextNode = _CurrentNode->_M_chain;
                 delete _CurrentNode;
@@ -4392,7 +4436,7 @@ public:
     template<typename _Function>
     _Ty combine(_Function _FnCombine) const
     {
-        _Node* _CurrentNode = NULL;
+        _Node* _CurrentNode = nullptr;
         size_t _Index;
 
         // Look for the first value in the set, and use (a copy of) that as the result.
@@ -4400,21 +4444,21 @@ public:
         for (_Index = 0; _Index < _M_size; ++_Index)
         {
             _CurrentNode = _M_buckets[_Index];
-            if (_CurrentNode != NULL)
+            if (_CurrentNode != nullptr)
             {
                  break;
             }
         }
 
         // No values... return the initializer value.
-        if (_CurrentNode == NULL)
+        if (_CurrentNode == nullptr)
         {
             return _M_fnInitialize();
         }
 
         // Accumulate the rest of the items in the current bucket.
         _Ty _Result = _CurrentNode->_M_value;
-        for (_CurrentNode = _CurrentNode->_M_chain; _CurrentNode != NULL; _CurrentNode = _CurrentNode->_M_chain)
+        for (_CurrentNode = _CurrentNode->_M_chain; _CurrentNode != nullptr; _CurrentNode = _CurrentNode->_M_chain)
         {
             _Result = _FnCombine(_Result, _CurrentNode->_M_value);
         }
@@ -4423,7 +4467,7 @@ public:
         _CONCRT_ASSERT(_Index < _M_size);
         for (++_Index; _Index < _M_size; ++_Index)
         {
-            for (_CurrentNode = _M_buckets[_Index]; _CurrentNode != NULL; _CurrentNode = _CurrentNode->_M_chain)
+            for (_CurrentNode = _M_buckets[_Index]; _CurrentNode != nullptr; _CurrentNode = _CurrentNode->_M_chain)
             {
                 _Result = _FnCombine(_Result, _CurrentNode->_M_value);
             }
@@ -4450,7 +4494,7 @@ public:
     {
         for (size_t _Index = 0; _Index < _M_size; ++_Index)
         {
-            for (_Node* _CurrentNode = _M_buckets[_Index]; _CurrentNode != NULL; _CurrentNode = _CurrentNode->_M_chain)
+            for (_Node* _CurrentNode = _M_buckets[_Index]; _CurrentNode != nullptr; _CurrentNode = _CurrentNode->_M_chain)
             {
                 _FnCombine(_CurrentNode->_M_value);
             }
@@ -4461,44 +4505,83 @@ private:
     void _InitNew()
     {
         _M_size = ::Concurrency::details::_GetCombinableSize();
-        _M_buckets = new _Node*[_M_size];
-        memset((void*)_M_buckets, 0, _M_size * sizeof _M_buckets[0]);
+        _M_buckets = new _Node*[_M_size]{};
     }
 
-    void _InitCopy(const combinable& _Copy)
+    struct _InitCopyOp
     {
-        _M_buckets = new _Node*[_M_size];
-        for (size_t _Index = 0; _Index < _M_size; ++_Index)
+        std::unique_ptr<_Node*[]> _M_new_buckets;
+        size_t _M_index; // invariant: !_M_new_buckets || _M_index < _Size
+
+        explicit _InitCopyOp(size_t _Size)
+            : _M_new_buckets(),
+            _M_index(0)
         {
-            _M_buckets[_Index] = NULL;
-            for (_Node* _CurrentNode = _Copy._M_buckets[_Index]; _CurrentNode != NULL; _CurrentNode = _CurrentNode->_M_chain)
+            if (_Size != 0)
             {
-                _Node* _NewNode = new _Node(_CurrentNode->_M_key, _CurrentNode->_M_value);
-                _NewNode->_M_chain = _M_buckets[_Index];
-                _M_buckets[_Index] = _NewNode;
+                _M_new_buckets = std::make_unique<_Node*[]>(_Size);
             }
         }
+
+        _Node ** _DoCopy(size_t _Size, const combinable& _Other)
+        {
+            for (; _M_index < _Size; ++_M_index)
+            {
+                for (_Node* _CurrentNode = _Other._M_buckets[_M_index]; _CurrentNode != nullptr;
+                    _CurrentNode = _CurrentNode->_M_chain)
+                {
+                    // allocate node and push_front
+                    _Node* _NewNode = new _Node(_CurrentNode->_M_key, _CurrentNode->_M_value);
+                    _NewNode->_M_chain = _M_new_buckets[_M_index];
+                    _M_new_buckets[_M_index] = _NewNode;
+                }
+            }
+
+            return _M_new_buckets.release(); // also muzzles destructor
+        }
+
+        ~_InitCopyOp()
+        {
+            if (_M_new_buckets)
+            {
+                // if we get here, an exception was thrown in _DoCopy; note we must back out including the
+                // _M_index-th entry (where the exception was thrown), hence <=
+                for (size_t _Next = 0; _Next <= _M_index; ++_Next)
+                {
+                    _Node* _CurrentNode = _M_new_buckets[_Next];
+                    while (_CurrentNode)
+                    {
+                        const auto _NextNode = _CurrentNode->_M_chain;
+                        delete _CurrentNode;
+                        _CurrentNode = _NextNode;
+                    }
+                }
+            }
+        }
+    };
+
+    static _Node ** _InitCopy(const combinable& _Other)
+    {
+        _InitCopyOp _Op{_Other._M_size};
+        return _Op._DoCopy(_Other._M_size, _Other);
     }
 
     _Node* _FindLocalItem(unsigned long _Key, size_t* _PIndex)
     {
-        _CONCRT_ASSERT(_PIndex != NULL);
+        _CONCRT_ASSERT(_PIndex != nullptr);
 
         *_PIndex = _Key % _M_size;
 
         // Search at this index for an existing value.
-        _Node* _CurrentNode = _M_buckets[*_PIndex];
-        while (_CurrentNode != NULL)
+        for (_Node* _CurrentNode = _M_buckets[*_PIndex]; _CurrentNode != nullptr; _CurrentNode = _CurrentNode->_M_chain)
         {
             if (_CurrentNode->_M_key == _Key)
             {
                 return _CurrentNode;
             }
-
-            _CurrentNode = _CurrentNode->_M_chain;
         }
 
-        return NULL;
+        return nullptr;
     }
 
     _Node* _AddLocalItem(unsigned long _Key, size_t _Index)
@@ -4679,11 +4762,11 @@ void _Merge_chunks(_Random_iterator _Begin1, const _Random_iterator &_End1, _Ran
 
     if (_Begin1 != _End1)
     {
-        std::_Move_no_deprecate(_Begin1, _End1, _Output);
+        std::move(_Begin1, _End1, _Output);
     }
     else if (_Begin2 != _End2)
     {
-        std::_Move_no_deprecate(_Begin2, _End2, _Output);
+        std::move(_Begin2, _End2, _Output);
     }
 }
 
@@ -4780,11 +4863,11 @@ void _Integer_radix_sort(const _Random_iterator &_Begin, size_t _Size, const _Ra
     {
         if (_Radix + 1 & 1)
         {
-            std::_Move_no_deprecate(_Output, _Output + _Size, _Begin);
+            std::move(_Output, _Output + _Size, _Begin);
         }
         else
         {
-            std::_Move_no_deprecate(_Begin, _Begin + _Size, _Output);
+            std::move(_Begin, _Begin + _Size, _Output);
         }
     }
 }
@@ -4965,7 +5048,7 @@ void _Parallel_integer_sort_asc(const _Random_iterator &_Begin, size_t _Size, co
     typedef typename std::iterator_traits<_Random_iterator>::value_type _Value_type;
     // The key type of the radix sort, this must be an "unsigned integer-like" type, that is, it needs support:
     //     operator>> (int), operator>>= (int), operator& (int), operator <, operator size_t ()
-    typedef typename std::remove_const<typename std::remove_reference<decltype(_Proj_func(*_Begin))>::type>::type _Integer_type;
+    typedef std::remove_const_t<std::remove_reference_t<decltype(_Proj_func(*_Begin))>> _Integer_type;
 
     // Find out the max value, which will be used to determine the highest differing byte (the radix position)
     _Integer_type _Max_val = ::Concurrency::parallel_reduce(_Begin, _Begin + _Size, _Proj_func(*_Begin),
@@ -5108,7 +5191,7 @@ template<typename _Random_iterator, typename _Random_buffer_iterator, typename _
 inline bool _Parallel_buffered_sort_impl(const _Random_iterator &_Begin, size_t _Size, _Random_buffer_iterator _Output, const _Function &_Func,
     int _Div_num, const size_t _Chunk_size)
 {
-    static_assert(std::is_same<typename std::iterator_traits<_Random_iterator>::value_type, typename std::iterator_traits<_Random_buffer_iterator>::value_type>::value,
+    static_assert(std::is_same_v<typename std::iterator_traits<_Random_iterator>::value_type, typename std::iterator_traits<_Random_buffer_iterator>::value_type>,
         "same value type expected");
 
     if (_Div_num <= 1 || _Size <= _Chunk_size)
@@ -5169,19 +5252,22 @@ inline bool _Parallel_buffered_sort_impl(const _Random_iterator &_Begin, size_t 
 
 // Allocate and construct a buffer
 template<typename _Allocator>
-inline typename _Allocator::pointer _Construct_buffer(size_t _N, _Allocator &_Alloc)
+inline typename std::allocator_traits<_Allocator>::pointer _Construct_buffer(size_t _N, _Allocator &_Alloc)
 {
-    typename _Allocator::pointer _P = _Alloc.allocate(_N);
+    using _Traits = std::allocator_traits<_Allocator>;
+    using _Value_type = typename _Allocator::value_type;
+    using _Pointer = typename _Traits::pointer;
 
-    // If the objects being sorted have trivial default constructors, they do not need to be
-    // constructed here. This can benefit performance.
-    if (!std::is_trivially_default_constructible<typename _Allocator::value_type>::value)
+    const _Pointer _P = _Alloc.allocate(_N);
+
+    // If the objects being sorted have trivial default initialization, they do not need to be
+    // initialized here. This can benefit performance.
+    if (!std::is_trivially_default_constructible_v<_Value_type>)
     {
         for (size_t _I = 0; _I < _N; _I++)
         {
-            // Objects being sorted must have a default constructor
-            typename _Allocator::value_type _T;
-            _Alloc.construct(_P + _I, std::forward<typename _Allocator::value_type>(_T));
+            // Objects being sorted must be default-initializable
+            _Traits::construct(_Alloc, _P + _I);
         }
     }
 
@@ -5190,15 +5276,17 @@ inline typename _Allocator::pointer _Construct_buffer(size_t _N, _Allocator &_Al
 
 // Destroy and deallocate a buffer
 template<typename _Allocator>
-inline void _Destroy_buffer(typename _Allocator::pointer _P, size_t _N, _Allocator &_Alloc)
+inline void _Destroy_buffer(typename std::allocator_traits<_Allocator>::pointer _P, size_t _N, _Allocator &_Alloc)
 {
-    // If the objects being sorted have trivial destructors, they do not need to be
-    // destructed here. This can benefit performance.
-    if (!std::is_trivially_destructible<typename _Allocator::value_type>::value)
+    using _Traits = std::allocator_traits<_Allocator>;
+
+    // If the objects being sorted have trivial destruction, they do not need to be
+    // destroyed here. This can benefit performance.
+    if (!std::is_trivially_destructible_v<typename _Allocator::value_type>)
     {
         for (size_t _I = 0; _I < _N; _I++)
         {
-            _Alloc.destroy(_P + _I);
+            _Traits::destroy(_Alloc, _P + _I);
         }
     }
 
@@ -5213,10 +5301,11 @@ template<typename _Allocator>
 class _AllocatedBufferHolder
 {
 public:
-    _AllocatedBufferHolder(size_t _Size, const _Allocator & _Alloc): _M_alloc(_Alloc)
+    _AllocatedBufferHolder(size_t _Size, const _Allocator &_Alloc)
+        : _M_size(_Size),
+        _M_alloc(_Alloc),
+        _M_buffer(_Construct_buffer(_Size, _M_alloc))
     {
-        _M_size = _Size;
-        _M_buffer = _Construct_buffer(_Size, _M_alloc);
     }
 
     ~_AllocatedBufferHolder()
@@ -5224,7 +5313,7 @@ public:
         _Destroy_buffer(_M_buffer, _M_size, _M_alloc);
     }
 
-    typename _Allocator::pointer _Get_buffer()
+    typename std::allocator_traits<_Allocator>::pointer _Get_buffer()
     {
         return _M_buffer;
     }
@@ -5232,7 +5321,7 @@ public:
 private:
     size_t _M_size;
     _Allocator _M_alloc;
-    typename _Allocator::pointer _M_buffer;
+    typename std::allocator_traits<_Allocator>::pointer _M_buffer;
 };
 
 
@@ -5636,11 +5725,11 @@ struct _Radix_sort_default_function
         // and unsigned long.
         // In addition, with compilers that provide them, an integral type can be one of long long, unsigned long long, __int64, and
         // unsigned __int64
-        static_assert(std::is_integral<_DataType>::value,
+        static_assert(std::is_integral_v<_DataType>,
             "Type should be integral to use default radix function. For more information on integral types, please refer to https://msdn.microsoft.com/en-us/library/bb983099.aspx.");
         static_assert((sizeof(_DataType) <= sizeof(size_t)), "Passed Type is bigger than size_t.");
 
-        if (std::is_unsigned<_DataType>::value)
+        if (std::is_unsigned_v<_DataType>)
         {
             return _Val;
         }

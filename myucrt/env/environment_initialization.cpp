@@ -154,7 +154,7 @@ static Character** const create_environment(Character* const environment_block) 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // In the initialize function below, we need to ensure that we've initialized
 // the mbc table before we start performing character transformations.
-static void pre_initialize(char)    throw() { /*__acrt_initialize_multibyte(); */}
+static void pre_initialize(char)    throw() { __acrt_initialize_multibyte(); }
 static void pre_initialize(wchar_t) throw() { /* no-op */                    }
 
 
@@ -215,11 +215,11 @@ static void __cdecl uninitialize_environment_internal(Character**& environment) 
 
 extern "C" void __cdecl __dcrt_uninitialize_environments_nolock()
 {
-    //_environ_table .uninitialize(uninitialize_environment_internal<char>);
-    //_wenviron_table.uninitialize(uninitialize_environment_internal<wchar_t>);
+    _environ_table .uninitialize(uninitialize_environment_internal<char>);
+    _wenviron_table.uninitialize(uninitialize_environment_internal<wchar_t>);
 
-    //free_environment(__dcrt_initial_narrow_environment);
-    //free_environment(__dcrt_initial_wide_environment);
+    free_environment(__dcrt_initial_narrow_environment);
+    free_environment(__dcrt_initial_wide_environment);
 }
 
 

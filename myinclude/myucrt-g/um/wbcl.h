@@ -26,8 +26,8 @@ extern "C" {
 
 #if NTDDI_VERSION >= NTDDI_WIN8 
 
-//----------------------------------TCG-defined PCR Event Types
 #ifndef SIPAEV_PREBOOT_CERT
+//----------------------------------TCG-defined PCR Event Types
 #define SIPAEV_PREBOOT_CERT (0x00000000)
 #define SIPAEV_POST_CODE (0x00000001)
 #define SIPAEV_UNUSED (0x00000002)
@@ -46,6 +46,7 @@ extern "C" {
 #define SIPAEV_NONHOST_CODE (0x0000000F)
 #define SIPAEV_NONHOST_CONFIG (0x00000010)
 #define SIPAEV_NONHOST_INFO (0x00000011)
+#define SIPAEV_OMIT_BOOT_DEVICE_EVENTS (0x00000012)
 #define SIPAEV_EFI_EVENT_BASE (0x80000000)
 #define SIPAEV_EFI_VARIABLE_DRIVER_CONFIG (0x80000001)
 #define SIPAEV_EFI_VARIABLE_BOOT (0x80000002)
@@ -58,6 +59,31 @@ extern "C" {
 #define SIPAEV_EFI_HANDOFF_TABLES (0x80000009)
 #define SIPAEV_EFI_HCRTM_EVENT (0x80000010)
 #define SIPAEV_EFI_VARIABLE_AUTHORITY (0x800000E0)
+//----------------------------------PCR Event Types for Intel TXT
+#define SIPAEV_TXT_EVENT_BASE (0x00000400)
+#define SIPAEV_TXT_PCR_MAPPING (0x00000401)
+#define SIPAEV_TXT_HASH_START (0x00000402)
+#define SIPAEV_TXT_COMBINED_HASH (0x00000403)
+#define SIPAEV_TXT_MLE_HASH (0x00000404)
+#define SIPAEV_TXT_BIOSAC_REG_DATA (0x0000040A)
+#define SIPAEV_TXT_CPU_SCRTM_STAT (0x0000040B)
+#define SIPAEV_TXT_LCP_CONTROL_HASH (0x0000040C)
+#define SIPAEV_TXT_ELEMENTS_HASH (0x0000040D)
+#define SIPAEV_TXT_STM_HASH (0x0000040E)
+#define SIPAEV_TXT_OSSINITDATA_CAP_HASH (0x0000040F)
+#define SIPAEV_TXT_SINIT_PUBKEY_HASH (0x00000410)
+#define SIPAEV_TXT_LCP_HASH (0x00000411)
+#define SIPAEV_TXT_LCP_DETAILS_HASH (0x00000412)
+#define SIPAEV_TXT_LCP_AUTHORITIES_HASH (0x00000413)
+#define SIPAEV_TXT_NV_INFO_HASH (0x00000414)
+#define SIPAEV_TXT_COLD_BOOT_BIOS_HASH (0x00000415)
+#define SIPAEV_TXT_KM_HASH (0x00000416)
+#define SIPAEV_TXT_BPM_HASH (0x00000417)
+#define SIPAEV_TXT_KM_INFO_HASH (0x00000418)
+#define SIPAEV_TXT_BPM_INFO_HASH (0x00000419)
+#define SIPAEV_TXT_BOOT_POL_HASH (0x0000041A)
+#define SIPAEV_TXT_RANDOM_VALUE (0x000004FE)
+#define SIPAEV_TXT_CAP_VALUE (0x000004FF)
 #endif
 
 //-----------------------------Types of tagged events in WBCL file
@@ -78,6 +104,7 @@ extern "C" {
 #define SIPAEVENTTYPE_ELAM                              (0x00090000)
 #define SIPAEVENTTYPE_VBS                               (0x000A0000)
 #define SIPAEVENTTYPE_KSR                               (0x000B0000)
+#define SIPAEVENTTYPE_DRTM                              (0x000C0000)
 
 //SIPAEVENTTYPE_CONTAINER
 #define SIPAEVENT_TRUSTBOUNDARY            (SIPAEVENTTYPE_AGGREGATION + \
@@ -289,6 +316,18 @@ extern "C" {
 
 // #endif
 
+#if NTDDI_VERSION >= NTDDI_WIN10_RS5
+
+//
+// This event contains certain details of the active Secure Boot Custom Policy (SBCP).
+// The data portion for this event is an instance of SIPAEVENT_SBCP_INFO_PAYLOAD_V* 
+// structure.
+//
+#define SIPAEVENT_SBCP_INFO                 (SIPAEVENTTYPE_OSPARAMETER + \
+                                             0x0029)
+
+#endif
+
 //SIPAEVENTTYPE_AUHTORITY
 #define SIPAEVENT_NOAUTHORITY              (SIPAEVENTTYPE_AUTHORITY + \
                                             0x0001)
@@ -379,6 +418,23 @@ extern "C" {
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
 
+#if NTDDI_VERSION >= NTDDI_WIN10_RS5
+
+//
+// SIPAEVENTTYPE_DRTM.
+//
+// This event is measured to PCR[20] during DRTM by TcbLaunch.exe.
+//
+// The payload for this event is an instance of TPM_API_PA_DIRECT_AUTHORIZATION_1
+// containing a signature over a TPM policy matching the system state at the time
+// of launching TcbLaunch.exe. A typical TPM policy for validating DRTM state
+// contains a combination of the MLE measurement in PCR 18, a state of PCR[22] and
+// a proper value for the DRTM SVN.
+//
+#define SIPAEVENT_DRTM_STATE_AUTH           (SIPAEVENTTYPE_DRTM + \
+                                            0x001)
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS5
 
 //
 #endif
@@ -686,6 +742,59 @@ typedef struct tag_SIPAEVENT_KSR_SIGNATURE_PAYLOAD
 } SIPAEVENT_KSR_SIGNATURE_PAYLOAD, *PSIPAEVENT_KSR_SIGNATURE_PAYLOAD;
 
 #endif // NTDDI_VERSION >= NTDDI_WIN10_RS3
+
+#if NTDDI_VERSION >= NTDDI_WIN10_RS5
+
+//
+// Payload structure used to carry information about SBCP.
+//
+typedef struct tag_SIPAEVENT_SBCP_INFO_PAYLOAD_V1
+{
+    //
+    // Version of this structure. 
+    // For SIPAEVENT_SBCP_INFO_PAYLOAD_V1 this value is going to be set to 1.
+    //
+    UINT32 PayloadVersion;
+
+    //
+    // Offset in bytes from the start of this structure to the first byte
+    // of VarData.
+    //
+    UINT32 VarDataOffset;
+
+    //
+    // Indicates hash algorithm ID used to produce SBCP hash digest.
+    // Contains one of the TPM_ALG_ID values, typically the TPM_ALG_SHA256.
+    //
+    UINT16  HashAlgID;
+
+    //
+    // Indicates the hash digest length (in bytes). Digest is stored as part of VarData.
+    //
+    _Field_range_(1, 64)
+    UINT16  DigestLength;
+
+    //
+    // Contains the OptionFlags value from the SBCP descriptor.
+    //
+    UINT32  Options;
+
+    //
+    // Contains the SignersCount value for the SBCP.
+    // 
+    UINT32  SignersCount;
+
+    //
+    // VarData layout is:
+    //
+    // BYTE Digest[DigestLength]
+    //
+    _Field_size_bytes_(DigestLength)
+    BYTE    VarData[ANYSIZE_ARRAY];
+
+} SIPAEVENT_SBCP_INFO_PAYLOAD_V1, *PSIPAEVENT_SBCP_INFO_PAYLOAD_V1;
+
+#endif // NTDDI_VERSION >= NTDDI_WIN10_RS5
 
 #pragma pack(pop)
 

@@ -837,6 +837,15 @@ Notes:
 //
 #define MF_E_HARDWARE_DRM_UNSUPPORTED    _HRESULT_TYPEDEF_(0xC00D3706L)
 
+//
+// MessageId: MF_E_DURATION_TOO_LONG
+//
+// MessageText:
+//
+// The specified duration is too long.%0
+//
+#define MF_E_DURATION_TOO_LONG           _HRESULT_TYPEDEF_(0xC00D3707L)
+
 
 /////////////////////////////////////////////////////////////////////////
 //

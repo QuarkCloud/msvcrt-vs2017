@@ -23,6 +23,7 @@
 //                     +-----------------------+
 //
 
+_CRT_SECURITYCRITICAL_ATTRIBUTE
 void* __CRTDECL operator new(size_t const size, std::align_val_t const al)
 {
     for (;;)

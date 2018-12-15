@@ -6,6 +6,7 @@
 // Defines _write(), which writes a buffer to a file.
 //
 #include <corecrt_internal_lowio.h>
+#include <corecrt_internal_mbstring.h>
 #include <ctype.h>
 #include <locale.h>
 #include <stdlib.h>
@@ -78,8 +79,8 @@ static bool __cdecl write_requires_double_translation_nolock(int const fh) throw
     // console.
 
     // If this isn't a TTY or a text mode screen, then it isn't the console:
-    //if (!_isatty(fh))
-    //    return false;
+    if (!_isatty(fh))
+        return false;
 
     if ((_osfile(fh) & FTEXT) == 0)
         return false;
@@ -111,9 +112,10 @@ static write_result __cdecl write_double_translated_ansi_nolock(
     HANDLE      const os_handle  = reinterpret_cast<HANDLE>(_osfhnd(fh));
     char const* const buffer_end = buffer + buffer_size;
     UINT        const console_cp = GetConsoleCP();
+    _LocaleUpdate _loc_update(nullptr);
+    const bool is_utf8 = _loc_update.GetLocaleT()->locinfo->_public._locale_lc_codepage == CP_UTF8;
 
     write_result result = { 0 };
-
 
     for (char const* source_it = buffer; source_it < buffer_end; )
     {
@@ -127,8 +129,97 @@ static write_result __cdecl write_double_translated_ansi_nolock(
         // byte-by-byte, so when we see a lead byte without a trail byte, we
         // have to store it and return no error.  When this function is called
         // again, that byte will be combined with the next available character.
-        wchar_t wc = 0;
-        if (_dbcsBufferUsed(fh))
+        wchar_t wc[2] = { 0 };
+        int wc_used = 1;
+        if (is_utf8)
+        {
+            _ASSERTE(!_dbcsBufferUsed(fh));
+            const int mb_buf_size = sizeof(_mbBuffer(fh));
+            int mb_buf_used;
+            for (mb_buf_used = 0; mb_buf_used < mb_buf_size && _mbBuffer(fh)[mb_buf_used]; ++mb_buf_used)
+            {}
+
+            if (mb_buf_used > 0)
+            {
+                const int mb_len = _utf8_no_of_trailbytes(_mbBuffer(fh)[0]) + 1;
+                _ASSERTE(1 < mb_len && mb_buf_used < mb_len);
+                const int remaining_bytes = mb_len - mb_buf_used;
+                if (remaining_bytes <= (buffer_end - source_it))
+                {
+                    // We now have enough bytes to complete the code point
+                    char mb_buffer[MB_LEN_MAX];
+
+                    for (int i = 0; i < mb_buf_used; ++i)
+                    {
+                        mb_buffer[i] = _mbBuffer(fh)[i];
+                    }
+                    for (int i = 0; i < remaining_bytes; ++i)
+                    {
+                        mb_buffer[i + mb_buf_used] = source_it[i];
+                    }
+
+                    // Clear out the temp buffer
+                    for (int i = 0; i < mb_buf_used; ++i)
+                    {
+                        _mbBuffer(fh)[i] = 0;
+                    }
+
+                    mbstate_t state{};
+                    const char* str = mb_buffer;
+                    if (mb_len == 4)
+                    {
+                        wc_used = 2;
+                    }
+                    if (__crt_mbstring::__mbsrtowcs_utf8(wc, &str, wc_used, &state) == -1)
+                        return result;
+                    source_it += (remaining_bytes - 1);
+                }
+                else
+                {
+                    // Need to add some more bytes to the buffer for later
+                    const auto bytes_to_add = buffer_end - source_it;
+                    _ASSERTE(mb_buf_used + bytes_to_add < mb_buf_size);
+                    for (int i = 0; i < bytes_to_add; ++i)
+                    {
+                        _mbBuffer(fh)[i + mb_buf_used] = source_it[i];
+                    }
+                    // Pretend we wrote the bytes, because this isn't an error *yet*.
+                    result.char_count += static_cast<DWORD>(bytes_to_add);
+                    return result;
+                }
+            }
+            else
+            {
+                const int mb_len = _utf8_no_of_trailbytes(*source_it) + 1;
+                const auto available_bytes = buffer_end - source_it;
+                if (mb_len <= (available_bytes))
+                {
+                    // We have enough bytes to write the entire code point
+                    mbstate_t state{};
+                    const char* str = source_it;
+                    if (mb_len == 4)
+                    {
+                        wc_used = 2;
+                    }
+                    if (__crt_mbstring::__mbsrtowcs_utf8(wc, &str, wc_used, &state) == -1)
+                        return result;
+                    source_it += (mb_len - 1);
+                }
+                else
+                {
+                    // Not enough bytes for this code point
+                    _ASSERTE(available_bytes <= sizeof(_mbBuffer(fh)));
+                    for (int i = 0; i < available_bytes; ++i)
+                    {
+                        _mbBuffer(fh)[i] = source_it[i];
+                    }
+                    // Pretend we wrote the bytes, because this isn't an error *yet*.
+                    result.char_count += static_cast<DWORD>(available_bytes);
+                    return result;
+                }
+            }
+        }
+        else if (_dbcsBufferUsed(fh))
         {
             // We already have a DBCS lead byte buffered.  Take the current
             // character, combine it with the lead byte, and convert:
@@ -140,8 +231,8 @@ static write_result __cdecl write_double_translated_ansi_nolock(
 
             _dbcsBufferUsed(fh) = false;
 
-            //if (mbtowc(&wc, mb_buffer, 2) == -1)
-            //    return result;
+            if (mbtowc(wc, mb_buffer, 2) == -1)
+                return result;
         }
         else
         {
@@ -150,8 +241,8 @@ static write_result __cdecl write_double_translated_ansi_nolock(
                 if ((source_it + 1) < buffer_end)
                 {
                     // And we have more bytes to read, just convert...
-                    //if (mbtowc(&wc, source_it, 2) == -1)
-                    //    return result;
+                    if (mbtowc(wc, source_it, 2) == -1)
+                        return result;
 
                     // Increment the source_it to accomodate the DBCS character:
                     ++source_it;
@@ -171,8 +262,8 @@ static write_result __cdecl write_double_translated_ansi_nolock(
             else
             {
                 // single character conversion:
-                //if (mbtowc(&wc, source_it, 1) == -1)
-                //    return result;
+                if (mbtowc(wc, source_it, 1) == -1)
+                    return result;
             }
         }
 
@@ -181,8 +272,8 @@ static write_result __cdecl write_double_translated_ansi_nolock(
         // Translate the Unicode character into Multibyte in the console codepage
         // and write the character to the file:
         char mb_buffer[MB_LEN_MAX];
-        DWORD const size = static_cast<DWORD>(WideCharToMultiByte(
-            console_cp, 0, &wc, 1, mb_buffer, sizeof(mb_buffer), nullptr, nullptr));
+        DWORD const size = static_cast<DWORD>(__acrt_WideCharToMultiByte(
+            console_cp, 0, wc, wc_used, mb_buffer, sizeof(mb_buffer), nullptr, nullptr));
 
         if(size == 0)
             return result;
@@ -252,8 +343,7 @@ static write_result __cdecl write_double_translated_unicode_nolock(
     {
         wchar_t const c = *reinterpret_cast<wchar_t const*>(pch);
 
-		/*
-        //if (_putwch_nolock(c) == c)
+        if (_putwch_nolock(c) == c)
         {
             result.char_count += 2;
         }
@@ -262,19 +352,16 @@ static write_result __cdecl write_double_translated_unicode_nolock(
             result.error_code = GetLastError();
             return result;
         }
-		*/
 
         // If the character was a carriage return, also emit a line feed.
         // CRT_REFACTOR TODO Doesn't this print LFCR instead of CRLF?
         if (c == LF)
         {
-			/**
             if (_putwch_nolock(CR) != CR)
             {
                 result.error_code = GetLastError();
                 return result;
             }
-			*/
 
             ++result.char_count;
             ++result.lf_count;
@@ -455,7 +542,7 @@ static write_result __cdecl write_text_utf8_nolock(
         // This is the second translation, where we translate the UTF-16 text to
         // UTF-8, into the UTF-8 buffer:
         char utf8_buf[(BUF_SIZE * 2) / 3];
-        DWORD const bytes_converted = static_cast<DWORD>(WideCharToMultiByte(
+        DWORD const bytes_converted = static_cast<DWORD>(__acrt_WideCharToMultiByte(
                 CP_UTF8,
                 0,
                 utf16_buf,
@@ -540,8 +627,8 @@ extern "C" int __cdecl _write_nolock(int const fh, void const* const buffer, uns
 
     // If the file is opened for appending, seek to the end of the file.  We
     // ignore errors because the underlying file may not allow seeking.
-    //if (_osfile(fh) & FAPPEND)
-    //    (void)_lseeki64_nolock(fh, 0, FILE_END);
+    if (_osfile(fh) & FAPPEND)
+        (void)_lseeki64_nolock(fh, 0, FILE_END);
 
 
 

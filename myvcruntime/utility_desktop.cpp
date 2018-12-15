@@ -67,6 +67,22 @@ extern "C" int __cdecl __scrt_initialize_winrt()
     return 0;
 }
 
+// If exe_initialize_mta.lib doesn't get linked in, then the "real" function won't be seen, so all we do is call the no-op stub.
+extern "C" int __cdecl __scrt_exe_initialize_mta();
+
+extern "C" int __cdecl __scrt_stub_for_initialize_mta()
+{
+    // By default, we don't initialize a COM MTA
+    return 0;
+}
+
+_VCRT_DECLARE_ALTERNATE_NAME(__scrt_exe_initialize_mta, __scrt_stub_for_initialize_mta)
+
+extern "C" int __cdecl __scrt_initialize_mta()
+{
+    return __scrt_exe_initialize_mta();
+}
+
 extern "C" LONG WINAPI __scrt_unhandled_exception_filter(LPEXCEPTION_POINTERS const pointers)
 {
     auto const exception_record = reinterpret_cast<EHExceptionRecord*>(pointers->ExceptionRecord);

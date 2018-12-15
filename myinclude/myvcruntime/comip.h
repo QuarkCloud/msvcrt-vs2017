@@ -146,12 +146,12 @@ public:
         }
     }
 
-#if defined(_NATIVE_NULLPTR_SUPPORTED) && !defined(_DO_NOT_USE_NULLPTR_IN_COM_PTR_T)
+#if !defined(_DO_NOT_USE_NULLPTR_IN_COM_PTR_T)
 
     // This constructor is provided to allow nullptr assignment.
-    _com_ptr_t(decltype(__nullptr)) : m_pInterface(NULL) { }
+    _com_ptr_t(decltype(nullptr)) : m_pInterface(NULL) { }
 
-#endif // defined(_NATIVE_NULLPTR_SUPPORTED) && !defined(_DO_NOT_USE_NULLPTR_IN_COM_PTR_T)
+#endif // !defined(_DO_NOT_USE_NULLPTR_IN_COM_PTR_T)
 
     // Copy the pointer and AddRef().
     //

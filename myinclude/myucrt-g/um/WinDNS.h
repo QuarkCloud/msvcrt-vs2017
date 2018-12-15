@@ -923,9 +923,9 @@ typedef enum
     DnsConfigHostName_UTF8,
     DnsConfigFullHostName_W,
     DnsConfigFullHostName_A,
-    DnsConfigFullHostName_UTF8
+    DnsConfigFullHostName_UTF8,
 
-    //  In XP-SP1 (Server.net)
+    DnsConfigNameServer
 }
 DNS_CONFIG_TYPE;
 

@@ -273,7 +273,7 @@ int __cdecl _VCrtDbgReportA(
         {
             /* use only 'safe' functions -- must not assert in here! */
 
-            //_ERRCHECK(_itoa_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
+            _ERRCHECK(_itoa_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
 
             __acrt_OutputDebugStringA("Second Chance Assertion Failed: File ");
             __acrt_OutputDebugStringA(szFile ? szFile : "<file unknown>");
@@ -295,25 +295,25 @@ int __cdecl _VCrtDbgReportA(
                                                     szFormat, arglist));
             if (szlen < 0)
             {
-                //_ERRCHECK(strcpy_s(szUserMessage, DBGRPT_MAX_MSG, DBGRPT_TOOLONGMSG));
+                _ERRCHECK(strcpy_s(szUserMessage, DBGRPT_MAX_MSG, DBGRPT_TOOLONGMSG));
             }
         }
 
         if (_CRT_ASSERT == nRptType)
         {
-            //_ERRCHECK(strcpy_s(szLineMessage, DBGRPT_MAX_MSG, szFormat ? ASSERTINTRO1 : ASSERTINTRO2));
+            _ERRCHECK(strcpy_s(szLineMessage, DBGRPT_MAX_MSG, szFormat ? ASSERTINTRO1 : ASSERTINTRO2));
         }
 
-        //_ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, szUserMessage));
+        _ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, szUserMessage));
 
         if (_CRT_ASSERT == nRptType)
         {
             if (_CrtDbgMode[nRptType] & _CRTDBG_MODE_FILE)
             {
-                //_ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, "\r"));
+                _ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, "\r"));
             }
 
-            //_ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, "\n"));
+            _ERRCHECK(strcat_s(szLineMessage, DBGRPT_MAX_MSG, "\n"));
         }
 
         if (szFile)
@@ -323,21 +323,21 @@ int __cdecl _VCrtDbgReportA(
                                                     szFile, nLine, szLineMessage));
             if (szlen < 0)
             {
-                //_ERRCHECK(strcpy_s(szOutMessage, DBGRPT_MAX_MSG, DBGRPT_TOOLONGMSG));
+                _ERRCHECK(strcpy_s(szOutMessage, DBGRPT_MAX_MSG, DBGRPT_TOOLONGMSG));
             }
         }
         else
         {
-            //_ERRCHECK(strcpy_s(szOutMessage, DBGRPT_MAX_MSG, szLineMessage));
+            _ERRCHECK(strcpy_s(szOutMessage, DBGRPT_MAX_MSG, szLineMessage));
         }
 
         {
             size_t ret = 0;
             errno_t e = 0;
-            //_ERRCHECK_EINVAL_ERANGE(e = mbstowcs_s(&ret, szOutMessage2, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
+            _ERRCHECK_EINVAL_ERANGE(e = mbstowcs_s(&ret, szOutMessage2, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
             if(e != 0)
             {
-                //_ERRCHECK(wcscpy_s(szOutMessage2, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_INVALIDMSG)));
+                _ERRCHECK(wcscpy_s(szOutMessage2, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_INVALIDMSG)));
             }
         }
 
@@ -414,10 +414,10 @@ int __cdecl _VCrtDbgReportA(
             szLineMessage[0] = 0;
             if (nLine)
             {
-                //_ERRCHECK(_itoa_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
+                _ERRCHECK(_itoa_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
             }
 
-            //retval = __acrt_MessageWindowA(nRptType, returnAddress, szFile, (nLine ? szLineMessage : nullptr), szModule, szUserMessage);
+            retval = __acrt_MessageWindowA(nRptType, returnAddress, szFile, (nLine ? szLineMessage : nullptr), szModule, szUserMessage);
         }
     }
     __finally
@@ -491,7 +491,7 @@ int __cdecl _VCrtDbgReportW
         {
             /* use only 'safe' functions -- must not assert in here! */
 
-            //_ERRCHECK(_itow_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
+            _ERRCHECK(_itow_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
 
             OutputDebugStringW(L"Second Chance Assertion Failed: File ");
             OutputDebugStringW(szFile ? szFile : L"<file unknown>");
@@ -525,21 +525,21 @@ int __cdecl _VCrtDbgReportW
                 arglist));
             if (szlen < 0)
             {
-                //_ERRCHECK(wcscpy_s(szUserMessage, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
+                _ERRCHECK(wcscpy_s(szUserMessage, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
             }
         }
 
-        //if (_CRT_ASSERT == nRptType)
-        //    _ERRCHECK(wcscpy_s(szLineMessage, DBGRPT_MAX_MSG, szFormat ? _CRT_WIDE(ASSERTINTRO1) : _CRT_WIDE(ASSERTINTRO2)));
+        if (_CRT_ASSERT == nRptType)
+            _ERRCHECK(wcscpy_s(szLineMessage, DBGRPT_MAX_MSG, szFormat ? _CRT_WIDE(ASSERTINTRO1) : _CRT_WIDE(ASSERTINTRO2)));
 
-        //_ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, szUserMessage));
+        _ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, szUserMessage));
 
         if (_CRT_ASSERT == nRptType)
         {
-            //if (_CrtDbgMode[nRptType] & _CRTDBG_MODE_FILE)
-            //    _ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, L"\r"));
+            if (_CrtDbgMode[nRptType] & _CRTDBG_MODE_FILE)
+                _ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, L"\r"));
             {
-                //_ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, L"\n"));
+                _ERRCHECK(wcscat_s(szLineMessage, DBGRPT_MAX_MSG, L"\n"));
             }
         }
 
@@ -548,19 +548,19 @@ int __cdecl _VCrtDbgReportW
             int szlen = 0;
             _ERRCHECK_SPRINTF(szlen = _snwprintf_s(szOutMessage, DBGRPT_MAX_MSG, DBGRPT_MAX_MSG, L"%ls(%d) : %ls",
                                                     szFile, nLine, szLineMessage));
-            //if (szlen < 0)
-            //    _ERRCHECK(wcscpy_s(szOutMessage, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
+            if (szlen < 0)
+                _ERRCHECK(wcscpy_s(szOutMessage, DBGRPT_MAX_MSG, _CRT_WIDE(DBGRPT_TOOLONGMSG)));
         }
         else
         {
-            //_ERRCHECK(wcscpy_s(szOutMessage, DBGRPT_MAX_MSG, szLineMessage));
+            _ERRCHECK(wcscpy_s(szOutMessage, DBGRPT_MAX_MSG, szLineMessage));
         }
 
         /* scope */
         {
-            //errno_t e = _ERRCHECK_EINVAL_ERANGE(wcstombs_s(nullptr, szOutMessage2, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
-            //if(e != 0)
-            //    _ERRCHECK(strcpy_s(szOutMessage2, DBGRPT_MAX_MSG, DBGRPT_INVALIDMSG));
+            errno_t e = _ERRCHECK_EINVAL_ERANGE(wcstombs_s(nullptr, szOutMessage2, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
+            if(e != 0)
+                _ERRCHECK(strcpy_s(szOutMessage2, DBGRPT_MAX_MSG, DBGRPT_INVALIDMSG));
         }
 
         /* User hook may handle report.
@@ -625,8 +625,8 @@ int __cdecl _VCrtDbgReportW
             case FILE_TYPE_CHAR:
             {
                 DWORD characters_written = 0;
-                //if (WriteConsoleW(_CrtDbgFile[nRptType], szOutMessage, static_cast<DWORD>(wcslen(szOutMessage)), &characters_written, nullptr))
-                //   break;
+                if (WriteConsoleW(_CrtDbgFile[nRptType], szOutMessage, static_cast<DWORD>(wcslen(szOutMessage)), &characters_written, nullptr))
+                    break;
 
                 /* If WriteConsole fails & LastError is ERROR_INVALID_VALUE, then the console is redirected */
                 if (GetLastError() != ERROR_INVALID_HANDLE)
@@ -636,13 +636,12 @@ int __cdecl _VCrtDbgReportW
             {
                 char szaOutMessage[DBGRPT_MAX_MSG];
                 size_t ret = 0;
-                //errno_t e = _ERRCHECK_EINVAL_ERANGE(wcstombs_s(&ret, szaOutMessage, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
-				errno_t e = 0 ;
+                errno_t e = _ERRCHECK_EINVAL_ERANGE(wcstombs_s(&ret, szaOutMessage, DBGRPT_MAX_MSG, szOutMessage, _TRUNCATE));
 
                 if (e != 0 && e != STRUNCATE)
                 {
-                    //DWORD bytes_written = 0;
-                    //WriteFile(_CrtDbgFile[nRptType], szOutMessage, static_cast<DWORD>(wcslen(szOutMessage)) * 2, &bytes_written, nullptr);
+                    DWORD bytes_written = 0;
+                    WriteFile(_CrtDbgFile[nRptType], szOutMessage, static_cast<DWORD>(wcslen(szOutMessage)) * 2, &bytes_written, nullptr);
                 }
                 else
                 {
@@ -661,7 +660,7 @@ int __cdecl _VCrtDbgReportW
 
         if (_CrtDbgMode[nRptType] & _CRTDBG_MODE_DEBUG)
         {
-            __acrt_OutputDebugStringW(szOutMessage);
+            ::OutputDebugStringW(szOutMessage);
         }
 
         if (_CrtDbgMode[nRptType] & _CRTDBG_MODE_WNDW)
@@ -669,9 +668,9 @@ int __cdecl _VCrtDbgReportW
             szLineMessage[0] = 0;
             if (nLine)
             {
-                //_ERRCHECK(_itow_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
+                _ERRCHECK(_itow_s(nLine, szLineMessage, DBGRPT_MAX_MSG, 10));
             }
-            //retval = __acrt_MessageWindowW(nRptType, returnAddress, szFile, (nLine ? szLineMessage : nullptr), szModule, szUserMessage);
+            retval = __acrt_MessageWindowW(nRptType, returnAddress, szFile, (nLine ? szLineMessage : nullptr), szModule, szUserMessage);
         }
     }
     __finally

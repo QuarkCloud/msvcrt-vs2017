@@ -61,8 +61,8 @@ public:
  #if _HAS_ITERATOR_DEBUGGING
   #ifndef _STLCLRDB_REPORT
    #define _STLCLRDB_REPORT(mesg, file, line)	\
-	std::_Debug_message(mesg, file, line)
- #endif /* _STLCLRDB_REPORT */
+	if (::_CrtDbgReportW(_CRT_ASSERT, file, line, NULL, L"%ls", mesg) == 1) { ::_CrtDbgBreak(); }
+  #endif /* _STLCLRDB_REPORT */
 
   #define _STLCLRDB_ERROR(mesg)	\
 	_STLCLRDB_REPORT(mesg, __FILEW__, __LINE__)

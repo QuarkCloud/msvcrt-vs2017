@@ -136,7 +136,7 @@ public:
         PQTuningSpace t;
         HRESULT hr = (*this)->Clone(&t);
         if (FAILED(hr) || !t) {
-            Release();  // clone failed, clear ourselves
+            this->Release();  // clone failed, clear ourselves
             return;
         }
         TUNINGSPACETYPE::operator=(t);
@@ -556,7 +556,7 @@ public:
         PQLocator t;
         HRESULT hr = (*this)->Clone(&t);
         if (FAILED(hr) || !t) {
-            Release();  // clone failed, clear ourselves
+            this->Release();  // clone failed, clear ourselves
             return;
         }
         LOCATORTYPE::operator=(t);
@@ -1237,7 +1237,7 @@ public:
         PQTuneRequest t;
         HRESULT hr = (*this)->Clone(&t);
         if (FAILED(hr) || !t) {
-            Release();  // clone failed, clear ourselves
+            this->Release();  // clone failed, clear ourselves
             return;
         }
         TUNEREQUESTTYPE::operator=(t);

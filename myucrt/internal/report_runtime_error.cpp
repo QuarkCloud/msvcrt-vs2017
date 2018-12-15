@@ -169,33 +169,31 @@ extern "C" void __cdecl __acrt_report_runtime_error(wchar_t const* const message
         size_t progname_size = _countof(outmsg) - (progname - outmsg);
         wchar_t* pch = progname;
 
-        //_ERRCHECK(wcscpy_s(outmsg, _countof(outmsg), MSGTEXTPREFIX));
+        _ERRCHECK(wcscpy_s(outmsg, _countof(outmsg), MSGTEXTPREFIX));
 
         progname[MAX_PATH] = L'\0';
         if (!GetModuleFileNameW(nullptr, progname, MAX_PATH))
         {
-            //_ERRCHECK(wcscpy_s(progname, progname_size, L"<program name unknown>"));
+            _ERRCHECK(wcscpy_s(progname, progname_size, L"<program name unknown>"));
         }
 
         #define MAXLINELEN 60
-        //if (wcslen(pch) + 1 > MAXLINELEN)
+        if (wcslen(pch) + 1 > MAXLINELEN)
         {
-            //pch += wcslen(progname) + 1 - MAXLINELEN;
-            //_ERRCHECK(wcsncpy_s(pch, progname_size - (pch - progname), L"...", 3));
+            pch += wcslen(progname) + 1 - MAXLINELEN;
+            _ERRCHECK(wcsncpy_s(pch, progname_size - (pch - progname), L"...", 3));
         }
 
-        //_ERRCHECK(wcscat_s(outmsg, _countof(outmsg), L"\n\n"));
-        //_ERRCHECK(wcscat_s(outmsg, _countof(outmsg), message));
+        _ERRCHECK(wcscat_s(outmsg, _countof(outmsg), L"\n\n"));
+        _ERRCHECK(wcscat_s(outmsg, _countof(outmsg), message));
 
         // Okay to ignore return value here, this is just to display the message box.
         // Only caller is abort() (so we shouldn't/can't handle IDABORT), so the process
         // will end shortly.
-		/**
         __acrt_show_wide_message_box(
             outmsg,
             L"Microsoft Visual C++ Runtime Library",
             MB_OK | MB_ICONHAND | MB_SETFOREGROUND | MB_TASKMODAL);
-		*/
     }
 }
 

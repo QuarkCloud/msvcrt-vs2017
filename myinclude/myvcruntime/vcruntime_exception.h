@@ -8,7 +8,6 @@
 #pragma once
 
 #include <eh.h>
-#include <vcruntime_internal.h>
 
 #ifdef _M_CEE_PURE
     #include <vcruntime_new.h>
@@ -26,60 +25,51 @@ struct __std_exception_data
 };
 
 _VCRTIMP void __cdecl __std_exception_copy(
-    _In_ struct __std_exception_data const* _From,
-    _Out_ struct __std_exception_data*       _To
+    _In_  __std_exception_data const* _From,
+    _Out_ __std_exception_data*       _To
     );
 
 _VCRTIMP void __cdecl __std_exception_destroy(
-    _Inout_ struct __std_exception_data* _Data
+    _Inout_ __std_exception_data* _Data
     );
-	
-typedef void(__fastcall *PCOOKIE_CHECK)(UINT_PTR);
-_VCRTIMP EXCEPTION_DISPOSITION __cdecl _except_handler4_common(
-    IN PUINT_PTR                        CookiePointer,
-    IN PCOOKIE_CHECK                    CookieCheckFunction,
-    IN PEXCEPTION_RECORD                ExceptionRecord,
-    IN PEXCEPTION_REGISTRATION_RECORD   EstablisherFrame,
-    IN OUT PCONTEXT                     ContextRecord,
-    IN OUT PVOID                        DispatcherContext
-);
-	
-	
+
 _CRT_END_C_HEADER
 
 
 
 namespace std {
 
+#pragma warning(push)
+#pragma warning(disable: 4577) // 'noexcept' used with no exception handling mode specified
 class exception
 {
 public:
 
-    exception() throw()
+    exception() noexcept
         : _Data()
     {
     }
 
-    explicit exception(char const* const _Message) throw()
+    explicit exception(char const* const _Message) noexcept
         : _Data()
     {
         __std_exception_data _InitData = { _Message, true };
         __std_exception_copy(&_InitData, &_Data);
     }
 
-    exception(char const* const _Message, int) throw()
+    exception(char const* const _Message, int) noexcept
         : _Data()
     {
         _Data._What = _Message;
     }
 
-    exception(exception const& _Other) throw()
+    exception(exception const& _Other) noexcept
         : _Data()
     {
         __std_exception_copy(&_Other._Data, &_Data);
     }
 
-    exception& operator=(exception const& _Other) throw()
+    exception& operator=(exception const& _Other) noexcept
     {
         if (this == &_Other)
         {
@@ -91,7 +81,7 @@ public:
         return *this;
     }
 
-    virtual ~exception() throw()
+    virtual ~exception() noexcept
     {
         __std_exception_destroy(&_Data);
     }
@@ -111,7 +101,7 @@ class bad_exception
 {
 public:
 
-    bad_exception() throw()
+    bad_exception() noexcept
         : exception("bad exception", 1)
     {
     }
@@ -122,7 +112,7 @@ class bad_alloc
 {
 public:
 
-    bad_alloc() throw()
+    bad_alloc() noexcept
         : exception("bad allocation", 1)
     {
     }
@@ -131,7 +121,7 @@ private:
 
     friend class bad_array_new_length;
 
-    bad_alloc(char const* const _Message) throw()
+    bad_alloc(char const* const _Message) noexcept
         : exception(_Message, 1)
     {
     }
@@ -142,11 +132,13 @@ class bad_array_new_length
 {
 public:
 
-    bad_array_new_length() throw()
+    bad_array_new_length() noexcept
         : bad_alloc("bad array new length")
     {
     }
 };
+
+#pragma warning(pop)
 
 } // namespace std
 

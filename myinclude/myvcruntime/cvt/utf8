@@ -10,11 +10,14 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
+#if !_HAS_IF_CONSTEXPR
  #pragma warning(disable: 4127)	// conditional expression is constant
  #pragma warning(disable: 6326)	// Potential comparison of a constant with another constant.
+#endif /* ^^^ original code ^^^ */
 
 namespace stdext {
 	namespace cvt {
@@ -31,7 +34,7 @@ template<class _Elem,
 	: public _STD codecvt<_Elem, char, _Statype>
 	{	// facet for converting between _Elem and UTF-8 byte sequences
 public:
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -43,7 +46,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~codecvt_utf8() _NOEXCEPT
+	virtual ~codecvt_utf8() noexcept
 		{	// destroy the object
 		}
 
@@ -58,57 +61,89 @@ protected:
 
 		while (_Mid1 != _Last1 && _Mid2 != _Last2)
 			{	// convert a multibyte sequence
-			unsigned char _By = (unsigned char)*_Mid1;
+			unsigned long _By = static_cast<unsigned char>(*_Mid1);
 			unsigned long _Ch;
 			int _Nextra;
 
 			if (_By < 0x80)
-				_Ch = _By, _Nextra = 0;
+				{
+				_Ch = _By;
+				_Nextra = 0;
+				}
 			else if (_By < 0xc0)
 				{	// 0x80-0xdf not first byte
 				++_Mid1;
 				return (_Mybase::error);
 				}
 			else if (_By < 0xe0)
-				_Ch = _By & 0x1f, _Nextra = 1;
+				{
+				_Ch = _By & 0x1f;
+				_Nextra = 1;
+				}
 			else if (_By < 0xf0)
-				_Ch = _By & 0x0f, _Nextra = 2;
+				{
+				_Ch = _By & 0x0f;
+				_Nextra = 2;
+				}
 			else if (_By < 0xf8)
-				_Ch = _By & 0x07, _Nextra = 3;
+				{
+				_Ch = _By & 0x07;
+				_Nextra = 3;
+				}
 			else
-				_Ch = _By & 0x03, _Nextra = _By < 0xfc ? 4 : 5;
+				{
+				_Ch = _By & 0x03;
+				_Nextra = _By < 0xfc ? 4 : 5;
+				}
 
 			if (_Nextra == 0)
+				{
 				++_Mid1;
+				}
 			else if (_Last1 - _Mid1 < _Nextra + 1)
+				{
 				break;	// not enough input
+				}
 			else
+				{
 				for (++_Mid1; 0 < _Nextra; --_Nextra, ++_Mid1)
+					{
 					if ((_By = (unsigned char)*_Mid1) < 0x80 || 0xc0 <= _By)
+						{
 						return (_Mybase::error);	// not continuation byte
+						}
 					else
+						{
 						_Ch = _Ch << 6 | (_By & 0x3f);
+						}
+					}
+				}
 
 			if (*_Pstate == 0)
 				{	// first time, maybe look for and consume header
 				*_Pstate = 1;
 
-				if ((_Mode & _STD consume_header) != 0 && _Ch == 0xfeff)
-					{	// drop header and retry
-					result _Ans = do_in(_State, _Mid1, _Last1, _Mid1,
-						_First2, _Last2, _Mid2);
+				if _CONSTEXPR_IF ((_Mode & _STD consume_header) != 0)
+					{
+					if (_Ch == 0xfeff)
+						{	// drop header and retry
+						result _Ans = do_in(_State, _Mid1, _Last1, _Mid1,
+							_First2, _Last2, _Mid2);
 
-					if (_Ans == _Mybase::partial)
-						{	// roll back header determination
-						*_Pstate = 0;
-						_Mid1 = _First1;
+						if (_Ans == _Mybase::partial)
+							{	// roll back header determination
+							*_Pstate = 0;
+							_Mid1 = _First1;
+							}
+						return (_Ans);
 						}
-					return (_Ans);
 					}
 				}
 
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);	// code too large
+				}
 			*_Mid2++ = (_Elem)_Ch;
 			}
 
@@ -130,30 +165,53 @@ protected:
 			unsigned long _Ch = (unsigned long)*_Mid1;
 
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);
+				}
 
 			if (_Ch < 0x0080)
-				_By = (_Byte)_Ch, _Nextra = 0;
+				{
+				_By = (_Byte)_Ch;
+				_Nextra = 0;
+				}
 			else if (_Ch < 0x0800)
-				_By = (_Byte)(0xc0 | _Ch >> 6), _Nextra = 1;
+				{
+				_By = (_Byte)(0xc0 | _Ch >> 6);
+				_Nextra = 1;
+				}
 			else if (_Ch < 0x00010000)
-				_By = (_Byte)(0xe0 | _Ch >> 12), _Nextra = 2;
+				{
+				_By = (_Byte)(0xe0 | _Ch >> 12);
+				_Nextra = 2;
+				}
 			else if (_Ch < 0x00200000)
-				_By = (_Byte)(0xf0 | _Ch >> 18), _Nextra = 3;
+				{
+				_By = (_Byte)(0xf0 | _Ch >> 18);
+				_Nextra = 3;
+				}
 			else if (_Ch < 0x04000000)
-				_By = (_Byte)(0xf8 | _Ch >> 24), _Nextra = 4;
+				{
+				_By = (_Byte)(0xf8 | _Ch >> 24);
+				_Nextra = 4;
+				}
 			else
-				_By = (_Byte)(0xfc | (_Ch >> 30 & 0x03)), _Nextra = 5;
+				{
+				_By = (_Byte)(0xfc | (_Ch >> 30 & 0x03));
+				_Nextra = 5;
+				}
 
 			if (*_Pstate == 0)
 				{	// first time, maybe generate header
 				*_Pstate = 1;
-				if ((_Mode & _STD generate_header) == 0)
-					;
-				else if (_Last2 - _Mid2 < 3 + 1 + _Nextra)
-					return (_Mybase::partial);	// not enough room for both
-				else
-					{	// prepend header
+
+				if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0)
+					{
+					if (_Last2 - _Mid2 < 3 + 1 + _Nextra)
+						{
+						return (_Mybase::partial);	// not enough room for both
+						}
+
+					// prepend header
 					*_Mid2++ = (_Byte)(unsigned char)0xef;
 					*_Mid2++ = (_Byte)(unsigned char)0xbb;
 					*_Mid2++ = (_Byte)(unsigned char)0xbf;
@@ -161,11 +219,15 @@ protected:
 				}
 
 			if (_Last2 - _Mid2 < 1 + _Nextra)
+				{
 				break;	// not enough room for output
+				}
 
 			++_Mid1;
 			for (*_Mid2++ = _By; 0 < _Nextra; )
+				{
 				*_Mid2++ = (_Byte)((_Ch >> 6 * --_Nextra & 0x3f) | 0x80);
+				}
 			}
 		return (_First1 == _Mid1 ? _Mybase::partial : _Mybase::ok);
 		}
@@ -178,7 +240,7 @@ protected:
 		}
 
 	virtual int do_length(_Statype& _State, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
 		size_t _Wchars = 0;
 		_Statype _Mystate = _State;
@@ -195,7 +257,7 @@ protected:
 			case _Mybase::noconv:
 				return ((int)(_Wchars + (_Last1 - _First1)));
 
-			case  _Mybase::ok:
+			case _Mybase::ok:
 				if (_Mid2 == &_Ch + 1)
 					++_Wchars;	// replacement do_in might not convert one
 				_First1 = _Mid1;
@@ -209,21 +271,33 @@ protected:
 		return ((int)_Wchars);
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? 9 : 6);
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (9);
+			}
+		else
+			{
+			return (6);
+			}
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? -1 : 0);	// -1 => state dependent, 0 => varying length
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (-1);	// -1 => state dependent
+			}
+		else
+			{
+			return (0);		// 0 => varying length
+			}
 		}
 	};
 #pragma warning(pop)
@@ -240,6 +314,7 @@ protected:
  #endif /* _TEST_IT */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

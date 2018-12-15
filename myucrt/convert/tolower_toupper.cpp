@@ -54,7 +54,6 @@ static int __cdecl common_tox_l(int const c, DWORD const map_flag, _locale_t con
     // Convert the character to a multibyte string:
     size_t        in_count    {};
     unsigned char in_buffer[3]{};
-    /*
     if (locale_update.GetLocaleT()->locinfo->_public._locale_mb_cur_max > 1 && _isleadbyte_l(c >> 8 & 0xff, locale_update.GetLocaleT()))
     {
         in_buffer[0] = c >> 8 & 0xff; // Put the lead byte at start of the string
@@ -70,12 +69,10 @@ static int __cdecl common_tox_l(int const c, DWORD const map_flag, _locale_t con
         in_buffer[1] = 0;
         in_count     = 1;
     }
-    */
 
     // Convert the wide character equivalent to the target case:
     unsigned char out_buffer[3]{};
-
-    int const out_count = 0;   /*__acrt_LCMapStringA(
+    int const out_count = __acrt_LCMapStringA(
         locale_update.GetLocaleT(),
         locale_update.GetLocaleT()->locinfo->locale_name[LC_CTYPE],
         map_flag,
@@ -85,7 +82,7 @@ static int __cdecl common_tox_l(int const c, DWORD const map_flag, _locale_t con
         static_cast<int>(_countof(out_buffer)),
         locale_update.GetLocaleT()->locinfo->_public._locale_lc_codepage,
         TRUE);
-    */
+
     if (out_count == 0)
         return c;
 

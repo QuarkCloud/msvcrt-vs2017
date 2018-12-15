@@ -1,4 +1,3 @@
- 
 /********************************************************************************
 *                                                                               *
 * wow64app.h - ApiSet Contract for api-ms-win-core-wow64-l1                     *
@@ -19,44 +18,22 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-wow64-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_WOW64_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS3
-#define _APISET_WOW64_VER 0x0102
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_WOW64_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_WOW64_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 // RC warns because "WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY" is a bit long.
 #if !defined(RC_INVOKED)
-
 #if _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
 
 WINBASEAPI
 BOOL
 WINAPI
 Wow64DisableWow64FsRedirection(
-    _Out_ PVOID * OldValue
+    _Out_ PVOID* OldValue
     );
 
 
@@ -75,9 +52,7 @@ Wow64RevertWow64FsRedirection(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= 0x0501)
 
@@ -96,15 +71,10 @@ IsWow64Process(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_WOW64_VER >= 0x0101)
 
 // RC warns because "WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY" is a bit long.
 #if !defined(RC_INVOKED)
-
 #if _WIN32_WINNT >= 0x0501 || defined(WINBASE_DECLARE_GET_SYSTEM_WOW64_DIRECTORY)
 
 WINBASEAPI
@@ -113,7 +83,7 @@ _Success_(return != 0 && return < uSize)
 UINT
 WINAPI
 GetSystemWow64DirectoryA(
-    _Out_writes_to_opt_(uSize, return + 1) LPSTR lpBuffer,
+    _Out_writes_to_opt_(uSize,return + 1) LPSTR lpBuffer,
     _In_ UINT uSize
     );
 
@@ -123,7 +93,7 @@ _Success_(return != 0 && return < uSize)
 UINT
 WINAPI
 GetSystemWow64DirectoryW(
-    _Out_writes_to_opt_(uSize, return + 1) LPWSTR lpBuffer,
+    _Out_writes_to_opt_(uSize,return + 1) LPWSTR lpBuffer,
     _In_ UINT uSize
     );
 
@@ -136,7 +106,6 @@ GetSystemWow64DirectoryW(
 #endif // _WIN32_WINNT >= 0x0501
 #endif // !defined(RC_INVOKED)
 
-
 #if (_WIN32_WINNT >= 0x0A00)
 
 WINBASEAPI
@@ -147,15 +116,35 @@ Wow64SetThreadDefaultGuestMachine(
     );
 
 
+#endif // _WIN32_WINNT >= 0x0A00
+
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+#pragma endregion
+
+#pragma region Application Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
+
+#if (_WIN32_WINNT >= 0x0A00)
+
 WINBASEAPI
 BOOL
 WINAPI
 IsWow64Process2(
     _In_ HANDLE hProcess,
-    _Out_ USHORT * pProcessMachine,
-    _Out_opt_ USHORT * pNativeMachine
+    _Out_ USHORT* pProcessMachine,
+    _Out_opt_ USHORT* pNativeMachine
     );
 
+
+#endif // _WIN32_WINNT >= 0x0A00
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#pragma region Desktop Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+
+#if (_WIN32_WINNT >= 0x0A00)
 
 WINBASEAPI
 _Must_inspect_result_
@@ -163,7 +152,7 @@ _Success_(return != 0 && return < uSize)
 UINT
 WINAPI
 GetSystemWow64Directory2A(
-    _Out_writes_to_opt_(uSize, return + 1) LPSTR lpBuffer,
+    _Out_writes_to_opt_(uSize,return + 1) LPSTR lpBuffer,
     _In_ UINT uSize,
     _In_ WORD ImageFileMachineType
     );
@@ -174,7 +163,7 @@ _Success_(return != 0 && return < uSize)
 UINT
 WINAPI
 GetSystemWow64Directory2W(
-    _Out_writes_to_opt_(uSize, return + 1) LPWSTR lpBuffer,
+    _Out_writes_to_opt_(uSize,return + 1) LPWSTR lpBuffer,
     _In_ UINT uSize,
     _In_ WORD ImageFileMachineType
     );
@@ -187,12 +176,6 @@ GetSystemWow64Directory2W(
 
 #endif // _WIN32_WINNT >= 0x0A00
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_WOW64_VER >= 0x0101)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_WOW64_VER >= 0x0102)
-
-
 #if (_WIN32_WINNT >= 0x0A00)
 
 WINBASEAPI
@@ -201,14 +184,11 @@ HRESULT
 WINAPI
 IsWow64GuestMachineSupported(
     _In_ USHORT WowGuestMachine,
-    _Out_ BOOL * MachineIsSupported
+    _Out_ BOOL* MachineIsSupported
     );
 
 
 #endif // _WIN32_WINNT >= 0x0A00
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_WOW64_VER >= 0x0102)
-
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion

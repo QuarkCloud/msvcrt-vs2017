@@ -10,11 +10,14 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
+#if !_HAS_IF_CONSTEXPR
  #pragma warning(disable: 4127)	// conditional expression is constant
  #pragma warning(disable: 6326)	// Potential comparison of a constant with another constant.
+#endif /* ^^^ original code ^^^ */
 
 namespace stdext {
 	namespace cvt {
@@ -34,7 +37,7 @@ template<class _Elem,
 	enum {_Bytes_per_word = 2};
 
 public:
- 	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
+	typedef _STD codecvt<_Elem, char, _Statype> _Mybase;
 	typedef typename _Mybase::result result;
 	typedef char _Byte;
 	typedef _Elem intern_type;
@@ -46,7 +49,7 @@ public:
 		{	// construct with ref count
 		}
 
-	virtual ~codecvt_utf16() _NOEXCEPT
+	virtual ~codecvt_utf16() noexcept
 		{	// destroy the object
 		}
 
@@ -66,22 +69,36 @@ protected:
 			unsigned short _Ch0, _Ch1;
 
 			if (*_Pstate == _LITTLE_FIRST)
+				{
 				_Ch0 = (unsigned short)(_Ptr[1] << 8 | _Ptr[0]);
+				}
 			else if (*_Pstate == _BIG_FIRST)
+				{
 				_Ch0 = (unsigned short)(_Ptr[0] << 8 | _Ptr[1]);
+				}
 			else
 				{	// no header seen yet, try preferred mode
-				unsigned char _Default_endian =
+				constexpr unsigned char _Default_endian =
 					(_Mode & _STD little_endian) != 0
 					? _LITTLE_FIRST : _BIG_FIRST;
 
-				 if ((_Mode & _STD little_endian) != 0)
+				if _CONSTEXPR_IF ((_Mode & _STD little_endian) != 0)
+					{
 					_Ch0 = (unsigned short)(_Ptr[1] << 8 | _Ptr[0]);
+					}
 				else
+					{
 					_Ch0 = (unsigned short)(_Ptr[0] << 8 | _Ptr[1]);
-				if ((_Mode & _STD consume_header) == 0
-					|| (_Ch0 != 0xfeff && _Ch0 != 0xfffe))
+					}
+
+				if _CONSTEXPR_IF ((_Mode & _STD consume_header) == 0)
+					{
 					*_Pstate = _Default_endian;
+					}
+				else if (_Ch0 != 0xfeff && _Ch0 != 0xfffe)
+					{
+					*_Pstate = _Default_endian;
+					}
 				else
 					{	// consume header, fixate on endianness, and retry
 					_Mid1 += _Bytes_per_word;
@@ -106,16 +123,24 @@ protected:
 				_Ch = _Ch0;
 				}
 			else if (_Last1 - _Mid1 < 2 * _Bytes_per_word)
+				{
 				break;
+				}
 			else
 				{	// get second word
 				if (*_Pstate == _LITTLE_FIRST)
+					{
 					_Ch1 = (unsigned short)(_Ptr[3] << 8 | _Ptr[2]);
+					}
 				else
+					{
 					_Ch1 = (unsigned short)(_Ptr[2] << 8 | _Ptr[3]);
+					}
 
 				if (_Ch1 < 0xdc00 || 0xe000 <= _Ch1)
+					{
 					return (_Mybase::error);
+					}
 
 				_Mid1 += 2 * _Bytes_per_word;
 				_Ch = (unsigned long)(_Ch0 - 0xd800 + 0x0040) << 10
@@ -123,7 +148,9 @@ protected:
 				}
 
 			if (_Maxcode < _Ch)
+				{
 				return (_Mybase::error);	// code too large
+				}
 			*_Mid2++ = (_Elem)_Ch;
 			}
 
@@ -140,21 +167,32 @@ protected:
 
 		if (*_Pstate == 0)
 			{	// determine endianness once, maybe generate header
-			*_Pstate = (_Mode & _STD little_endian) != 0
-				? _LITTLE_FIRST : _BIG_FIRST;
-			if ((_Mode & _STD generate_header) == 0)
-				;
-			else if (_Last2 - _Mid2 < 3 * _Bytes_per_word)
-				return (_Mybase::partial);	// not enough room for both
-			else if (*_Pstate == _LITTLE_FIRST)
-				{	// put header LS byte first
-				*_Mid2++ = (_Byte)(unsigned char)0xff;
-				*_Mid2++ = (_Byte)(unsigned char)0xfe;
+			if _CONSTEXPR_IF ((_Mode & _STD little_endian) != 0)
+				{
+				*_Pstate = _LITTLE_FIRST;
 				}
 			else
-				{	// put header MS byte first
-				*_Mid2++ = (_Byte)(unsigned char)0xfe;
-				*_Mid2++ = (_Byte)(unsigned char)0xff;
+				{
+				*_Pstate = _BIG_FIRST;
+				}
+
+			if _CONSTEXPR_IF ((_Mode & _STD generate_header) != 0)
+				{
+				if (_Last2 - _Mid2 < 3 * _Bytes_per_word)
+					{
+					return (_Mybase::partial);	// not enough room for both
+					}
+
+				if (*_Pstate == _LITTLE_FIRST)
+					{	// put header LS byte first
+					*_Mid2++ = (_Byte)(unsigned char)0xff;
+					*_Mid2++ = (_Byte)(unsigned char)0xfe;
+					}
+				else
+					{	// put header MS byte first
+					*_Mid2++ = (_Byte)(unsigned char)0xfe;
+					*_Mid2++ = (_Byte)(unsigned char)0xff;
+					}
 				}
 			}
 
@@ -164,11 +202,15 @@ protected:
 			unsigned long _Ch = (unsigned long)*_Mid1++;
 
 			if ((_Maxcode < 0x10ffff ? _Maxcode : 0x10ffff) < _Ch)
+				{
 				return (_Mybase::error);	// value too large
+				}
 			else if (_Ch <= 0xffff)
 				{	// one word, can't be code for first of two
 				if (0xd800 <= _Ch && _Ch < 0xdc00)
+					{
 					return (_Mybase::error);
+					}
 				}
 			else if (_Last2 - _Mid2 < 2 * _Bytes_per_word)
 				{	// not enough room for two-word output, back up
@@ -176,9 +218,12 @@ protected:
 				return (_Mybase::partial);
 				}
 			else
+				{
 				_Extra = true;
+				}
 
 			if (*_Pstate == _LITTLE_FIRST)
+				{
 				if (!_Extra)
 					{	// put a single word LS byte first
 					*_Mid2++ = (_Byte)_Ch;
@@ -196,7 +241,9 @@ protected:
 					*_Mid2++ = (_Byte)_Ch0;
 					*_Mid2++ = (_Byte)(_Ch0 >> 8);
 					}
+				}
 			else
+				{
 				if (!_Extra)
 					{	// put a single word MS byte first
 					*_Mid2++ = (_Byte)(_Ch >> 8);
@@ -214,6 +261,7 @@ protected:
 					*_Mid2++ = (_Byte)(_Ch0 >> 8);
 					*_Mid2++ = (_Byte)_Ch0;
 					}
+				}
 			}
 
 		return (_First1 == _Mid1 ? _Mybase::partial : _Mybase::ok);
@@ -227,7 +275,7 @@ protected:
 		}
 
 	virtual int do_length(_Statype& _State, const _Byte *_First1,
-		const _Byte *_Last1, size_t _Count) const _NOEXCEPT
+		const _Byte *_Last1, size_t _Count) const noexcept
 		{	// return min(_Count, converted length of bytes [_First1, _Last1))
 		size_t _Wchars = 0;
 		_Statype _Mystate = _State;
@@ -244,7 +292,7 @@ protected:
 			case _Mybase::noconv:
 				return ((int)(_Wchars + (_Last1 - _First1)));
 
-			case  _Mybase::ok:
+			case _Mybase::ok:
 				if (_Mid2 == &_Ch + 1)
 					++_Wchars;	// replacement do_in might not convert one
 				_First1 = _Mid1;
@@ -258,21 +306,33 @@ protected:
 		return ((int)_Wchars);
 		}
 
-	virtual bool do_always_noconv() const _NOEXCEPT
+	virtual bool do_always_noconv() const noexcept
 		{	// return true if conversions never change input
 		return (false);
 		}
 
-	virtual int do_max_length() const _NOEXCEPT
+	virtual int do_max_length() const noexcept
 		{	// return maximum length required for a conversion
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? 3 * _Bytes_per_word : 6 * _Bytes_per_word);
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (3 * _Bytes_per_word);
+			}
+		else
+			{
+			return (6 * _Bytes_per_word);
+			}
 		}
 
-	virtual int do_encoding() const _NOEXCEPT
+	virtual int do_encoding() const noexcept
 		{	// return length of code sequence (from codecvt)
-		return ((_Mode & (_STD consume_header | _STD generate_header)) != 0
-			? -1 : 0);	// -1 => state dependent, 0 => varying length
+		if _CONSTEXPR_IF ((_Mode & (_STD consume_header | _STD generate_header)) != 0)
+			{
+			return (-1);	// -1 => state dependent
+			}
+		else
+			{
+			return (0);		// 0 => varying length
+			}
 		}
 	};
 #pragma warning(pop)
@@ -289,6 +349,7 @@ protected:
  #endif /* _TEST_IT */
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

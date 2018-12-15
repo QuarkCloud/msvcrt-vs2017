@@ -1672,6 +1672,9 @@ enum
                                                       //  Only one of ASSOCF_INIT_FIXED_PROGID, ASSOCF_IS_PROTOCOL or ASSOCF_IS_FULL_URI can be specified at a time.
     ASSOCF_PER_MACHINE_ONLY            = 0x00008000,  //  Enforces per-machine association look-up only and avoid HKCU.
 #endif
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+    ASSOCF_APP_TO_APP                  = 0x00010000,
+#endif
 };
 typedef DWORD ASSOCF;
 

@@ -13,7 +13,7 @@ Abstract:
 
 Revision History:
 
-    Insung Park (insungp) 26-Aug-2004 
+    Insung Park (insungp) 26-Aug-2004
         Created the file.
 
 --*/
@@ -27,10 +27,13 @@ Revision History:
 #pragma region Desktop Family or OneCore Family
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
-
 #include <wmistr.h>
 #include <evntrace.h>
 #include <evntprov.h>
+
+#ifndef EVNTCONS_INLINE
+#define EVNTCONS_INLINE __inline
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,16 +62,17 @@ extern "C" {
 #define EVENT_HEADER_EXT_TYPE_PROV_TRAITS          0x000C
 #define EVENT_HEADER_EXT_TYPE_PROCESS_START_KEY    0x000D
 #define EVENT_HEADER_EXT_TYPE_CONTROL_GUID         0x000E
-#define EVENT_HEADER_EXT_TYPE_MAX                  0x000F
+#define EVENT_HEADER_EXT_TYPE_QPC_DELTA            0x000F
+#define EVENT_HEADER_EXT_TYPE_MAX                  0x0010
 
 #ifndef EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
 #define EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
 typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
 
     USHORT      Reserved1;                      // Reserved for internal use
-    USHORT      ExtType;                        // Extended info type 
+    USHORT      ExtType;                        // Extended info type
     struct {
-        USHORT  Linkage             :  1;       // Indicates additional extended 
+        USHORT  Linkage             :  1;       // Indicates additional extended
                                                 // data item
         USHORT  Reserved2           : 15;
     };
@@ -100,7 +104,7 @@ typedef struct _EVENT_EXTENDED_ITEM_STACK_TRACE32 {
     ULONG64 MatchId;
     ULONG   Address[ANYSIZE_ARRAY];
 } EVENT_EXTENDED_ITEM_STACK_TRACE32, *PEVENT_EXTENDED_ITEM_STACK_TRACE32;
-    
+
 typedef struct _EVENT_EXTENDED_ITEM_STACK_TRACE64 {
     ULONG64 MatchId;
     ULONG64 Address[ANYSIZE_ARRAY];
@@ -156,7 +160,7 @@ typedef struct _EVENT_HEADER {
             ULONG       KernelTime;             // Kernel Mode CPU ticks
             ULONG       UserTime;               // User mode CPU ticks
         } DUMMYSTRUCTNAME;
-        ULONG64         ProcessorTime;          // Processor Clock 
+        ULONG64         ProcessorTime;          // Processor Clock
                                                 // for private session events
     } DUMMYUNIONNAME;
     GUID                ActivityId;             // Activity Id
@@ -173,8 +177,8 @@ typedef struct _EVENT_RECORD {
     USHORT              ExtendedDataCount;      // Number of extended
                                                 // data items
     USHORT              UserDataLength;         // User data length
-    PEVENT_HEADER_EXTENDED_DATA_ITEM            // Pointer to an array of 
-                        ExtendedData;           // extended data items                                               
+    PEVENT_HEADER_EXTENDED_DATA_ITEM            // Pointer to an array of
+                        ExtendedData;           // extended data items
     PVOID               UserData;               // Pointer to user data
     PVOID               UserContext;            // Context from OpenTrace
 } EVENT_RECORD, *PEVENT_RECORD;
@@ -201,7 +205,7 @@ typedef const EVENT_RECORD *PCEVENT_RECORD;
 #define PROCESS_TRACE_MODE_RAW_TIMESTAMP            0x00001000
 #define PROCESS_TRACE_MODE_EVENT_RECORD             0x10000000
 
-FORCEINLINE
+EVNTCONS_INLINE
 ULONG
 GetEventProcessorIndex (
     _In_ PCEVENT_RECORD EventRecord
@@ -225,19 +229,19 @@ typedef enum {
     EtwProviderTraitTypeMax
 } ETW_PROVIDER_TRAIT_TYPE;
 
-__inline
+EVNTCONS_INLINE
 VOID
 EtwGetTraitFromProviderTraits(
     _In_ PVOID ProviderTraits,
     _In_ UCHAR TraitType,
     _Out_ PVOID* Trait,
     _Out_ PUSHORT Size
-    )  
+    )
 {
     USHORT const ByteCount = *(USHORT UNALIGNED*)ProviderTraits;
     PUCHAR Ptr = (PUCHAR)ProviderTraits;
     UCHAR const* PtrEnd = Ptr + ByteCount;
-    
+
     *Trait = NULL;
     *Size = 0;
 
@@ -253,14 +257,14 @@ EtwGetTraitFromProviderTraits(
     // Skip byte counts
     //
 
-    Ptr += 2;  
+    Ptr += 2;
 
     //
     // Skip the Provider Name, including the Null termination
     //
 
     Ptr += strnlen((PCSTR)Ptr, ByteCount - 3u);
-    Ptr += 1;  
+    Ptr += 1;
 
     //
     // Loop through the rest of the traits until one of the
@@ -278,7 +282,7 @@ EtwGetTraitFromProviderTraits(
             return;
         }
 
-        if ((Ptr[2] == TraitType) && 
+        if ((Ptr[2] == TraitType) &&
             (Ptr + TraitByteCount <= PtrEnd)) {
 
             *Trait = (PVOID)(Ptr + 3);
@@ -314,7 +318,7 @@ EventAccessControl(
     _In_ ULONG Rights,
     _In_ BOOLEAN AllowOrDeny
     );
-#endif 
+#endif
 
 #if (WINVER >= _WIN32_WINNT_LONGHORN)
 ULONG
@@ -332,7 +336,7 @@ EVNTAPI
 EventAccessRemove(
     _In_ LPGUID Guid
     );
-#endif 
+#endif
 
 #if defined (_MSC_VER)
 #if _MSC_VER >= 1200
@@ -341,7 +345,7 @@ EventAccessRemove(
 #pragma warning(default:4201) // nonstandard extension used : nameless struct/union
 #pragma warning(default:4214) // nonstandard extension used : bit field types other then int
 #endif
-#endif 
+#endif
 
 #ifdef __cplusplus
 }

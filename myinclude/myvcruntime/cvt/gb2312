@@ -2,8 +2,8 @@
  #pragma once
 
 #ifndef _CVT_GB2312_
+#define _CVT_GB2312_
 #ifndef RC_INVOKED
- #define _CVT_GB2312_
 //
 // 	Name:             GB2312-80 to Unicode table (complete, hex format)
 // 	Unicode version:  3.0
@@ -79,6 +79,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -3877,6 +3878,7 @@ template<class _Elem,
   #include <cvt/xtest>
  #endif /* _TEST_IT */
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

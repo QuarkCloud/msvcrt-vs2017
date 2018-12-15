@@ -1,4 +1,3 @@
- 
 /********************************************************
 *                                                       *
 *   Copyright (C) 2010 Microsoft. All rights reserved.  *
@@ -23,9 +22,7 @@
 //
 ////
 
-
 #if defined(_MSC_VER)
-
 #if _MSC_VER > 1000
 #pragma once
 #endif
@@ -34,7 +31,6 @@
 #ifndef _APPMODEL_H_
 #define _APPMODEL_H_
 
-
 #if defined(_CONTRACT_GEN)
 #include <nt.h>
 #include <ntrtl.h>
@@ -42,29 +38,7 @@
 #include <windows.h>
 #endif // defined(_CONTRACT_GEN)
 
-/* APISET_NAME: api-ms-win-appmodel-runtime-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_APPMODELRUNTIME_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS1
-#define _APISET_APPMODELRUNTIME_VER 0x0102
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINBLUE
-#define _APISET_APPMODELRUNTIME_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_APPMODELRUNTIME_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
-
 #if defined(_MSC_VER)
-
 #if _MSC_VER >= 1200
 #pragma warning(push)
 #endif
@@ -73,13 +47,11 @@
 
 #include <minappmodel.h>
 
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 
 // Identity Types
@@ -113,7 +85,6 @@ typedef struct PACKAGE_ID {
 #pragma endregion
 
 #pragma region Desktop Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
 // Identity Functions
@@ -123,8 +94,8 @@ _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetCurrentPackageId(
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer
     );
 
 
@@ -133,7 +104,7 @@ _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetCurrentPackageFullName(
-    _Inout_ UINT32 * packageFullNameLength,
+    _Inout_ UINT32* packageFullNameLength,
     _Out_writes_opt_(*packageFullNameLength) PWSTR packageFullName
     );
 
@@ -143,7 +114,7 @@ _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetCurrentPackageFamilyName(
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName
     );
 
@@ -153,7 +124,7 @@ _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetCurrentPackagePath(
-    _Inout_ UINT32 * pathLength,
+    _Inout_ UINT32* pathLength,
     _Out_writes_opt_(*pathLength) PWSTR path
     );
 
@@ -164,8 +135,8 @@ LONG
 WINAPI
 GetPackageId(
     _In_ HANDLE hProcess,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer
     );
 
 
@@ -175,26 +146,23 @@ LONG
 WINAPI
 GetPackageFullName(
     _In_ HANDLE hProcess,
-    _Inout_ UINT32 * packageFullNameLength,
+    _Inout_ UINT32* packageFullNameLength,
     _Out_writes_opt_(*packageFullNameLength) PWSTR packageFullName
     );
 
 
 //TODO:8645770 Change 0x0101 to 0x0102 once THRESHOLD constants are available
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetPackageFullNameFromToken(
     _In_ HANDLE token,
-    _Inout_ UINT32 * packageFullNameLength,
+    _Inout_ UINT32* packageFullNameLength,
     _Out_writes_opt_(*packageFullNameLength) PWSTR packageFullName
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 WINBASEAPI
 _Success_(return == ERROR_SUCCESS)
@@ -202,41 +170,35 @@ LONG
 WINAPI
 GetPackageFamilyName(
     _In_ HANDLE hProcess,
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName
     );
 
 
 //TODO:8645770 Change 0x0101 to 0x0102 once THRESHOLD constants are available
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetPackageFamilyNameFromToken(
     _In_ HANDLE token,
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 WINBASEAPI
 _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetPackagePath(
-    _In_ const PACKAGE_ID * packageId,
+    _In_ const PACKAGE_ID* packageId,
     _Reserved_ const UINT32 reserved,
-    _Inout_ UINT32 * pathLength,
+    _Inout_ UINT32* pathLength,
     _Out_writes_opt_(*pathLength) PWSTR path
     );
 
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 WINBASEAPI
 _Success_(return == ERROR_SUCCESS)
@@ -244,7 +206,7 @@ LONG
 WINAPI
 GetPackagePathByFullName(
     _In_ PCWSTR packageFullName,
-    _Inout_ UINT32 * pathLength,
+    _Inout_ UINT32* pathLength,
     _Out_writes_opt_(*pathLength) PWSTR path
     );
 
@@ -255,12 +217,10 @@ LONG
 WINAPI
 GetStagedPackagePathByFullName(
     _In_ PCWSTR packageFullName,
-    _Inout_ UINT32 * pathLength,
+    _Inout_ UINT32* pathLength,
     _Out_writes_opt_(*pathLength) PWSTR path
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 /* ---------------------------------------------------------------- */
 
@@ -271,7 +231,7 @@ _Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetCurrentApplicationUserModelId(
-    _Inout_ UINT32 * applicationUserModelIdLength,
+    _Inout_ UINT32* applicationUserModelIdLength,
     _Out_writes_opt_(*applicationUserModelIdLength) PWSTR applicationUserModelId
     );
 
@@ -282,26 +242,23 @@ LONG
 WINAPI
 GetApplicationUserModelId(
     _In_ HANDLE hProcess,
-    _Inout_ UINT32 * applicationUserModelIdLength,
+    _Inout_ UINT32* applicationUserModelIdLength,
     _Out_writes_opt_(*applicationUserModelIdLength) PWSTR applicationUserModelId
     );
 
 
 //TODO:8645770 Change 0x0101 to 0x0102 once THRESHOLD constants are available
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetApplicationUserModelIdFromToken(
     _In_ HANDLE token,
-    _Inout_ UINT32 * applicationUserModelIdLength,
+    _Inout_ UINT32* applicationUserModelIdLength,
     _Out_writes_opt_(*applicationUserModelIdLength) PWSTR applicationUserModelId
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma endregion
@@ -309,16 +266,14 @@ GetApplicationUserModelIdFromToken(
 /* ---------------------------------------------------------------- */
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 
 // Verification Functions
 
 //TODO:8645770 Change 0x0101 to 0x0102 once THRESHOLD constants are available
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 VerifyPackageFullName(
@@ -327,7 +282,8 @@ VerifyPackageFullName(
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 VerifyPackageFamilyName(
@@ -336,16 +292,18 @@ VerifyPackageFamilyName(
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 VerifyPackageId(
-    _In_ const PACKAGE_ID * packageId
+    _In_ const PACKAGE_ID* packageId
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 VerifyApplicationUserModelId(
@@ -354,7 +312,8 @@ VerifyApplicationUserModelId(
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 VerifyPackageRelativeApplicationId(
@@ -362,99 +321,99 @@ VerifyPackageRelativeApplicationId(
     );
 
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 /* ---------------------------------------------------------------- */
 
 // Conversion Functions
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 PackageIdFromFullName(
     _In_ PCWSTR packageFullName,
     _In_ const UINT32 flags,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 PackageFullNameFromId(
-    _In_ const PACKAGE_ID * packageId,
-    _Inout_ UINT32 * packageFullNameLength,
+    _In_ const PACKAGE_ID* packageId,
+    _Inout_ UINT32* packageFullNameLength,
     _Out_writes_opt_(*packageFullNameLength) PWSTR packageFullName
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 PackageFamilyNameFromId(
-    _In_ const PACKAGE_ID * packageId,
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _In_ const PACKAGE_ID* packageId,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 PackageFamilyNameFromFullName(
     _In_ PCWSTR packageFullName,
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 PackageNameAndPublisherIdFromFamilyName(
     _In_ PCWSTR packageFamilyName,
-    _Inout_ UINT32 * packageNameLength,
+    _Inout_ UINT32* packageNameLength,
     _Out_writes_opt_(*packageNameLength) PWSTR packageName,
-    _Inout_ UINT32 * packagePublisherIdLength,
+    _Inout_ UINT32* packagePublisherIdLength,
     _Out_writes_opt_(*packagePublisherIdLength) PWSTR packagePublisherId
     );
 
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 FormatApplicationUserModelId(
     _In_ PCWSTR packageFamilyName,
     _In_ PCWSTR packageRelativeApplicationId,
-    _Inout_ UINT32 * applicationUserModelIdLength,
+    _Inout_ UINT32* applicationUserModelIdLength,
     _Out_writes_opt_(*applicationUserModelIdLength) PWSTR applicationUserModelId
     );
 
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 ParseApplicationUserModelId(
     _In_ PCWSTR applicationUserModelId,
-    _Inout_ UINT32 * packageFamilyNameLength,
+    _Inout_ UINT32* packageFamilyNameLength,
     _Out_writes_opt_(*packageFamilyNameLength) PWSTR packageFamilyName,
-    _Inout_ UINT32 * packageRelativeApplicationIdLength,
+    _Inout_ UINT32* packageRelativeApplicationIdLength,
     _Out_writes_opt_(*packageRelativeApplicationIdLength) PWSTR packageRelativeApplicationId
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 #pragma endregion
@@ -462,39 +421,41 @@ ParseApplicationUserModelId(
 /* ---------------------------------------------------------------- */
 
 #pragma region Desktop Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
 // Lookup Functions
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS) _On_failure_(_Unchanged_(*count)) _On_failure_(_Unchanged_(*bufferLength))
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
+_On_failure_(_Unchanged_(*count))
+_On_failure_(_Unchanged_(*bufferLength))
 LONG
 WINAPI
 GetPackagesByPackageFamily(
     _In_ PCWSTR packageFamilyName,
-    _Inout_ UINT32 * count,
-    _Out_writes_opt_(*count) PWSTR * packageFullNames,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_opt_(*bufferLength) WCHAR * buffer
+    _Inout_ UINT32* count,
+    _Out_writes_opt_(*count) PWSTR* packageFullNames,
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_opt_(*bufferLength) WCHAR* buffer
     );
 
 
-
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 /* Any combination of PACKAGE_FILTER_* */WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS) _On_failure_(_Unchanged_(*count)) _On_failure_(_Unchanged_(*bufferLength))
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
+_On_failure_(_Unchanged_(*count))
+_On_failure_(_Unchanged_(*bufferLength))
 LONG
 WINAPI
 FindPackagesByPackageFamily(
     _In_ PCWSTR packageFamilyName,
     _In_ UINT32 packageFilters,
-    _Inout_ UINT32 * count,
-    _Out_writes_opt_(*count) PWSTR * packageFullNames,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_opt_(*bufferLength) WCHAR * buffer,
-    _Out_writes_opt_(*count) UINT32 * packageProperties
+    _Inout_ UINT32* count,
+    _Out_writes_opt_(*count) PWSTR* packageFullNames,
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_opt_(*bufferLength) WCHAR* buffer,
+    _Out_writes_opt_(*count) UINT32* packageProperties
     );
 
 
@@ -510,16 +471,15 @@ typedef enum PackageOrigin
 } PackageOrigin;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 GetStagedPackageOrigin(
     _In_ PCWSTR packageFullName,
-    _Out_ PackageOrigin * origin
+    _Out_ PackageOrigin* origin
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma endregion
@@ -529,7 +489,6 @@ GetStagedPackageOrigin(
 // Package Constants
 
 #pragma region Application Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 
 #define PACKAGE_PROPERTY_FRAMEWORK          0x00000001
@@ -551,9 +510,7 @@ GetStagedPackageOrigin(
 #pragma endregion
 
 #pragma region Desktop Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-
 
 #if defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_WINBLUE)
 #pragma deprecated("PACKAGE_FILTER_ALL_LOADED")
@@ -588,9 +545,9 @@ LONG
 WINAPI
 GetCurrentPackageInfo(
     _In_ const UINT32 flags,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer,
-    _Out_opt_ UINT32 * count
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer,
+    _Out_opt_ UINT32* count
     );
 
 
@@ -601,26 +558,23 @@ WINAPI
 OpenPackageInfoByFullName(
     _In_ PCWSTR packageFullName,
     _Reserved_ const UINT32 reserved,
-    _Out_ PACKAGE_INFO_REFERENCE * packageInfoReference
+    _Out_ PACKAGE_INFO_REFERENCE* packageInfoReference
     );
 
 
 //TODO:8645770 Change 0x0101 to 0x0102 once THRESHOLD constants are available
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 OpenPackageInfoByFullNameForUser(
     _In_opt_ PSID userSid,
     _In_ PCWSTR packageFullName,
     _Reserved_ const UINT32 reserved,
-    _Out_ PACKAGE_INFO_REFERENCE * packageInfoReference
+    _Out_ PACKAGE_INFO_REFERENCE* packageInfoReference
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 WINBASEAPI
 _Success_(return == ERROR_SUCCESS)
@@ -638,14 +592,11 @@ WINAPI
 GetPackageInfo(
     _In_ PACKAGE_INFO_REFERENCE packageInfoReference,
     _In_ const UINT32 flags,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer,
-    _Out_opt_ UINT32 * count
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer,
+    _Out_opt_ UINT32* count
     );
 
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
 
 WINBASEAPI
 _Success_(return == ERROR_SUCCESS)
@@ -653,16 +604,11 @@ LONG
 WINAPI
 GetPackageApplicationIds(
     _In_ PACKAGE_INFO_REFERENCE packageInfoReference,
-    _Inout_ UINT32 * bufferLength,
-    _Out_writes_bytes_opt_(*bufferLength) BYTE * buffer,
-    _Out_opt_ UINT32 * count
+    _Inout_ UINT32* bufferLength,
+    _Out_writes_bytes_opt_(*bufferLength) BYTE* buffer,
+    _Out_opt_ UINT32* count
     );
 
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0101)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0102)
 
 typedef enum AppPolicyLifecycleManagement
 {
@@ -671,12 +617,13 @@ typedef enum AppPolicyLifecycleManagement
 } AppPolicyLifecycleManagement;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetLifecycleManagement(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyLifecycleManagement * policy
+    _Out_ AppPolicyLifecycleManagement* policy
     );
 
 
@@ -689,12 +636,13 @@ typedef enum AppPolicyWindowingModel
 } AppPolicyWindowingModel;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetWindowingModel(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyWindowingModel * policy
+    _Out_ AppPolicyWindowingModel* policy
     );
 
 
@@ -705,12 +653,13 @@ typedef enum AppPolicyMediaFoundationCodecLoading
 } AppPolicyMediaFoundationCodecLoading;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetMediaFoundationCodecLoading(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyMediaFoundationCodecLoading * policy
+    _Out_ AppPolicyMediaFoundationCodecLoading* policy
     );
 
 
@@ -723,12 +672,13 @@ typedef enum AppPolicyClrCompat
 } AppPolicyClrCompat;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetClrCompat(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyClrCompat * policy
+    _Out_ AppPolicyClrCompat* policy
     );
 
 
@@ -739,12 +689,13 @@ typedef enum AppPolicyThreadInitializationType
 } AppPolicyThreadInitializationType;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetThreadInitializationType(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyThreadInitializationType * policy
+    _Out_ AppPolicyThreadInitializationType* policy
     );
 
 
@@ -755,12 +706,13 @@ typedef enum AppPolicyShowDeveloperDiagnostic
 } AppPolicyShowDeveloperDiagnostic;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetShowDeveloperDiagnostic(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyShowDeveloperDiagnostic * policy
+    _Out_ AppPolicyShowDeveloperDiagnostic* policy
     );
 
 
@@ -771,12 +723,13 @@ typedef enum AppPolicyProcessTerminationMethod
 } AppPolicyProcessTerminationMethod;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetProcessTerminationMethod(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyProcessTerminationMethod * policy
+    _Out_ AppPolicyProcessTerminationMethod* policy
     );
 
 
@@ -787,28 +740,24 @@ typedef enum AppPolicyCreateFileAccess
 } AppPolicyCreateFileAccess;
 
 WINBASEAPI
-_Check_return_ _Success_(return == ERROR_SUCCESS)
+_Check_return_
+_Success_(return == ERROR_SUCCESS)
 LONG
 WINAPI
 AppPolicyGetCreateFileAccess(
     _In_ HANDLE processToken,
-    _Out_ AppPolicyCreateFileAccess * policy
+    _Out_ AppPolicyCreateFileAccess* policy
     );
 
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_APPMODELRUNTIME_VER >= 0x0102)
-
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma endregion
-
 
 #if defined(__cplusplus)
 } // end extern "C"
 #endif // defined(__cplusplus)
 
-
 #if defined(_MSC_VER)
-
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif

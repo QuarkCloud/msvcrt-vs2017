@@ -13,12 +13,9 @@
 
 static char const* previous_character(char const* const first, char const* const current) throw()
 {
-	return NULL ;
-	/*
     return reinterpret_cast<char const*>(_mbsdec(
         reinterpret_cast<unsigned char const*>(first),
         reinterpret_cast<unsigned char const*>(current)));
-	*/
 }
 
 static wchar_t const* previous_character(wchar_t const*, wchar_t const* const current) throw()

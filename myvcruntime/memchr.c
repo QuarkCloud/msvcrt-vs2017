@@ -11,9 +11,7 @@
 
 #include <string.h>
 
-#ifdef _M_ARM
-	#pragma function(memchr)
-#endif
+#pragma function(memchr)
 
 /***
 *char *memchr(buf, chr, cnt) - search memory for given character.
@@ -34,7 +32,6 @@
 *Exceptions:
 *
 *******************************************************************************/
-
 #if defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64)
 
 #include <arm64string.h>

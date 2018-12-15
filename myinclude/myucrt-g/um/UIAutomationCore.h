@@ -781,6 +781,8 @@ typedef int LANDMARKTYPEID;
 
 typedef int METADATAID;
 
+typedef int HEADINGLEVELID;
+
 struct UiaRect
     {
     double left;

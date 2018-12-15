@@ -94,6 +94,10 @@ typedef NTSTATUS *PNTSTATUS;
 #define BCRYPT_KDF_RAW_SECRET               L"TRUNCATE"
 #endif
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define BCRYPT_KDF_HKDF                     L"HKDF"
+#endif
+
 //
 // DeriveKey KDF BufferTypes
 //
@@ -141,6 +145,8 @@ typedef NTSTATUS *PNTSTATUS;
 //      KDF_GENERIC_PARAMETER = Not used
 // BCRYPT/NCRYPT_TLS1_2_KDF_ALGORITHM
 //      KDF_GENERIC_PARAMETER = Not used
+// BCRYPT/NCRYPT_HKDF_ALGORITHM
+//      KDF_GENERIC_PARAMETER = Not used
 //
 // KDF specific parameters:
 // For BCRYPT/NCRYPT_SP800108_CTR_HMAC_ALGORITHM: 
@@ -161,9 +167,16 @@ typedef NTSTATUS *PNTSTATUS;
 //      KDF_HASH_ALGORITHM is required
 //      KDF_TLS_PRF_LABEL is required
 //      KDF_TLS_PRF_SEED is required
+// For BCRYPT/NCRYPT_HKDF_ALGORITHM
+//      KDF_HKDF_INFO is optional
 //
 #define KDF_GENERIC_PARAMETER 0x11
 #define KDF_KEYBITLENGTH      0x12
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define KDF_HKDF_SALT         0x13          // This is used only for testing purposes
+#define KDF_HKDF_INFO         0x14
 #endif
 
 
@@ -297,6 +310,45 @@ typedef struct _BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO
 
 #if (NTDDI_VERSION > NTDDI_WINBLUE || (NTDDI_VERSION == NTDDI_WINBLUE && defined(WINBLUE_KBSPRING14)))
 #define BCRYPT_MULTI_OBJECT_LENGTH  L"MultiObjectLength"
+#endif
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define BCRYPT_IS_IFX_TPM_WEAK_KEY  L"IsIfxTpmWeakKey"
+
+//
+// Additional properties for the HKDF on BCRYPT_KEY_HANDLE (and
+// BCRYPT_SECRET_HANDLE). Both the hash algorithm property and
+// one of the "Finalize" properties are required for the key
+// (or secret) to be usable.
+//
+// When the available inputs are the input keying material (IKM)
+// and the salt then the "SALT_AND_FINALIZE" path should be used:
+//  - First the function which creates the key (or secret) takes
+//  as input the IKM.
+//  - Then the hash algorithm should be set via the BCRYPT_HKDF_HASH_ALGORITHM
+//  property on BCryptSetProperty.
+//  - Finally the salt is input via the BCRYPT_HKDF_SALT_AND_FINALIZE
+//  property. The salt parameter is optional; thus the property input
+//  is allowed to be NULL.
+//
+// When the available input is the pseudorandom key (PRK) then
+// the "PRK_AND_FINALIZE" path should be used:
+//  - First the function which creates the key (or secret) takes
+//  as input the PRK.
+//  - Then the hash algorithm should be set via the BCRYPT_HKDF_HASH_ALGORITHM
+//  property on BCryptSetProperty.
+//  - Finally the key (or secret) is finalized via the
+//  BCRYPT_HKDF_PRK_AND_FINALIZE property. In this case the input property
+//  must be NULL since the PRK was already passed in.
+//
+// After setting one of the two "Finalize" properties the key
+// (or the secret) is finalized and can be used to derive the
+// HKDF output.
+//
+#define BCRYPT_HKDF_HASH_ALGORITHM      L"HkdfHashAlgorithm"
+#define BCRYPT_HKDF_SALT_AND_FINALIZE   L"HkdfSaltAndFinalize"
+#define BCRYPT_HKDF_PRK_AND_FINALIZE    L"HkdfPrkAndFinalize"
+
 #endif
 
 // BCryptSetProperty strings
@@ -789,6 +841,10 @@ typedef struct _BCRYPT_MULTI_OBJECT_LENGTH_STRUCT
 #define BCRYPT_XTS_AES_ALGORITHM                L"XTS-AES"
 #endif
 
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+#define BCRYPT_HKDF_ALGORITHM                   L"HKDF"
+#endif
+
 //
 // Interfaces
 //
@@ -874,6 +930,8 @@ typedef struct _BCRYPT_MULTI_OBJECT_LENGTH_STRUCT
 #define BCRYPT_TLS1_2_KDF_ALG_HANDLE            ((BCRYPT_ALG_HANDLE) 0x00000371)
 
 #define BCRYPT_XTS_AES_ALG_HANDLE               ((BCRYPT_ALG_HANDLE) 0x00000381)
+
+#define BCRYPT_HKDF_ALG_HANDLE                  ((BCRYPT_ALG_HANDLE) 0x00000391)
 
 #endif
 

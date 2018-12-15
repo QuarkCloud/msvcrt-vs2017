@@ -18,7 +18,7 @@
 
 // In the function below, we need to ensure that we've initialized the mbc table
 // before we start performing character transformations.
-static void do_locale_initialization(char)    throw() { /*__acrt_initialize_multibyte();*/ }
+static void do_locale_initialization(char)    throw() { __acrt_initialize_multibyte(); }
 static void do_locale_initialization(wchar_t) throw() { /* no-op */                    }
 
 static char*    get_command_line(char)    throw() { return _acmdln; }
@@ -74,14 +74,20 @@ static errno_t expand_argv_wildcards(
 *
 *******************************************************************************/
 
+
+// should_copy_another_character helper functions
+// should_copy_another_character is *ONLY* checking for DBCS lead bytes to see if there
+// might be a following trail byte.  This works because the callers are only concerned
+// about escaped quote sequences and other codepages aren't using those quotes.
 static bool __cdecl should_copy_another_character(char const c) throw()
 {
-    //return _ismbblead(c) != 0;
-	return false ;
+    // This is OK for UTF-8 as a quote is never a trail byte.
+    return _ismbblead(c) != 0;
 }
 
 static bool __cdecl should_copy_another_character(wchar_t) throw()
 {
+    // This is OK for UTF-16 as a quote is never part of a surrogate pair.
     return false;
 }
 

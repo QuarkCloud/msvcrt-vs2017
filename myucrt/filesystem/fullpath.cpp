@@ -57,99 +57,6 @@
 *Exceptions:
 *
 *******************************************************************************/
-__success(return != 0 && return < max_count)
-static unsigned __cdecl get_full_path_name(
-    _Out_writes_z_(max_count) char* const   buffer,
-    char const*                     const   path,
-    unsigned                        const   max_count
-    ) throw()
-{
-    return GetFullPathNameA(path, max_count, buffer, nullptr);
-}
-
-__success(return != 0 && return < max_count)
-static unsigned __cdecl get_full_path_name(
-    _Out_writes_z_(max_count) wchar_t*  const   buffer,
-    wchar_t const*                      const   path,
-    unsigned                            const   max_count
-    ) throw()
-{
-    return GetFullPathNameW(path, max_count, buffer, nullptr);
-}
-
-template <typename Character>
-_Success_(return != 0)
-_Ret_z_
-static Character* __cdecl common_fullpath_user_buffer(
-    _Out_writes_z_(buffer_count) Character* const   buffer,
-    Character const*                        const   path,
-    size_t                                  const   buffer_count
-    ) throw()
-{
-    _VALIDATE_RETURN      (buffer_count >  0,        EINVAL, nullptr);
-    _VALIDATE_RETURN_NOEXC(buffer_count <= UINT_MAX, ERANGE, nullptr);
-
-    unsigned const path_count = get_full_path_name(buffer, path, static_cast<unsigned>(buffer_count));
-    if (path_count >= buffer_count)
-    {
-        errno = ERANGE;
-        return nullptr;
-    }
-
-    if (path_count == 0)
-    {
-        __acrt_errno_map_os_error(GetLastError());
-        return nullptr;
-    }
-
-    return buffer;
-}
-
-template <typename Character>
-_Success_(return != 0)
-_Ret_z_
-static Character* __cdecl common_fullpath_dynamic_buffer(
-    Character const* const path,
-    size_t           const max_count,
-    int              const block_use,
-    char const*      const file_name,
-    int              const line_number
-    ) throw()
-{
-    // These are referenced only in the Debug CRT build
-    UNREFERENCED_PARAMETER(block_use);
-    UNREFERENCED_PARAMETER(file_name);
-    UNREFERENCED_PARAMETER(line_number);
-
-    unsigned const required_count = get_full_path_name(nullptr, path, 0);
-    if (required_count == 0)
-    {
-        __acrt_errno_map_os_error(GetLastError());
-        return nullptr;
-    }
-
-    size_t const actual_count = __max(max_count, required_count);
-
-    __crt_unique_heap_ptr<Character, __crt_public_free_policy> buffer(
-        static_cast<Character*>(_calloc_dbg(
-            actual_count,
-            sizeof(Character),
-            block_use,
-            file_name,
-            line_number)));
-
-    if (!buffer)
-    {
-        errno = ENOMEM;
-        return nullptr;
-    }
-
-    Character* const result = common_fullpath_user_buffer(buffer.get(), path, static_cast<unsigned>(actual_count));
-    if (!result)
-        return nullptr;
-
-    return buffer.detach();
-}
 
 template <typename Character>
 _Success_(return != 0)
@@ -162,6 +69,11 @@ static Character* __cdecl common_fullpath(
     int              const line_number
     ) throw()
 {
+    // These are referenced only in the Debug CRT build
+    UNREFERENCED_PARAMETER(block_use);
+    UNREFERENCED_PARAMETER(file_name);
+    UNREFERENCED_PARAMETER(line_number);
+
     typedef __crt_char_traits<Character> traits;
 
     // If the path is empty, we have no work to do:
@@ -171,11 +83,22 @@ static Character* __cdecl common_fullpath(
         return traits::tgetcwd(user_buffer, static_cast<int>(__min(max_count, INT_MAX)));
     }
 
-    // Allocate a buffer, if necessary:
-    if (user_buffer != nullptr)
-        return common_fullpath_user_buffer(user_buffer, path, max_count);
-
-    return common_fullpath_dynamic_buffer(path, max_count, block_use, file_name, line_number);
+    if (user_buffer != nullptr) {
+        // Using user buffer. Fail if not enough space.
+        __crt_no_alloc_win32_buffer<Character> buffer(user_buffer, max_count);
+        if (!traits::get_full_path_name(path, buffer)) {
+            return user_buffer;
+        } else {
+            return nullptr;
+        }
+    } else {
+        // Always new memory suitable for debug mode and releasing to the user.
+        __crt_public_win32_buffer<Character> buffer(
+            __crt_win32_buffer_debug_info(block_use, file_name, line_number)
+            );
+        traits::get_full_path_name(path, buffer);
+        return buffer.detach();
+    }
 }
 
 

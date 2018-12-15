@@ -3350,6 +3350,8 @@ interface DX_DECLARE_INTERFACE("06152247-6f50-465a-9245-118bfd3b6007") ID2D1Fact
     
     /// <summary>
     /// Retrieves the current desktop DPI. To refresh this, call ReloadSystemMetrics.
+    /// Note: this method is deprecated. Use DisplayProperties::LogicalDpi for Windows
+    /// Store Apps and GetDpiForWindow for Win32 Apps.
     /// </summary>
     STDMETHOD_(void, GetDesktopDpi)(
         _Out_ FLOAT *dpiX,

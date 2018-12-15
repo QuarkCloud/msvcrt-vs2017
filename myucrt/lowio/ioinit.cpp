@@ -179,8 +179,8 @@ static void initialize_stdio_handles_nolock() throw()
 
             // Also update the corresponding stdio stream, unless stdio was
             // already terminated:
-            //if (__piob)
-            //    __piob[fh]->_file = _NO_CONSOLE_FILENO;
+            if (__piob)
+                __piob[fh]->_file = _NO_CONSOLE_FILENO;
         }
     }
 }

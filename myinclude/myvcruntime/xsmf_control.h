@@ -4,11 +4,13 @@
 #ifndef _XSMF_CONTROL_H
 #define _XSMF_CONTROL_H
 #ifndef RC_INVOKED
+#include <yvals.h>
 #include <type_traits>
 
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -23,8 +25,8 @@ template<class _Base>
 
 	_Non_trivial_copy() = default;
 	_Non_trivial_copy(const _Non_trivial_copy& _That)
-		_NOEXCEPT_COND(_NOEXCEPT_OPER(
-			_Base::_Construct_from(static_cast<const _Base&>(_That))))
+		_NOEXCEPT_COND(_NOEXCEPT_OPER( // TRANSITION, VSO#615127
+			_STD declval<_Base&>()._Construct_from(static_cast<const _Base&>(_That))))
 		{
 		_Base::_Construct_from(static_cast<const _Base&>(_That));
 		}
@@ -55,7 +57,8 @@ template<class _Base,
 	_Non_trivial_move() = default;
 	_Non_trivial_move(const _Non_trivial_move&) = default;
 	_Non_trivial_move(_Non_trivial_move&& _That)
-		_NOEXCEPT_COND(_NOEXCEPT_OPER(_Mybase::_Construct_from(static_cast<_Base&&>(_That))))
+		_NOEXCEPT_COND(_NOEXCEPT_OPER( // TRANSITION, VSO#615127
+			_STD declval<_Base&>()._Construct_from(static_cast<_Base&&>(_That))))
 		{
 		_Mybase::_Construct_from(static_cast<_Base&&>(_That));
 		}
@@ -86,7 +89,8 @@ template<class _Base,
 	_Non_trivial_copy_assign(const _Non_trivial_copy_assign&) = default;
 	_Non_trivial_copy_assign(_Non_trivial_copy_assign&&) = default;
 	_Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That)
-		_NOEXCEPT_COND(_NOEXCEPT_OPER(_Mybase::_Assign_from(static_cast<const _Base&>(_That))))
+		_NOEXCEPT_COND(_NOEXCEPT_OPER( // TRANSITION, VSO#615127
+			_STD declval<_Base&>()._Assign_from(static_cast<const _Base&>(_That))))
 		{
 		_Mybase::_Assign_from(static_cast<const _Base&>(_That));
 		return (*this);
@@ -140,7 +144,8 @@ template<class _Base,
 	_Non_trivial_move_assign(_Non_trivial_move_assign&&) = default;
 	_Non_trivial_move_assign& operator=(const _Non_trivial_move_assign&) = default;
 	_Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That)
-		_NOEXCEPT_COND(_NOEXCEPT_OPER(_Mybase::_Assign_from(static_cast<_Base&&>(_That))))
+		_NOEXCEPT_COND(_NOEXCEPT_OPER( // TRANSITION, VSO#615127
+			_STD declval<_Base&>()._Assign_from(static_cast<_Base&&>(_That))))
 		{
 		_Mybase::_Assign_from(static_cast<_Base&&>(_That));
 		return (*this);
@@ -187,6 +192,7 @@ template<class _Base,
 _STD_END
 
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 

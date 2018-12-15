@@ -963,7 +963,14 @@ typedef union _WHEA_MEMORY_ERROR_SECTION_VALIDBITS {
         ULONGLONG ResponderId:1;
         ULONGLONG TargetId:1;
         ULONGLONG ErrorType:1;
-        ULONGLONG Reserved:49;
+        ULONGLONG RankNumber:1;
+        ULONGLONG CardHandle:1;
+        ULONGLONG ModuleHandle:1;
+        ULONGLONG ExtendedRow:1;
+        ULONGLONG BankGroup:1;
+        ULONGLONG BankAddress:1;
+        ULONGLONG ChipIdentification:1;
+        ULONGLONG Reserved:42;
     } DUMMYSTRUCTNAME;
     ULONGLONG ValidBits;
 } WHEA_MEMORY_ERROR_SECTION_VALIDBITS,
@@ -1000,6 +1007,10 @@ typedef struct _WHEA_MEMORY_ERROR_SECTION {
     ULONGLONG ResponderId;
     ULONGLONG TargetId;
     UCHAR ErrorType;
+    UCHAR Extended;
+    USHORT RankNumber;
+    USHORT CardHandle;
+    USHORT ModuleHandle;
 } WHEA_MEMORY_ERROR_SECTION, *PWHEA_MEMORY_ERROR_SECTION;
 
 //
@@ -1322,7 +1333,8 @@ typedef union _MCG_STATUS {
         ULONG RestartIpValid:1;
         ULONG ErrorIpValid:1;
         ULONG MachineCheckInProgress:1;
-        ULONG Reserved1:29;
+        ULONG LocalMceValid:1;
+        ULONG Reserved1:28;
         ULONG Reserved2;
     } DUMMYSTRUCTNAME;
     ULONGLONG QuadPart;
@@ -1353,7 +1365,8 @@ typedef enum _WHEA_CPU_VENDOR {
 } WHEA_CPU_VENDOR, *PWHEA_CPU_VENDOR;
 
 #define WHEA_XPF_MCA_EXTREG_MAX_COUNT            24
-#define WHEA_XPF_MCA_SECTION_VERSION             1
+#define WHEA_XPF_MCA_SECTION_VERSION_2           2
+#define WHEA_XPF_MCA_SECTION_VERSION             WHEA_XPF_MCA_SECTION_VERSION_2
 
 typedef struct _WHEA_XPF_MCA_SECTION {
     ULONG               VersionNumber;
@@ -1367,7 +1380,7 @@ typedef struct _WHEA_XPF_MCA_SECTION {
     ULONGLONG           Address;
     ULONGLONG           Misc;
     ULONG               ExtendedRegisterCount;
-    ULONG               Reserved2;
+    ULONG               ApicId;
     ULONGLONG           ExtendedRegisters[WHEA_XPF_MCA_EXTREG_MAX_COUNT];
 } WHEA_XPF_MCA_SECTION, *PWHEA_XPF_MCA_SECTION;
 

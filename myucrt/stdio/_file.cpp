@@ -13,10 +13,10 @@
 // FILE descriptors for stdin, stdout, and stderr
 extern "C" __crt_stdio_stream_data _iob[_IOB_ENTRIES] =
 {
-    // ptr      _base,   _cnt, _flag,                   _file, _charbuf, _bufsiz
-    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOREAD,  0,     0,        0        }, // stdin
-    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOWRITE, 1,     0,        0        }, // stdout
-    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOWRITE, 2,     0,        0        }, // stder
+    // ptr      _base,   _cnt, _flag,                                    _file, _charbuf, _bufsiz
+    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOREAD,                   0,     0,        0        }, // stdin
+    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOWRITE,                  1,     0,        0        }, // stdout
+    {  nullptr, nullptr, 0,    _IOALLOCATED | _IOWRITE | _IOBUFFER_NONE, 2,     0,        0        }, // stderr
 };
 
 extern "C" FILE* __cdecl __acrt_iob_func(unsigned const id)
@@ -41,8 +41,8 @@ __crt_stdio_stream_data** __piob;
 
 
 // Initializer and terminator for the stdio library:
-//_CRT_LINKER_FORCE_INCLUDE(__acrt_stdio_initializer);
-//_CRT_LINKER_FORCE_INCLUDE(__acrt_stdio_terminator);
+_CRT_LINKER_FORCE_INCLUDE(__acrt_stdio_initializer);
+_CRT_LINKER_FORCE_INCLUDE(__acrt_stdio_terminator);
 
 
 
@@ -98,7 +98,7 @@ extern "C" int __cdecl __acrt_initialize_stdio()
         // callers to distinguish between failure to open a file (-1) and a
         // program run without a console.
         intptr_t const os_handle = _osfhnd(i);
-        bool const has_no_console = 
+        bool const has_no_console =
             os_handle == reinterpret_cast<intptr_t>(INVALID_HANDLE_VALUE) ||
             os_handle == _NO_CONSOLE_FILENO ||
             os_handle == 0;
@@ -124,7 +124,7 @@ extern "C" void __cdecl __acrt_uninitialize_stdio()
 
     for (int i = 0; i != _IOB_ENTRIES; ++i)
     {
-        //__acrt_stdio_free_buffer_nolock(&__piob[i]->_public_file);
+        __acrt_stdio_free_buffer_nolock(&__piob[i]->_public_file);
         DeleteCriticalSection(&__piob[i]->_lock);
     }
 

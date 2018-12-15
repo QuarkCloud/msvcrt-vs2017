@@ -5,6 +5,8 @@
 //
 // Declarations used throughout the VCRuntime library.
 //
+#pragma once
+//
 // Note on use of "deprecate":
 //
 // Various places in this header and other headers use
@@ -18,6 +20,9 @@
 // Full details can be found in our documentation by searching for
 // "Security Enhancements in the CRT".
 //
+#ifndef _VCRUNTIME_H
+#define _VCRUNTIME_H
+
 #ifndef _UCRT
     #define _UCRT
 #endif
@@ -38,9 +43,6 @@
         #endif
     #endif
 #endif
-
-#ifndef _VCRUNTIME_H
-#define _VCRUNTIME_H
 
 #include <sal.h>
 #include <vadefs.h>
@@ -103,8 +105,6 @@ _CRT_BEGIN_C_HEADER
 
 #define _CRT_UNPARENTHESIZE_(...) __VA_ARGS__
 #define _CRT_UNPARENTHESIZE(...)  _CRT_UNPARENTHESIZE_ __VA_ARGS__
-
-
 
 #ifndef _VCRTIMP
     #if defined _CRTIMP && !defined _VCRT_DEFINED_CRTIMP

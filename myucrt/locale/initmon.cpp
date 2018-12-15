@@ -109,7 +109,7 @@ int __cdecl __acrt_locale_initialize_monetary (
             ctrylocalename = ploci->locale_name[LC_MONETARY];
 
             ret = 0;
-			/**
+
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, ctrylocalename,
                     LOCALE_SINTLSYMBOL, (void *)&lc->int_curr_symbol );
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_STR_TYPE, ctrylocalename,
@@ -155,7 +155,6 @@ int __cdecl __acrt_locale_initialize_monetary (
                     LOCALE_SPOSITIVESIGN, (void *)&lc->_W_positive_sign);
             ret |= __acrt_GetLocaleInfoA(&locinfo, LC_WSTR_TYPE, ctrylocalename,
                     LOCALE_SNEGATIVESIGN, (void *)&lc->_W_negative_sign);
-			*/
 
             if ( ret != 0 ) {
                 __acrt_locale_free_monetary(lc);

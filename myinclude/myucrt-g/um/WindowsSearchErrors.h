@@ -1585,6 +1585,24 @@
 //
 #define EVENT_FILTER_HOST_FORCE_TERMINATE 0x80002728L
 
+//
+// MessageId: EVENT_INDEXER_OUT_OF_DATABASE_INSTANCE
+//
+// MessageText:
+//
+// The search service has failed to create database instance for the index {%1} due to maximum number of instance reached. Please re-configure maximum value and restart the service.
+//
+#define EVENT_INDEXER_OUT_OF_DATABASE_INSTANCE 0xC0002729L
+
+//
+// MessageId: EVENT_INDEXER_FAIL_TO_SET_MAX_JETINSTANCE
+//
+// MessageText:
+//
+// The search service has failed to configure maximum number of database instance. {%1}. Please re-configure maximum value and restart the service.
+//
+#define EVENT_INDEXER_FAIL_TO_SET_MAX_JETINSTANCE 0xC000272AL
+
 
 // errorlst.mc
 

@@ -11,6 +11,7 @@
 ****/
 
 #include <ehdata.h>
+#include <ehdata4.h>
 #include <ehassert.h>
 #include <trnsctrl.h>
 
@@ -67,7 +68,7 @@ _CxxThrowException(
             {   EH_MAGIC_NUMBER1,           // Our version control magic number
                 nullptr,                       // pExceptionObject
                 nullptr,
-#if _EH_RELATIVE_TYPEINFO
+#if EH_EXCEPTION_PARAMETERS == 4
                 nullptr                        // Image base of thrown object
 #endif
             }                      // pThrowInfo
@@ -125,12 +126,8 @@ _CxxThrowException(
         //
 
         EHTRACE_EXIT;
-#if defined(_M_X64) && defined(_NTSUBSET_)
-        RtlRaiseException( (PEXCEPTION_RECORD) &ThisException );
-#else
         RaiseException( ThisException.ExceptionCode,
                         ThisException.ExceptionFlags,
                         ThisException.NumberParameters,
                         (PULONG_PTR)&ThisException.params );
-#endif
 }

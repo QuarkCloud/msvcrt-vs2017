@@ -8,6 +8,7 @@
  #pragma pack(push,_CRT_PACKING)
  #pragma warning(push,_STL_WARNING_LEVEL)
  #pragma warning(disable: _STL_DISABLED_WARNINGS)
+ _STL_DISABLE_CLANG_WARNINGS
  #pragma push_macro("new")
  #undef new
 
@@ -22,7 +23,7 @@ typedef enum memory_order {
 	memory_order_seq_cst
 	} memory_order;
 
-typedef _Uint32t _Uint4_t;
+typedef unsigned long _Uint4_t;
 typedef _Uint4_t _Atomic_integral_t;
 
 	/* SET SIZES AND FLAGS FOR COMPILER AND TARGET ARCHITECTURE */
@@ -62,6 +63,7 @@ inline _Atomic_integral_t
 
 _STD_END
  #pragma pop_macro("new")
+ _STL_RESTORE_CLANG_WARNINGS
  #pragma warning(pop)
  #pragma pack(pop)
 #endif /* RC_INVOKED */

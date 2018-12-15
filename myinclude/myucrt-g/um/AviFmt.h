@@ -108,6 +108,7 @@ typedef WORD TWOCC;
 
 /* form types, list types, and chunk types */
 #define formtypeAVI             mmioFOURCC('A', 'V', 'I', ' ')
+#define formtypeAVIX            mmioFOURCC('A', 'V', 'I', 'X')
 #define listtypeAVIHEADER       mmioFOURCC('h', 'd', 'r', 'l')
 #define ckidAVIMAINHDR          mmioFOURCC('a', 'v', 'i', 'h')
 #define listtypeSTREAMHEADER    mmioFOURCC('s', 't', 'r', 'l')

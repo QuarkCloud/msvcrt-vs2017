@@ -43,6 +43,8 @@ Revision History:
 
 // NT11 upgrade versions
 #define RS3_UPGRADE_VERSION  1
+#define RS4_UPGRADE_VERSION  2
+#define RS5_UPGRADE_VERSION  3
 
 #define CLUSREG_NAME_MIXED_MODE                    L"MixedMode"
 
@@ -405,7 +407,9 @@ typedef enum
 {
     CLUSTER_CLOUD_TYPE_NONE     = 0,
     CLUSTER_CLOUD_TYPE_AZURE    = 1,
-    CLUSTER_CLOUD_TYPE_MIXED    = 2,
+
+
+    CLUSTER_CLOUD_TYPE_MIXED    = 128,
 
     CLUSTER_CLOUD_TYPE_UNKNOWN  = -1
 } CLUSTER_CLOUD_TYPE, *PCLUSTER_CLOUD_TYPE;
@@ -1080,9 +1084,16 @@ typedef enum CLUSTER_OBJECT_TYPE {
     CLUSTER_OBJECT_TYPE_REGISTRY            =    0x00000008,
     CLUSTER_OBJECT_TYPE_QUORUM              =    0x00000009,
     CLUSTER_OBJECT_TYPE_SHARED_VOLUME       =    0x0000000a,
-    CLUSTER_OBJECT_TYPE_GROUPSET          =    0x0000000d,
+    CLUSTER_OBJECT_TYPE_GROUPSET            =    0x0000000d,
 } CLUSTER_OBJECT_TYPE;
 
+
+typedef enum CLUSTERSET_OBJECT_TYPE {
+    CLUSTERSET_OBJECT_TYPE_NONE             =    0x00000000,
+    CLUSTERSET_OBJECT_TYPE_MEMBER           =    0x00000001,
+    CLUSTERSET_OBJECT_TYPE_WORKLOAD         =    0x00000002,
+    CLUSTERSET_OBJECT_TYPE_DATABASE         =    0x00000003,
+} CLUSTERSET_OBJECT_TYPE;
 //
 // Cluster notification structs V2
 //
@@ -1479,6 +1490,15 @@ ClusterAddGroupToGroupSet(
     _In_ HGROUP hGroup
     );
 
+DWORD
+WINAPI
+ClusterAddGroupToGroupSetWithDomains(
+    _In_ HGROUPSET hGroupSet,
+    _In_ HGROUP hGroup,
+    _In_ DWORD faultDomain,
+    _In_ DWORD updateDomain
+    );
+
 typedef DWORD
 (WINAPI * PCLUSAPI_CLUSTER_ADD_GROUP_TO_GROUP_GROUPSET)(
     _In_ HGROUPSET hGroupSet,
@@ -1810,7 +1830,8 @@ typedef enum CLUSTER_NODE_STATUS
     NodeStatusDrainInProgress           =  0x4,
     NodeStatusDrainCompleted            =  0x8,
     NodeStatusDrainFailed               =  0x10,
-    NodeStatusMax                       =  (NodeStatusIsolated | NodeStatusQuarantined | NodeStatusDrainFailed)
+    NodeStatusAvoidPlacement            =  0x20,
+    NodeStatusMax                       =  (NodeStatusIsolated | NodeStatusQuarantined | NodeStatusDrainFailed | NodeStatusAvoidPlacement)
 } CLUSTER_NODE_STATUS;
 
 #endif //CLUSAPI_VERSION >= CLUSAPI_VERSION_WINTHRESHOLD
@@ -2265,7 +2286,10 @@ typedef HGROUP
 #if (CLUSAPI_VERSION >= CLUSAPI_VERSION_WINDOWS8)
 
 // flags for PauseClusterNodeEx
-#define CLUSAPI_NODE_PAUSE_REMAIN_ON_PAUSED_NODE_ON_MOVE_ERROR 0x00000001
+#define CLUSAPI_NODE_PAUSE_REMAIN_ON_PAUSED_NODE_ON_MOVE_ERROR  0x00000001
+#define CLUSAPI_NODE_AVOID_PLACEMENT                            0x00000002
+#define CLUSAPI_NODE_PAUSE_RETRY_DRAIN_ON_FAILURE               0x00000004
+
 
 DWORD
 WINAPI
@@ -2321,6 +2345,7 @@ typedef DWORD
 #define CLUSGRP_STATUS_OS_HEARTBEAT                                            0x0000000000000200
 #define CLUSGRP_STATUS_APPLICATION_READY                                       0x0000000000000400
 #define CLUSGRP_STATUS_OFFLINE_NOT_LOCAL_DISK_OWNER                            0x0000000000000800
+#define CLUSGRP_STATUS_WAITING_FOR_DEPENDENCIES                                0x0000000000001000
 
 HGROUP
 WINAPI
@@ -3508,6 +3533,9 @@ typedef enum CLUSTER_CONTROL_OBJECT {
     ((CLCTL_CLUSTER_BASE + Function) << CLUSCTL_FUNCTION_SHIFT) | \
     ((Modify) << CLCTL_MODIFY_SHIFT) )
 
+//External codes:
+//A control code that applications can use to initiate an operation on a cluster object. External control codes are passed as the dwControlCode parameter to control code functions.
+
 #ifndef _CLUSTER_API_TYPES_
 typedef enum CLCTL_CODES {
     //
@@ -3728,6 +3756,12 @@ typedef enum CLCTL_CODES {
     CLCTL_SCALEOUT_GET_CLUSTERS                     = CLCTL_EXTERNAL_CODE( 2919, CLUS_ACCESS_READ, CLUS_MODIFY ),
 
 
+    CLCTL_RELOAD_AUTOLOGGER_CONFIG                  = CLCTL_EXTERNAL_CODE( 2932, CLUS_ACCESS_WRITE, CLUS_NO_MODIFY ),
+
+//Internal codes:
+//A control code used by the Cluster service to notify a resource DLL of changes to the cluster environment. Applications cannot use internal control codes; they must use external control codes.
+
+
     //
     // Internal control codes
     //
@@ -3769,7 +3803,6 @@ typedef enum CLCTL_CODES {
 #if (CLUSAPI_VERSION >= CLUSAPI_VERSION_WINTHRESHOLD)
     CLCTL_VALIDATE_CHANGE_GROUP             = CLCTL_INTERNAL_CODE( 2121, CLUS_ACCESS_READ, CLUS_NO_MODIFY ),
 #endif
-
 
 
 } CLCTL_CODES;
@@ -4736,6 +4769,9 @@ typedef enum CLUSCTL_CLUSTER_CODES {
         CLUSCTL_CLUSTER_CODE( CLCTL_SET_CLUSTER_S2D_CACHE_METADATA_RESERVE_BYTES ),
 #endif
 
+
+    CLUSCTL_CLUSTER_RELOAD_AUTOLOGGER_CONFIG  =
+        CLUSCTL_CLUSTER_CODE( CLCTL_RELOAD_AUTOLOGGER_CONFIG  ),
 
 } CLUSCTL_CLUSTER_CODES;
 
@@ -6648,6 +6684,12 @@ DetermineClusterCloudTypeFromCluster(
     _Out_ PCLUSTER_CLOUD_TYPE   pCloudType
 );
 
+DWORD 
+WINAPI 
+GetNodeCloudTypeDW(
+    _In_ PCWSTR  ppszNodeName, 
+    __out DWORD* NodeCloudType);
+
 typedef DWORD (WINAPI *PCLUSAPI_REMOVE_CLUSTER_NAME_ACCOUNT)(
     _In_ HCLUSTER    hCluster
 );
@@ -6772,17 +6814,13 @@ typedef DWORD
 #define CLUS_RESTYPE_NAME_STORAGE_REPLICA       L"Storage Replica"
 #define CLUS_RESTYPE_NAME_CROSS_CLUSTER         L"Cross Cluster Dependency Orchestrator"
 
-#if CLUSTER_SET == 1
 #define CLUS_RESTYPE_NAME_SCALEOUT_MASTER       L"Scaleout Master"
 #define CLUS_RESTYPE_NAME_SCALEOUT_WORKER       L"Scaleout Worker"
-#endif
 
 #define CLUS_RESTYPE_NAME_CONTAINER             L"Container"
 
-#if CLUSTER_SET == 1
 #define CLUS_RES_NAME_SCALEOUT_MASTER           L"Scaleout Master"
 #define CLUS_RES_NAME_SCALEOUT_WORKER           L"Scaleout Worker"
-#endif
 
 //
 // Cluster common property names
@@ -6843,6 +6881,7 @@ typedef DWORD
 #define CLUSTER_NAME_AUTO_BALANCER_LEVEL           L"AutoBalancerLevel"
 #define CLUSREG_NAME_GROUP_DEPENDENCY_TIMEOUT      L"GroupDependencyTimeout"
 #define CLUSREG_NAME_PLACEMENT_OPTIONS             L"PlacementOptions"
+#define CLUSREG_NAME_ENABLED_EVENT_LOGS            L"EnabledEventLogs"
 
 //
 // Properties and defaults for single and multi subnet delays and thresholds.

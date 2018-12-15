@@ -29,8 +29,7 @@ extern "C" wchar_t __acrt_wide_c_locale_string[]{L"C"};
 
 
 
-extern "C" __crt_lc_time_data const __lc_time_c = {};
-/*
+extern "C" __crt_lc_time_data const __lc_time_c
 {
     { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" },
 
@@ -84,7 +83,7 @@ extern "C" __crt_lc_time_data const __lc_time_c = {};
     L"HH:mm:ss",
     L"en-US"
 };
-*/
+
 
 
 // The initial locale information structure, containing the C locale data.  It
@@ -137,5 +136,5 @@ __crt_state_management::dual_state_global<__crt_locale_data*> __acrt_current_loc
 extern "C" __crt_locale_pointers __acrt_initial_locale_pointers
 {
     &__acrt_initial_locale_data,
-	NULL
+    &__acrt_initial_multibyte_data
 };

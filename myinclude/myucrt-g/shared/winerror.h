@@ -146,6 +146,7 @@
 #define FACILITY_WSB_ONLINE              133
 #define FACILITY_ONLINE_ID               134
 #define FACILITY_DEVICE_UPDATE_AGENT     135
+#define FACILITY_DRVSERVICING            136
 #define FACILITY_DLS                     153
 #define FACILITY_DELIVERY_OPTIMIZATION   208
 #define FACILITY_USERMODE_SPACES         231
@@ -183,6 +184,7 @@
 #define FACILITY_LEAP                    2184
 #define FACILITY_AUDCLNT                 2185
 #define FACILITY_WINCODEC_DWRITE_DWM     2200
+#define FACILITY_WINML                   2192
 #define FACILITY_DIRECT2D                2201
 #define FACILITY_DEFRAG                  2304
 #define FACILITY_USERMODE_SDBUS          2305
@@ -285,7 +287,7 @@
 //
 // MessageText:
 //
-// Not enough storage is available to process this command.
+// Not enough memory resources are available to process this command.
 //
 #define ERROR_NOT_ENOUGH_MEMORY          8L    // dderror
 
@@ -339,7 +341,7 @@
 //
 // MessageText:
 //
-// Not enough storage is available to complete this operation.
+// Not enough memory resources are available to complete this operation.
 //
 #define ERROR_OUTOFMEMORY                14L
 
@@ -2699,7 +2701,7 @@
 //
 // MessageText:
 //
-// The cloud sync root is already connected with another cloud sync engine.
+// The cloud sync root is already connected with another cloud sync provider.
 //
 #define ERROR_CLOUD_FILE_ALREADY_CONNECTED 378L
 
@@ -2708,7 +2710,7 @@
 //
 // MessageText:
 //
-// The operation is not supported by the cloud sync engine.
+// The operation is not supported by the cloud sync provider.
 //
 #define ERROR_CLOUD_FILE_NOT_SUPPORTED   379L
 
@@ -2735,7 +2737,7 @@
 //
 // MessageText:
 //
-// The operation is reserved for a connected cloud sync engine.
+// The operation is reserved for a connected cloud sync provider.
 //
 #define ERROR_CLOUD_FILE_CONNECTED_PROVIDER_ONLY 382L
 
@@ -2744,7 +2746,7 @@
 //
 // MessageText:
 //
-// The cloud sync engine failed to validate the downloaded data.
+// The cloud sync provider failed to validate the downloaded data.
 //
 #define ERROR_CLOUD_FILE_VALIDATION_FAILED 383L
 
@@ -2772,7 +2774,7 @@
 //
 // MessageText:
 //
-// The cloud sync engine failed user authentication.
+// The cloud sync provider failed user authentication.
 //
 #define ERROR_CLOUD_FILE_AUTHENTICATION_FAILED 386L
 
@@ -2781,7 +2783,7 @@
 //
 // MessageText:
 //
-// The cloud sync engine failed to perform the operation due to low system resources.
+// The cloud sync provider failed to perform the operation due to low system resources.
 //
 #define ERROR_CLOUD_FILE_INSUFFICIENT_RESOURCES 387L
 
@@ -2790,7 +2792,7 @@
 //
 // MessageText:
 //
-// The cloud sync engine failed to perform the operation due to network being unavailable.
+// The cloud sync provider failed to perform the operation due to network being unavailable.
 //
 #define ERROR_CLOUD_FILE_NETWORK_UNAVAILABLE 388L
 
@@ -2894,9 +2896,6 @@
 #define ERROR_EXTERNAL_SYSKEY_NOT_SUPPORTED 399L
 
 //
-// **** Available SYSTEM error codes ****
-//
-//
 // MessageId: ERROR_THREAD_MODE_ALREADY_BACKGROUND
 //
 // MessageText:
@@ -2931,6 +2930,195 @@
 // The process is not in background processing mode.
 //
 #define ERROR_PROCESS_MODE_NOT_BACKGROUND 403L
+
+//
+// MessageId: ERROR_CLOUD_FILE_PROVIDER_TERMINATED
+//
+// MessageText:
+//
+// The cloud file provider exited unexpectedly.
+//
+#define ERROR_CLOUD_FILE_PROVIDER_TERMINATED 404L
+
+//
+// MessageId: ERROR_NOT_A_CLOUD_SYNC_ROOT
+//
+// MessageText:
+//
+// The file is not a cloud sync root.
+//
+#define ERROR_NOT_A_CLOUD_SYNC_ROOT      405L
+
+//
+// MessageId: ERROR_FILE_PROTECTED_UNDER_DPL
+//
+// MessageText:
+//
+// The read or write operation to an encrypted file could not be completed because the file can only be accessed when the device is unlocked.
+//
+#define ERROR_FILE_PROTECTED_UNDER_DPL   406L
+
+//
+// MessageId: ERROR_VOLUME_NOT_CLUSTER_ALIGNED
+//
+// MessageText:
+//
+// The volume is not cluster aligned on the disk.
+//
+#define ERROR_VOLUME_NOT_CLUSTER_ALIGNED 407L
+
+//
+// MessageId: ERROR_NO_PHYSICALLY_ALIGNED_FREE_SPACE_FOUND
+//
+// MessageText:
+//
+// No physically aligned free space was found on the volume.
+//
+#define ERROR_NO_PHYSICALLY_ALIGNED_FREE_SPACE_FOUND 408L
+
+//
+// MessageId: ERROR_APPX_FILE_NOT_ENCRYPTED
+//
+// MessageText:
+//
+// The APPX file can not be accessed because it is not encrypted as expected.
+//
+#define ERROR_APPX_FILE_NOT_ENCRYPTED    409L
+
+//
+// MessageId: ERROR_RWRAW_ENCRYPTED_FILE_NOT_ENCRYPTED
+//
+// MessageText:
+//
+// A read or write of raw encrypted data cannot be performed because the file is not encrypted.
+//
+#define ERROR_RWRAW_ENCRYPTED_FILE_NOT_ENCRYPTED 410L
+
+//
+// MessageId: ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_FILEOFFSET
+//
+// MessageText:
+//
+// An invalid file offset in the encrypted data info block was passed for read or write operation of file's raw encrypted data.
+//
+#define ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_FILEOFFSET 411L
+
+//
+// MessageId: ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_FILERANGE
+//
+// MessageText:
+//
+// An invalid offset and length combination in the encrypted data info block was passed for read or write operation of file's raw encrypted data.
+//
+#define ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_FILERANGE 412L
+
+//
+// MessageId: ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_PARAMETER
+//
+// MessageText:
+//
+// An invalid parameter in the encrypted data info block was passed for read or write operation of file's raw encrypted data.
+//
+#define ERROR_RWRAW_ENCRYPTED_INVALID_EDATAINFO_PARAMETER 413L
+
+//
+// MessageId: ERROR_LINUX_SUBSYSTEM_NOT_PRESENT
+//
+// MessageText:
+//
+// The Windows Subsystem for Linux has not been enabled.
+//
+#define ERROR_LINUX_SUBSYSTEM_NOT_PRESENT 414L
+
+//
+// MessageId: ERROR_FT_READ_FAILURE
+//
+// MessageText:
+//
+// The specified data could not be read from any of the copies.
+//
+#define ERROR_FT_READ_FAILURE            415L
+
+//
+// MessageId: ERROR_STORAGE_RESERVE_ID_INVALID
+//
+// MessageText:
+//
+// The specified storage reserve ID is invalid.
+//
+#define ERROR_STORAGE_RESERVE_ID_INVALID 416L
+
+//
+// MessageId: ERROR_STORAGE_RESERVE_DOES_NOT_EXIST
+//
+// MessageText:
+//
+// The specified storage reserve does not exist.
+//
+#define ERROR_STORAGE_RESERVE_DOES_NOT_EXIST 417L
+
+//
+// MessageId: ERROR_STORAGE_RESERVE_ALREADY_EXISTS
+//
+// MessageText:
+//
+// The specified storage reserve already exists.
+//
+#define ERROR_STORAGE_RESERVE_ALREADY_EXISTS 418L
+
+//
+// MessageId: ERROR_STORAGE_RESERVE_NOT_EMPTY
+//
+// MessageText:
+//
+// The specified storage reserve is not empty.
+//
+#define ERROR_STORAGE_RESERVE_NOT_EMPTY  419L
+
+//
+// MessageId: ERROR_NOT_A_DAX_VOLUME
+//
+// MessageText:
+//
+// This operation requires a DAX volume.
+//
+#define ERROR_NOT_A_DAX_VOLUME           420L
+
+//
+// MessageId: ERROR_NOT_DAX_MAPPABLE
+//
+// MessageText:
+//
+// This stream is not DAX mappable.
+//
+#define ERROR_NOT_DAX_MAPPABLE           421L
+
+//
+// MessageId: ERROR_TIME_CRITICAL_THREAD
+//
+// MessageText:
+//
+// Operation cannot be performed on a time critical thread.
+//
+#define ERROR_TIME_CRITICAL_THREAD       422L
+
+//
+// MessageId: ERROR_DPL_NOT_SUPPORTED_FOR_USER
+//
+// MessageText:
+//
+// User data protection is not supported for the current or provided user.
+//
+#define ERROR_DPL_NOT_SUPPORTED_FOR_USER 423L
+
+//
+// MessageId: ERROR_CASE_DIFFERING_NAMES_IN_DIR
+//
+// MessageText:
+//
+// This directory contains entries whose names differ only in case.
+//
+#define ERROR_CASE_DIFFERING_NAMES_IN_DIR 424L
 
 //
 // **** Available SYSTEM error codes ****
@@ -3011,7 +3199,7 @@
 //
 // MessageText:
 //
-// There is no matching authorized in the SCCD.
+// None of the authorized entity elements in the SCCD matched the app being installed; either the PFNs don't match, or the element's signature hash doesn't validate.
 //
 #define ERROR_CAPAUTHZ_SCCD_NO_AUTH_ENTITY 457L
 
@@ -5647,6 +5835,15 @@
 #define ERROR_ENCLAVE_NOT_TERMINATED     814L
 
 //
+// MessageId: ERROR_ENCLAVE_VIOLATION
+//
+// MessageText:
+//
+// An attempt was made to access protected memory in violation of its secure access policy.
+//
+#define ERROR_ENCLAVE_VIOLATION          815L
+
+//
 // **** Available SYSTEM error codes ****
 //
 //
@@ -6486,7 +6683,7 @@
 //
 // MessageText:
 //
-// Not enough server storage is available to process this command.
+// Not enough server memory resources are available to process this command.
 //
 #define ERROR_NOT_ENOUGH_SERVER_MEMORY   1130L
 
@@ -11981,9 +12178,89 @@
 
 ///////////////////////////////////////////////////
 //                                               //
+//           AppExec Error codes                 //
+//                                               //
+//                 3060 to 3079                  //
+///////////////////////////////////////////////////
+
+//
+// MessageId: ERROR_APPEXEC_CONDITION_NOT_SATISFIED
+//
+// MessageText:
+//
+// The condition supplied for the app execution request was not satisfied, so the request was not performed.
+//
+#define ERROR_APPEXEC_CONDITION_NOT_SATISFIED 3060L
+
+//
+// MessageId: ERROR_APPEXEC_HANDLE_INVALIDATED
+//
+// MessageText:
+//
+// The supplied handle has been invalidated and may not be used for the requested operation.
+//
+#define ERROR_APPEXEC_HANDLE_INVALIDATED 3061L
+
+//
+// MessageId: ERROR_APPEXEC_INVALID_HOST_GENERATION
+//
+// MessageText:
+//
+// The supplied host generation has been invalidated and may not be used for the requested operation.
+//
+#define ERROR_APPEXEC_INVALID_HOST_GENERATION 3062L
+
+//
+// MessageId: ERROR_APPEXEC_UNEXPECTED_PROCESS_REGISTRATION
+//
+// MessageText:
+//
+// An attempt to register a process failed because the target host was not in a valid state to receive process registrations.
+//
+#define ERROR_APPEXEC_UNEXPECTED_PROCESS_REGISTRATION 3063L
+
+//
+// MessageId: ERROR_APPEXEC_INVALID_HOST_STATE
+//
+// MessageText:
+//
+// The host is not in a valid state to support the execution request.
+//
+#define ERROR_APPEXEC_INVALID_HOST_STATE 3064L
+
+//
+// MessageId: ERROR_APPEXEC_NO_DONOR
+//
+// MessageText:
+//
+// The operation was not completed because a required resource donor was not found for the host.
+//
+#define ERROR_APPEXEC_NO_DONOR           3065L
+
+//
+// MessageId: ERROR_APPEXEC_HOST_ID_MISMATCH
+//
+// MessageText:
+//
+// The operation was not completed because an unexpected host ID was encountered.
+//
+#define ERROR_APPEXEC_HOST_ID_MISMATCH   3066L
+
+//
+// MessageId: ERROR_APPEXEC_UNKNOWN_USER
+//
+// MessageText:
+//
+// The operation was not completed because the specified user was not known to the service.
+//
+#define ERROR_APPEXEC_UNKNOWN_USER       3067L
+
+
+///////////////////////////////////////////////////
+//                                               //
 //                  Available                    //
 //                                               //
-//                 3060 to 3199                  //
+//                 3080 to 3199                  //
 ///////////////////////////////////////////////////
 
 
@@ -12192,7 +12469,7 @@
 //
 // MessageText:
 //
-// Can not perform the reqested operation because it has already been carried out.
+// Can not perform the requested operation because it has already been carried out.
 //
 #define PEERDIST_ERROR_ALREADY_COMPLETED 4060L
 
@@ -13082,7 +13359,7 @@
 //
 // MessageText:
 //
-// The Supplemntal Policy is not recognized on this device.
+// The Supplemental Policy is not recognized on this device.
 //
 #define ERROR_SECUREBOOT_POLICY_UNKNOWN  4428L
 
@@ -13152,7 +13429,7 @@
 
 ///////////////////////////////////////////////////
 //                                               //
-//   File System Supported Features Error Codes  //
+//       File System Specific Error Codes        //
 //                                               //
 //                 4440 to 4499                  //
 ///////////////////////////////////////////////////
@@ -13210,6 +13487,33 @@
 // The volume must undergo garbage collection.
 //
 #define ERROR_SMR_GARBAGE_COLLECTION_REQUIRED 4445L
+
+//
+// MessageId: ERROR_WOF_WIM_HEADER_CORRUPT
+//
+// MessageText:
+//
+// The WOF driver encountered a corruption in WIM image's Header.
+//
+#define ERROR_WOF_WIM_HEADER_CORRUPT     4446L
+
+//
+// MessageId: ERROR_WOF_WIM_RESOURCE_TABLE_CORRUPT
+//
+// MessageText:
+//
+// The WOF driver encountered a corruption in WIM image's Resource Table.
+//
+#define ERROR_WOF_WIM_RESOURCE_TABLE_CORRUPT 4447L
+
+//
+// MessageId: ERROR_WOF_FILE_RESOURCE_TABLE_CORRUPT
+//
+// MessageText:
+//
+// The WOF driver encountered a corruption in the compressed file's Resource Table.
+//
+#define ERROR_WOF_FILE_RESOURCE_TABLE_CORRUPT 4448L
 
 
 ///////////////////////////////////////////////////
@@ -15223,7 +15527,7 @@
 // MessageText:
 //
 // 
-// The action cannot be completed because the cluster set managenement cluster is unreachable.
+// The action cannot be completed because the cluster set management cluster is unreachable.
 //
 #define ERROR_CLUSTERSET_MANAGEMENT_CLUSTER_UNREACHABLE 5999L
 
@@ -16658,7 +16962,7 @@
 //
 // MessageText:
 //
-// The transactional resource manager had too many tranactions outstanding that could not be aborted. The transactional resource manger has been shut down.
+// The transactional resource manager had too many transactions outstanding that could not be aborted. The transactional resource manger has been shut down.
 //
 #define ERROR_CANNOT_ABORT_TRANSACTIONS  6848L
 
@@ -25120,7 +25424,7 @@
 //
 #define ERROR_IPSEC_IKE_STRONG_CRED_AUTHORIZATION_AND_CERTMAP_FAILURE 13908L
 
-// Extended upper bound for IKE errors to accomodate new errors
+// Extended upper bound for IKE errors to accommodate new errors
 //
 // MessageId: ERROR_IPSEC_IKE_NEG_STATUS_EXTENDED_END
 //
@@ -26367,7 +26671,7 @@
 //
 // MessageText:
 //
-// The event data raised by the publisher is not compatible with the event template definition in the publisher's manifest
+// The event data raised by the publisher is not compatible with the event template definition in the publisher's manifest.
 //
 #define ERROR_EVT_INVALID_EVENT_DATA     15005L
 
@@ -26376,7 +26680,7 @@
 //
 // MessageText:
 //
-// The specified channel could not be found. Check channel configuration.
+// The specified channel could not be found.
 //
 #define ERROR_EVT_CHANNEL_NOT_FOUND      15007L
 
@@ -26385,7 +26689,7 @@
 //
 // MessageText:
 //
-// The specified xml text was not well-formed. See Extended Error for more details.
+// The specified XML text was not well-formed. See Extended Error for more details.
 //
 #define ERROR_EVT_MALFORMED_XML_TEXT     15008L
 
@@ -26394,7 +26698,7 @@
 //
 // MessageText:
 //
-// The caller is trying to subscribe to a direct channel which is not allowed. The events for a direct channel go directly to a logfile and cannot be subscribed to.
+// The events for a direct channel go directly to a log file and cannot be subscribed to.
 //
 #define ERROR_EVT_SUBSCRIPTION_TO_DIRECT_CHANNEL 15009L
 
@@ -26412,7 +26716,7 @@
 //
 // MessageText:
 //
-// The query result is stale / invalid. This may be due to the log being cleared or rolling over after the query result was created. Users should handle this code by releasing the query result object and reissuing the query.
+// The query result is stale or invalid and must be recreated. This may be due to the log being cleared or rolling over after the query result was created.
 //
 #define ERROR_EVT_QUERY_RESULT_STALE     15011L
 
@@ -26421,7 +26725,7 @@
 //
 // MessageText:
 //
-// Query result is currently at an invalid position.
+// The query result is currently at an invalid position.
 //
 #define ERROR_EVT_QUERY_RESULT_INVALID_POSITION 15012L
 
@@ -26439,7 +26743,7 @@
 //
 // MessageText:
 //
-// An expression can only be followed by a change of scope operation if it itself evaluates to a node set and is not already part of some other change of scope operation.
+// An expression can only be followed by a change-of-scope operation if the expression evaluates to a node set and is not already part of another change-of-scope operation.
 //
 #define ERROR_EVT_FILTER_ALREADYSCOPED   15014L
 
@@ -26448,7 +26752,7 @@
 //
 // MessageText:
 //
-// Can't perform a step operation from a term that does not represent an element set.
+// Cannot perform a step operation from a term that does not represent an element set.
 //
 #define ERROR_EVT_FILTER_NOTELTSET       15015L
 
@@ -26457,7 +26761,7 @@
 //
 // MessageText:
 //
-// Left hand side arguments to binary operators must be either attributes, nodes or variables and right hand side arguments must be constants.
+// Left-hand side arguments to binary operators must be either attributes, nodes or variables. Right-hand side arguments must be constants.
 //
 #define ERROR_EVT_FILTER_INVARG          15016L
 
@@ -26466,7 +26770,7 @@
 //
 // MessageText:
 //
-// A step operation must involve either a node test or, in the case of a predicate, an algebraic expression against which to test each node in the node set identified by the preceeding node set can be evaluated.
+// A step operation must involve a node test or, in the case of a predicate, an algebraic expression against which to test each node in the preceeding node set.
 //
 #define ERROR_EVT_FILTER_INVTEST         15017L
 
@@ -26502,7 +26806,7 @@
 //
 // MessageText:
 //
-// The token encountered was unexpected.
+// An unexpected token was encountered.
 //
 #define ERROR_EVT_FILTER_UNEXPECTEDTOKEN 15021L
 
@@ -26511,7 +26815,7 @@
 //
 // MessageText:
 //
-// The requested operation cannot be performed over an enabled direct channel. The channel must first be disabled before performing the requested operation.
+// The requested operation cannot be performed over an enabled direct channel. The channel must first be disabled.
 //
 #define ERROR_EVT_INVALID_OPERATION_OVER_ENABLED_DIRECT_CHANNEL 15022L
 
@@ -26520,7 +26824,7 @@
 //
 // MessageText:
 //
-// Channel property %1!s! contains invalid value. The value has invalid type, is outside of valid range, can't be updated or is not supported by this type of channel.
+// Channel property %1!s! contains an invalid value. The value has an invalid type, is outside of its valid range, cannot be changed, or is not supported by this type of channel.
 //
 #define ERROR_EVT_INVALID_CHANNEL_PROPERTY_VALUE 15023L
 
@@ -26529,7 +26833,7 @@
 //
 // MessageText:
 //
-// Publisher property %1!s! contains invalid value. The value has invalid type, is outside of valid range, can't be updated or is not supported by this type of publisher.
+// Publisher property %1!s! contains an invalid value. The value has an invalid type, is outside of its valid range, cannot be changed, or is not supported by this type of publisher.
 //
 #define ERROR_EVT_INVALID_PUBLISHER_PROPERTY_VALUE 15024L
 
@@ -26538,7 +26842,7 @@
 //
 // MessageText:
 //
-// The channel fails to activate.
+// The channel failed to activate.
 //
 #define ERROR_EVT_CHANNEL_CANNOT_ACTIVATE 15025L
 
@@ -26547,7 +26851,7 @@
 //
 // MessageText:
 //
-// The xpath expression exceeded supported complexity. Please symplify it or split it into two or more simple expressions.
+// The XPath expression exceeded the supported complexity. Simplify the expression or split it into multiple expressions.
 //
 #define ERROR_EVT_FILTER_TOO_COMPLEX     15026L
 
@@ -26556,7 +26860,7 @@
 //
 // MessageText:
 //
-// the message resource is present but the message is not found in the string/message table
+// The message resource is present but the message was not found in the message table.
 //
 #define ERROR_EVT_MESSAGE_NOT_FOUND      15027L
 
@@ -26565,7 +26869,7 @@
 //
 // MessageText:
 //
-// The message id for the desired message could not be found.
+// The message ID for the desired message could not be found.
 //
 #define ERROR_EVT_MESSAGE_ID_NOT_FOUND   15028L
 
@@ -26601,7 +26905,7 @@
 //
 // MessageText:
 //
-// The event definition could not be found for event id (%1).
+// The event definition could not be found for event ID (%1).
 //
 #define ERROR_EVT_EVENT_DEFINITION_NOT_FOUND 15032L
 
@@ -26619,7 +26923,7 @@
 //
 // MessageText:
 //
-// The resource is too old to be compatible.
+// The resource is too old and is not supported.
 //
 #define ERROR_EVT_VERSION_TOO_OLD        15034L
 
@@ -26628,7 +26932,7 @@
 //
 // MessageText:
 //
-// The resource is too new to be compatible.
+// The resource is too new and is not supported.
 //
 #define ERROR_EVT_VERSION_TOO_NEW        15035L
 
@@ -27161,6 +27465,15 @@
 //
 #define ERROR_PRI_MERGE_INVALID_FILE_NAME 15158L
 
+//
+// MessageId: ERROR_MRM_PACKAGE_NOT_FOUND
+//
+// MessageText:
+//
+// Unable to find the specified package.
+//
+#define ERROR_MRM_PACKAGE_NOT_FOUND      15159L
+
 
 ///////////////////////////////////////////////////
 //                                               //
@@ -27347,7 +27660,7 @@
 //
 // MessageText:
 //
-// The requested operation is not suppported for the specified handle.
+// The requested operation is not supported for the specified handle.
 //
 #define ERROR_GPIO_OPERATION_DENIED      15325L
 
@@ -27859,6 +28172,33 @@
 //
 #define ERROR_PACKAGES_REPUTATION_CHECK_TIMEDOUT 15644L
 
+//
+// MessageId: ERROR_DEPLOYMENT_OPTION_NOT_SUPPORTED
+//
+// MessageText:
+//
+// The current deployment option is not supported.
+//
+#define ERROR_DEPLOYMENT_OPTION_NOT_SUPPORTED 15645L
+
+//
+// MessageId: ERROR_APPINSTALLER_ACTIVATION_BLOCKED
+//
+// MessageText:
+//
+// Activation is blocked due to the .appinstaller update settings for this app.
+//
+#define ERROR_APPINSTALLER_ACTIVATION_BLOCKED 15646L
+
+//
+// MessageId: ERROR_REGISTRATION_FROM_REMOTE_DRIVE_NOT_SUPPORTED
+//
+// MessageText:
+//
+// Remote drives are not supported; use \\server\share to register a remote package.
+//
+#define ERROR_REGISTRATION_FROM_REMOTE_DRIVE_NOT_SUPPORTED 15647L
+
 //////////////////////////
 //                      //
 // AppModel Error Codes //
@@ -28175,14 +28515,14 @@
 // with several fields encoded in the value. The parts of an
 // HRESULT are shown below.
 //
-// Many of the macros and functions below were orginally defined to
+// Many of the macros and functions below were originally defined to
 // operate on SCODEs. SCODEs are no longer used. The macros are
 // still present for compatibility and easy porting of Win16 code.
 // Newly written code should use the HRESULT macros and functions.
 //
 
 //
-//  HRESULTs are 32 bit values layed out as follows:
+//  HRESULTs are 32 bit values laid out as follows:
 //
 //   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
 //   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
@@ -28333,6 +28673,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 #define E_NOT_SET                HRESULT_FROM_WIN32(ERROR_NOT_FOUND)
 #define E_NOT_VALID_STATE        HRESULT_FROM_WIN32(ERROR_INVALID_STATE)
 #define E_NOT_SUFFICIENT_BUFFER  HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)
+#define E_TIME_CRITICAL_THREAD   HRESULT_FROM_WIN32(ERROR_TIME_CRITICAL_THREAD)
 
 // ---------------------- HRESULT value definitions -----------------
 //
@@ -29161,7 +29502,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 
 
 //
-// Generic OLE errors that may be returned by many inerfaces
+// Generic OLE errors that may be returned by many interfaces
 //
 
 #define OLE_E_FIRST ((HRESULT)0x80040000L)
@@ -32364,6 +32705,96 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // The .appinstaller file is invalid.
 //
 #define APPX_E_INVALID_APPINSTALLER      _HRESULT_TYPEDEF_(0x8008020CL)
+
+//
+// MessageId: APPX_E_DELTA_BASELINE_VERSION_MISMATCH
+//
+// MessageText:
+//
+// The baseline package version in delta package does not match the version in the baseline package to be updated.
+//
+#define APPX_E_DELTA_BASELINE_VERSION_MISMATCH _HRESULT_TYPEDEF_(0x8008020DL)
+
+//
+// MessageId: APPX_E_DELTA_PACKAGE_MISSING_FILE
+//
+// MessageText:
+//
+// The delta package is missing a file from the updated package.
+//
+#define APPX_E_DELTA_PACKAGE_MISSING_FILE _HRESULT_TYPEDEF_(0x8008020EL)
+
+//
+// MessageId: APPX_E_INVALID_DELTA_PACKAGE
+//
+// MessageText:
+//
+// The delta package is invalid.
+//
+#define APPX_E_INVALID_DELTA_PACKAGE     _HRESULT_TYPEDEF_(0x8008020FL)
+
+//
+// MessageId: APPX_E_DELTA_APPENDED_PACKAGE_NOT_ALLOWED
+//
+// MessageText:
+//
+// The delta appended package is not allowed for the current operation.
+//
+#define APPX_E_DELTA_APPENDED_PACKAGE_NOT_ALLOWED _HRESULT_TYPEDEF_(0x80080210L)
+
+//
+// MessageId: APPX_E_INVALID_PACKAGING_LAYOUT
+//
+// MessageText:
+//
+// The packaging layout file is invalid.
+//
+#define APPX_E_INVALID_PACKAGING_LAYOUT  _HRESULT_TYPEDEF_(0x80080211L)
+
+//
+// MessageId: APPX_E_INVALID_PACKAGESIGNCONFIG
+//
+// MessageText:
+//
+// The packageSignConfig file is invalid.
+//
+#define APPX_E_INVALID_PACKAGESIGNCONFIG _HRESULT_TYPEDEF_(0x80080212L)
+
+//
+// MessageId: APPX_E_RESOURCESPRI_NOT_ALLOWED
+//
+// MessageText:
+//
+// The resources.pri file is not allowed when there are no resource elements in the package manifest.
+//
+#define APPX_E_RESOURCESPRI_NOT_ALLOWED  _HRESULT_TYPEDEF_(0x80080213L)
+
+//
+// MessageId: APPX_E_FILE_COMPRESSION_MISMATCH
+//
+// MessageText:
+//
+// The compression state of file in baseline and updated package does not match.
+//
+#define APPX_E_FILE_COMPRESSION_MISMATCH _HRESULT_TYPEDEF_(0x80080214L)
+
+//
+// MessageId: APPX_E_INVALID_PAYLOAD_PACKAGE_EXTENSION
+//
+// MessageText:
+//
+// Non appx extensions are not allowed for payload packages targeting older platforms.
+//
+#define APPX_E_INVALID_PAYLOAD_PACKAGE_EXTENSION _HRESULT_TYPEDEF_(0x80080215L)
+
+//
+// MessageId: APPX_E_INVALID_ENCRYPTION_EXCLUSION_FILE_LIST
+//
+// MessageText:
+//
+// The encryptionExclusionFileList file is invalid.
+//
+#define APPX_E_INVALID_ENCRYPTION_EXCLUSION_FILE_LIST _HRESULT_TYPEDEF_(0x80080216L)
 
 //
 // Codes 0x0300-0x030f are reserved for background task error codes.
@@ -36979,7 +37410,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The attestation response could not be validated. It is either unexpected or incorrect.
+// The client's response could not be validated. It is either unexpected or incorrect.
 //
 #define CERTSRV_E_INVALID_RESPONSE       _HRESULT_TYPEDEF_(0x8009481DL)
 
@@ -36991,6 +37422,24 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // A valid Request ID was not detected in the request attributes, or an invalid one was submitted.
 //
 #define CERTSRV_E_INVALID_REQUESTID      _HRESULT_TYPEDEF_(0x8009481EL)
+
+//
+// MessageId: CERTSRV_E_REQUEST_PRECERTIFICATE_MISMATCH
+//
+// MessageText:
+//
+// The request is not consistent with the previously generated precertificate.
+//
+#define CERTSRV_E_REQUEST_PRECERTIFICATE_MISMATCH _HRESULT_TYPEDEF_(0x8009481FL)
+
+//
+// MessageId: CERTSRV_E_PENDING_CLIENT_RESPONSE
+//
+// MessageText:
+//
+// The request is locked against edits until a response is received from the client.
+//
+#define CERTSRV_E_PENDING_CLIENT_RESPONSE _HRESULT_TYPEDEF_(0x80094820L)
 
 //
 // The range 0x5000-0x51ff is reserved for XENROLL errors.
@@ -40142,7 +40591,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Report was not queued to queueing being disabled.
+// Report was not queued to queuing being disabled.
 //
 #define WER_S_DISABLED_QUEUE             _HRESULT_TYPEDEF_(0x001B0005L)
 
@@ -40223,7 +40672,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Report aborted due to user cancelation.
+// Report aborted due to user cancellation.
 //
 #define WER_E_CANCELED                   _HRESULT_TYPEDEF_(0x801B8001L)
 
@@ -40546,7 +40995,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The specifiec context is already attached to another object
+// The specified context is already attached to another object
 //
 #define ERROR_FLT_CONTEXT_ALREADY_LINKED _HRESULT_TYPEDEF_(0x801F001CL)
 
@@ -40627,7 +41076,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // MessageText:
 //
 // {No DWM redirection surface is available}
-// The DWM was unable to provide a redireciton surface to complete the DirectX present.
+// The DWM was unable to provide a redirection surface to complete the DirectX present.
 //
 #define DWM_E_NO_REDIRECTION_SURFACE_AVAILABLE _HRESULT_TYPEDEF_(0x80263003L)
 
@@ -40858,7 +41307,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Not able to present with color convertion
+// Not able to present with color conversion
 //
 #define ERROR_GRAPHICS_CANNOTCOLORCONVERT _HRESULT_TYPEDEF_(0xC0262008L)
 
@@ -40915,6 +41364,33 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // Windowless present is disabled (desktop windowing management subsystem is off).
 //
 #define ERROR_GRAPHICS_WINDOWLESS_PRESENT_DISABLED _HRESULT_TYPEDEF_(0xC026200EL)
+
+//
+// MessageId: ERROR_GRAPHICS_PRESENT_INVALID_WINDOW
+//
+// MessageText:
+//
+// Window handle is invalid
+//
+#define ERROR_GRAPHICS_PRESENT_INVALID_WINDOW _HRESULT_TYPEDEF_(0xC026200FL)
+
+//
+// MessageId: ERROR_GRAPHICS_PRESENT_BUFFER_NOT_BOUND
+//
+// MessageText:
+//
+// No buffer is bound to composition surface
+//
+#define ERROR_GRAPHICS_PRESENT_BUFFER_NOT_BOUND _HRESULT_TYPEDEF_(0xC0262010L)
+
+//
+// MessageId: ERROR_GRAPHICS_VAIL_STATE_CHANGED
+//
+// MessageText:
+//
+// Vail state has been changed
+//
+#define ERROR_GRAPHICS_VAIL_STATE_CHANGED _HRESULT_TYPEDEF_(0xC0262011L)
 
 //
 // Video Memory Manager (VidMM) subsystem errors {0x2100..0x21ff}
@@ -42791,7 +43267,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Authentication failed.
+// TPM 1.2: Authentication failed.
 //
 #define TPM_E_AUTHFAIL                   _HRESULT_TYPEDEF_(0x80280001L)
 
@@ -42800,7 +43276,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The index to a PCR, DIR or other register is incorrect.
+// TPM 1.2: The index to a PCR, DIR or other register is incorrect.
 //
 #define TPM_E_BADINDEX                   _HRESULT_TYPEDEF_(0x80280002L)
 
@@ -42809,7 +43285,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// One or more parameter is bad.
+// TPM 1.2: One or more parameter is bad.
 //
 #define TPM_E_BAD_PARAMETER              _HRESULT_TYPEDEF_(0x80280003L)
 
@@ -42818,7 +43294,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// An operation completed successfully but the auditing of that operation failed.
+// TPM 1.2: An operation completed successfully but the auditing of that operation failed.
 //
 #define TPM_E_AUDITFAILURE               _HRESULT_TYPEDEF_(0x80280004L)
 
@@ -42827,7 +43303,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The clear disable flag is set and all clear operations now require physical access.
+// TPM 1.2: The clear disable flag is set and all clear operations now require physical access.
 //
 #define TPM_E_CLEAR_DISABLED             _HRESULT_TYPEDEF_(0x80280005L)
 
@@ -42836,7 +43312,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Activate the Trusted Platform Module (TPM).
+// TPM 1.2: Activate the Trusted Platform Module (TPM).
 //
 #define TPM_E_DEACTIVATED                _HRESULT_TYPEDEF_(0x80280006L)
 
@@ -42845,7 +43321,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Enable the Trusted Platform Module (TPM).
+// TPM 1.2: Enable the Trusted Platform Module (TPM).
 //
 #define TPM_E_DISABLED                   _HRESULT_TYPEDEF_(0x80280007L)
 
@@ -42854,7 +43330,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The target command has been disabled.
+// TPM 1.2: The target command has been disabled.
 //
 #define TPM_E_DISABLED_CMD               _HRESULT_TYPEDEF_(0x80280008L)
 
@@ -42863,7 +43339,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The operation failed.
+// TPM 1.2: The operation failed.
 //
 #define TPM_E_FAIL                       _HRESULT_TYPEDEF_(0x80280009L)
 
@@ -42872,7 +43348,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The ordinal was unknown or inconsistent.
+// TPM 1.2: The ordinal was unknown or inconsistent.
 //
 #define TPM_E_BAD_ORDINAL                _HRESULT_TYPEDEF_(0x8028000AL)
 
@@ -42881,7 +43357,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The ability to install an owner is disabled.
+// TPM 1.2: The ability to install an owner is disabled.
 //
 #define TPM_E_INSTALL_DISABLED           _HRESULT_TYPEDEF_(0x8028000BL)
 
@@ -42890,7 +43366,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The key handle cannot be interpreted.
+// TPM 1.2: The key handle cannot be interpreted.
 //
 #define TPM_E_INVALID_KEYHANDLE          _HRESULT_TYPEDEF_(0x8028000CL)
 
@@ -42899,7 +43375,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The key handle points to an invalid key.
+// TPM 1.2: The key handle points to an invalid key.
 //
 #define TPM_E_KEYNOTFOUND                _HRESULT_TYPEDEF_(0x8028000DL)
 
@@ -42908,7 +43384,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Unacceptable encryption scheme.
+// TPM 1.2: Unacceptable encryption scheme.
 //
 #define TPM_E_INAPPROPRIATE_ENC          _HRESULT_TYPEDEF_(0x8028000EL)
 
@@ -42917,7 +43393,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Migration authorization failed.
+// TPM 1.2: Migration authorization failed.
 //
 #define TPM_E_MIGRATEFAIL                _HRESULT_TYPEDEF_(0x8028000FL)
 
@@ -42926,7 +43402,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// PCR information could not be interpreted.
+// TPM 1.2: PCR information could not be interpreted.
 //
 #define TPM_E_INVALID_PCR_INFO           _HRESULT_TYPEDEF_(0x80280010L)
 
@@ -42935,7 +43411,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// No room to load key.
+// TPM 1.2: No room to load key.
 //
 #define TPM_E_NOSPACE                    _HRESULT_TYPEDEF_(0x80280011L)
 
@@ -42944,7 +43420,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// There is no Storage Root Key (SRK) set.
+// TPM 1.2: There is no Storage Root Key (SRK) set.
 //
 #define TPM_E_NOSRK                      _HRESULT_TYPEDEF_(0x80280012L)
 
@@ -42953,7 +43429,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// An encrypted blob is invalid or was not created by this TPM.
+// TPM 1.2: An encrypted blob is invalid or was not created by this TPM.
 //
 #define TPM_E_NOTSEALED_BLOB             _HRESULT_TYPEDEF_(0x80280013L)
 
@@ -42962,7 +43438,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The Trusted Platform Module (TPM) already has an owner.
+// TPM 1.2: The Trusted Platform Module (TPM) already has an owner.
 //
 #define TPM_E_OWNER_SET                  _HRESULT_TYPEDEF_(0x80280014L)
 
@@ -42971,7 +43447,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM has insufficient internal resources to perform the requested action.
+// TPM 1.2: The TPM has insufficient internal resources to perform the requested action.
 //
 #define TPM_E_RESOURCES                  _HRESULT_TYPEDEF_(0x80280015L)
 
@@ -42980,7 +43456,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A random string was too short.
+// TPM 1.2: A random string was too short.
 //
 #define TPM_E_SHORTRANDOM                _HRESULT_TYPEDEF_(0x80280016L)
 
@@ -42989,7 +43465,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM does not have the space to perform the operation.
+// TPM 1.2: The TPM does not have the space to perform the operation.
 //
 #define TPM_E_SIZE                       _HRESULT_TYPEDEF_(0x80280017L)
 
@@ -42998,7 +43474,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The named PCR value does not match the current PCR value.
+// TPM 1.2: The named PCR value does not match the current PCR value.
 //
 #define TPM_E_WRONGPCRVAL                _HRESULT_TYPEDEF_(0x80280018L)
 
@@ -43007,7 +43483,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The paramSize argument to the command has the incorrect value .
+// TPM 1.2: The paramSize argument to the command has the incorrect value .
 //
 #define TPM_E_BAD_PARAM_SIZE             _HRESULT_TYPEDEF_(0x80280019L)
 
@@ -43016,7 +43492,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// There is no existing SHA-1 thread.
+// TPM 1.2: There is no existing SHA-1 thread.
 //
 #define TPM_E_SHA_THREAD                 _HRESULT_TYPEDEF_(0x8028001AL)
 
@@ -43025,7 +43501,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The calculation is unable to proceed because the existing SHA-1 thread has already encountered an error.
+// TPM 1.2: The calculation is unable to proceed because the existing SHA-1 thread has already encountered an error.
 //
 #define TPM_E_SHA_ERROR                  _HRESULT_TYPEDEF_(0x8028001BL)
 
@@ -43034,7 +43510,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM hardware device reported a failure during its internal self test. Try restarting the computer to resolve the problem. If the problem continues, check for the latest BIOS or firmware update for your TPM hardware. Consult the computer manufacturer's documentation for instructions.
+// TPM 1.2: The TPM hardware device reported a failure during its internal self test. Try restarting the computer to resolve the problem. If the problem continues, check for the latest BIOS or firmware update for your TPM hardware. Consult the computer manufacturer's documentation for instructions.
 //
 #define TPM_E_FAILEDSELFTEST             _HRESULT_TYPEDEF_(0x8028001CL)
 
@@ -43043,7 +43519,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The authorization for the second key in a 2 key function failed authorization.
+// TPM 1.2: The authorization for the second key in a 2 key function failed authorization.
 //
 #define TPM_E_AUTH2FAIL                  _HRESULT_TYPEDEF_(0x8028001DL)
 
@@ -43052,7 +43528,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The tag value sent to for a command is invalid.
+// TPM 1.2: The tag value sent to for a command is invalid.
 //
 #define TPM_E_BADTAG                     _HRESULT_TYPEDEF_(0x8028001EL)
 
@@ -43061,7 +43537,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// An IO error occurred transmitting information to the TPM.
+// TPM 1.2: An IO error occurred transmitting information to the TPM.
 //
 #define TPM_E_IOERROR                    _HRESULT_TYPEDEF_(0x8028001FL)
 
@@ -43070,7 +43546,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The encryption process had a problem.
+// TPM 1.2: The encryption process had a problem.
 //
 #define TPM_E_ENCRYPT_ERROR              _HRESULT_TYPEDEF_(0x80280020L)
 
@@ -43079,7 +43555,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The decryption process did not complete.
+// TPM 1.2: The decryption process did not complete.
 //
 #define TPM_E_DECRYPT_ERROR              _HRESULT_TYPEDEF_(0x80280021L)
 
@@ -43088,7 +43564,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// An invalid handle was used.
+// TPM 1.2: An invalid handle was used.
 //
 #define TPM_E_INVALID_AUTHHANDLE         _HRESULT_TYPEDEF_(0x80280022L)
 
@@ -43097,7 +43573,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM does not have an Endorsement Key (EK) installed.
+// TPM 1.2: The TPM does not have an Endorsement Key (EK) installed.
 //
 #define TPM_E_NO_ENDORSEMENT             _HRESULT_TYPEDEF_(0x80280023L)
 
@@ -43106,7 +43582,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The usage of a key is not allowed.
+// TPM 1.2: The usage of a key is not allowed.
 //
 #define TPM_E_INVALID_KEYUSAGE           _HRESULT_TYPEDEF_(0x80280024L)
 
@@ -43115,7 +43591,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The submitted entity type is not allowed.
+// TPM 1.2: The submitted entity type is not allowed.
 //
 #define TPM_E_WRONG_ENTITYTYPE           _HRESULT_TYPEDEF_(0x80280025L)
 
@@ -43124,7 +43600,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The command was received in the wrong sequence relative to TPM_Init and a subsequent TPM_Startup.
+// TPM 1.2: The command was received in the wrong sequence relative to TPM_Init and a subsequent TPM_Startup.
 //
 #define TPM_E_INVALID_POSTINIT           _HRESULT_TYPEDEF_(0x80280026L)
 
@@ -43133,7 +43609,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Signed data cannot include additional DER information.
+// TPM 1.2: Signed data cannot include additional DER information.
 //
 #define TPM_E_INAPPROPRIATE_SIG          _HRESULT_TYPEDEF_(0x80280027L)
 
@@ -43142,7 +43618,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The key properties in TPM_KEY_PARMs are not supported by this TPM.
+// TPM 1.2: The key properties in TPM_KEY_PARMs are not supported by this TPM.
 //
 #define TPM_E_BAD_KEY_PROPERTY           _HRESULT_TYPEDEF_(0x80280028L)
 
@@ -43151,7 +43627,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The migration properties of this key are incorrect.
+// TPM 1.2: The migration properties of this key are incorrect.
 //
 #define TPM_E_BAD_MIGRATION              _HRESULT_TYPEDEF_(0x80280029L)
 
@@ -43160,7 +43636,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The signature or encryption scheme for this key is incorrect or not permitted in this situation.
+// TPM 1.2: The signature or encryption scheme for this key is incorrect or not permitted in this situation.
 //
 #define TPM_E_BAD_SCHEME                 _HRESULT_TYPEDEF_(0x8028002AL)
 
@@ -43169,7 +43645,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The size of the data (or blob) parameter is bad or inconsistent with the referenced key.
+// TPM 1.2: The size of the data (or blob) parameter is bad or inconsistent with the referenced key.
 //
 #define TPM_E_BAD_DATASIZE               _HRESULT_TYPEDEF_(0x8028002BL)
 
@@ -43178,7 +43654,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A mode parameter is bad, such as capArea or subCapArea for TPM_GetCapability, phsicalPresence parameter for TPM_PhysicalPresence, or migrationType for TPM_CreateMigrationBlob.
+// TPM 1.2: A mode parameter is bad, such as capArea or subCapArea for TPM_GetCapability, phsicalPresence parameter for TPM_PhysicalPresence, or migrationType for TPM_CreateMigrationBlob.
 //
 #define TPM_E_BAD_MODE                   _HRESULT_TYPEDEF_(0x8028002CL)
 
@@ -43187,7 +43663,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Either the physicalPresence or physicalPresenceLock bits have the wrong value.
+// TPM 1.2: Either the physicalPresence or physicalPresenceLock bits have the wrong value.
 //
 #define TPM_E_BAD_PRESENCE               _HRESULT_TYPEDEF_(0x8028002DL)
 
@@ -43196,7 +43672,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM cannot perform this version of the capability.
+// TPM 1.2: The TPM cannot perform this version of the capability.
 //
 #define TPM_E_BAD_VERSION                _HRESULT_TYPEDEF_(0x8028002EL)
 
@@ -43205,7 +43681,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM does not allow for wrapped transport sessions.
+// TPM 1.2: The TPM does not allow for wrapped transport sessions.
 //
 #define TPM_E_NO_WRAP_TRANSPORT          _HRESULT_TYPEDEF_(0x8028002FL)
 
@@ -43214,7 +43690,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// TPM audit construction failed and the underlying command was returning a failure code also.
+// TPM 1.2: TPM audit construction failed and the underlying command was returning a failure code also.
 //
 #define TPM_E_AUDITFAIL_UNSUCCESSFUL     _HRESULT_TYPEDEF_(0x80280030L)
 
@@ -43223,7 +43699,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// TPM audit construction failed and the underlying command was returning success.
+// TPM 1.2: TPM audit construction failed and the underlying command was returning success.
 //
 #define TPM_E_AUDITFAIL_SUCCESSFUL       _HRESULT_TYPEDEF_(0x80280031L)
 
@@ -43232,7 +43708,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Attempt to reset a PCR register that does not have the resettable attribute.
+// TPM 1.2: Attempt to reset a PCR register that does not have the resettable attribute.
 //
 #define TPM_E_NOTRESETABLE               _HRESULT_TYPEDEF_(0x80280032L)
 
@@ -43241,7 +43717,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Attempt to reset a PCR register that requires locality and locality modifier not part of command transport.
+// TPM 1.2: Attempt to reset a PCR register that requires locality and locality modifier not part of command transport.
 //
 #define TPM_E_NOTLOCAL                   _HRESULT_TYPEDEF_(0x80280033L)
 
@@ -43250,7 +43726,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Make identity blob not properly typed.
+// TPM 1.2: Make identity blob not properly typed.
 //
 #define TPM_E_BAD_TYPE                   _HRESULT_TYPEDEF_(0x80280034L)
 
@@ -43259,7 +43735,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// When saving context identified resource type does not match actual resource.
+// TPM 1.2: When saving context identified resource type does not match actual resource.
 //
 #define TPM_E_INVALID_RESOURCE           _HRESULT_TYPEDEF_(0x80280035L)
 
@@ -43268,7 +43744,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The TPM is attempting to execute a command only available when in FIPS mode.
+// TPM 1.2: The TPM is attempting to execute a command only available when in FIPS mode.
 //
 #define TPM_E_NOTFIPS                    _HRESULT_TYPEDEF_(0x80280036L)
 
@@ -43277,7 +43753,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The command is attempting to use an invalid family ID.
+// TPM 1.2: The command is attempting to use an invalid family ID.
 //
 #define TPM_E_INVALID_FAMILY             _HRESULT_TYPEDEF_(0x80280037L)
 
@@ -43286,7 +43762,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The permission to manipulate the NV storage is not available.
+// TPM 1.2: The permission to manipulate the NV storage is not available.
 //
 #define TPM_E_NO_NV_PERMISSION           _HRESULT_TYPEDEF_(0x80280038L)
 
@@ -43295,7 +43771,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The operation requires a signed command.
+// TPM 1.2: The operation requires a signed command.
 //
 #define TPM_E_REQUIRES_SIGN              _HRESULT_TYPEDEF_(0x80280039L)
 
@@ -43304,7 +43780,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Wrong operation to load an NV key.
+// TPM 1.2: Wrong operation to load an NV key.
 //
 #define TPM_E_KEY_NOTSUPPORTED           _HRESULT_TYPEDEF_(0x8028003AL)
 
@@ -43313,7 +43789,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// NV_LoadKey blob requires both owner and blob authorization.
+// TPM 1.2: NV_LoadKey blob requires both owner and blob authorization.
 //
 #define TPM_E_AUTH_CONFLICT              _HRESULT_TYPEDEF_(0x8028003BL)
 
@@ -43322,7 +43798,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The NV area is locked and not writtable.
+// TPM 1.2: The NV area is locked and not writable.
 //
 #define TPM_E_AREA_LOCKED                _HRESULT_TYPEDEF_(0x8028003CL)
 
@@ -43331,7 +43807,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The locality is incorrect for the attempted operation.
+// TPM 1.2: The locality is incorrect for the attempted operation.
 //
 #define TPM_E_BAD_LOCALITY               _HRESULT_TYPEDEF_(0x8028003DL)
 
@@ -43340,7 +43816,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The NV area is read only and can't be written to.
+// TPM 1.2: The NV area is read only and can't be written to.
 //
 #define TPM_E_READ_ONLY                  _HRESULT_TYPEDEF_(0x8028003EL)
 
@@ -43349,7 +43825,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// There is no protection on the write to the NV area.
+// TPM 1.2: There is no protection on the write to the NV area.
 //
 #define TPM_E_PER_NOWRITE                _HRESULT_TYPEDEF_(0x8028003FL)
 
@@ -43358,7 +43834,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The family count value does not match.
+// TPM 1.2: The family count value does not match.
 //
 #define TPM_E_FAMILYCOUNT                _HRESULT_TYPEDEF_(0x80280040L)
 
@@ -43367,7 +43843,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The NV area has already been written to.
+// TPM 1.2: The NV area has already been written to.
 //
 #define TPM_E_WRITE_LOCKED               _HRESULT_TYPEDEF_(0x80280041L)
 
@@ -43376,7 +43852,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The NV area attributes conflict.
+// TPM 1.2: The NV area attributes conflict.
 //
 #define TPM_E_BAD_ATTRIBUTES             _HRESULT_TYPEDEF_(0x80280042L)
 
@@ -43385,7 +43861,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The structure tag and version are invalid or inconsistent.
+// TPM 1.2: The structure tag and version are invalid or inconsistent.
 //
 #define TPM_E_INVALID_STRUCTURE          _HRESULT_TYPEDEF_(0x80280043L)
 
@@ -43394,7 +43870,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The key is under control of the TPM Owner and can only be evicted by the TPM Owner.
+// TPM 1.2: The key is under control of the TPM Owner and can only be evicted by the TPM Owner.
 //
 #define TPM_E_KEY_OWNER_CONTROL          _HRESULT_TYPEDEF_(0x80280044L)
 
@@ -43403,7 +43879,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The counter handle is incorrect.
+// TPM 1.2: The counter handle is incorrect.
 //
 #define TPM_E_BAD_COUNTER                _HRESULT_TYPEDEF_(0x80280045L)
 
@@ -43412,7 +43888,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The write is not a complete write of the area.
+// TPM 1.2: The write is not a complete write of the area.
 //
 #define TPM_E_NOT_FULLWRITE              _HRESULT_TYPEDEF_(0x80280046L)
 
@@ -43421,7 +43897,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The gap between saved context counts is too large.
+// TPM 1.2: The gap between saved context counts is too large.
 //
 #define TPM_E_CONTEXT_GAP                _HRESULT_TYPEDEF_(0x80280047L)
 
@@ -43430,7 +43906,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The maximum number of NV writes without an owner has been exceeded.
+// TPM 1.2: The maximum number of NV writes without an owner has been exceeded.
 //
 #define TPM_E_MAXNVWRITES                _HRESULT_TYPEDEF_(0x80280048L)
 
@@ -43439,7 +43915,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// No operator AuthData value is set.
+// TPM 1.2: No operator AuthData value is set.
 //
 #define TPM_E_NOOPERATOR                 _HRESULT_TYPEDEF_(0x80280049L)
 
@@ -43448,7 +43924,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The resource pointed to by context is not loaded.
+// TPM 1.2: The resource pointed to by context is not loaded.
 //
 #define TPM_E_RESOURCEMISSING            _HRESULT_TYPEDEF_(0x8028004AL)
 
@@ -43457,7 +43933,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The delegate administration is locked.
+// TPM 1.2: The delegate administration is locked.
 //
 #define TPM_E_DELEGATE_LOCK              _HRESULT_TYPEDEF_(0x8028004BL)
 
@@ -43466,7 +43942,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Attempt to manage a family other then the delegated family.
+// TPM 1.2: Attempt to manage a family other then the delegated family.
 //
 #define TPM_E_DELEGATE_FAMILY            _HRESULT_TYPEDEF_(0x8028004CL)
 
@@ -43475,7 +43951,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Delegation table management not enabled.
+// TPM 1.2: Delegation table management not enabled.
 //
 #define TPM_E_DELEGATE_ADMIN             _HRESULT_TYPEDEF_(0x8028004DL)
 
@@ -43484,7 +43960,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// There was a command executed outside of an exclusive transport session.
+// TPM 1.2: There was a command executed outside of an exclusive transport session.
 //
 #define TPM_E_TRANSPORT_NOTEXCLUSIVE     _HRESULT_TYPEDEF_(0x8028004EL)
 
@@ -43493,7 +43969,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Attempt to context save a owner evict controlled key.
+// TPM 1.2: Attempt to context save a owner evict controlled key.
 //
 #define TPM_E_OWNER_CONTROL              _HRESULT_TYPEDEF_(0x8028004FL)
 
@@ -43502,7 +43978,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The DAA command has no resources availble to execute the command.
+// TPM 1.2: The DAA command has no resources available to execute the command.
 //
 #define TPM_E_DAA_RESOURCES              _HRESULT_TYPEDEF_(0x80280050L)
 
@@ -43511,7 +43987,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The consistency check on DAA parameter inputData0 has failed.
+// TPM 1.2: The consistency check on DAA parameter inputData0 has failed.
 //
 #define TPM_E_DAA_INPUT_DATA0            _HRESULT_TYPEDEF_(0x80280051L)
 
@@ -43520,7 +43996,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The consistency check on DAA parameter inputData1 has failed.
+// TPM 1.2: The consistency check on DAA parameter inputData1 has failed.
 //
 #define TPM_E_DAA_INPUT_DATA1            _HRESULT_TYPEDEF_(0x80280052L)
 
@@ -43529,7 +44005,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The consistency check on DAA_issuerSettings has failed.
+// TPM 1.2: The consistency check on DAA_issuerSettings has failed.
 //
 #define TPM_E_DAA_ISSUER_SETTINGS        _HRESULT_TYPEDEF_(0x80280053L)
 
@@ -43538,7 +44014,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The consistency check on DAA_tpmSpecific has failed.
+// TPM 1.2: The consistency check on DAA_tpmSpecific has failed.
 //
 #define TPM_E_DAA_TPM_SETTINGS           _HRESULT_TYPEDEF_(0x80280054L)
 
@@ -43547,7 +44023,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The atomic process indicated by the submitted DAA command is not the expected process.
+// TPM 1.2: The atomic process indicated by the submitted DAA command is not the expected process.
 //
 #define TPM_E_DAA_STAGE                  _HRESULT_TYPEDEF_(0x80280055L)
 
@@ -43556,7 +44032,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The issuer's validity check has detected an inconsistency.
+// TPM 1.2: The issuer's validity check has detected an inconsistency.
 //
 #define TPM_E_DAA_ISSUER_VALIDITY        _HRESULT_TYPEDEF_(0x80280056L)
 
@@ -43565,7 +44041,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The consistency check on w has failed.
+// TPM 1.2: The consistency check on w has failed.
 //
 #define TPM_E_DAA_WRONG_W                _HRESULT_TYPEDEF_(0x80280057L)
 
@@ -43574,7 +44050,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The handle is incorrect.
+// TPM 1.2: The handle is incorrect.
 //
 #define TPM_E_BAD_HANDLE                 _HRESULT_TYPEDEF_(0x80280058L)
 
@@ -43583,7 +44059,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Delegation is not correct.
+// TPM 1.2: Delegation is not correct.
 //
 #define TPM_E_BAD_DELEGATE               _HRESULT_TYPEDEF_(0x80280059L)
 
@@ -43592,7 +44068,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The context blob is invalid.
+// TPM 1.2: The context blob is invalid.
 //
 #define TPM_E_BADCONTEXT                 _HRESULT_TYPEDEF_(0x8028005AL)
 
@@ -43601,7 +44077,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Too many contexts held by the TPM.
+// TPM 1.2: Too many contexts held by the TPM.
 //
 #define TPM_E_TOOMANYCONTEXTS            _HRESULT_TYPEDEF_(0x8028005BL)
 
@@ -43610,7 +44086,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Migration authority signature validation failure.
+// TPM 1.2: Migration authority signature validation failure.
 //
 #define TPM_E_MA_TICKET_SIGNATURE        _HRESULT_TYPEDEF_(0x8028005CL)
 
@@ -43619,7 +44095,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Migration destination not authenticated.
+// TPM 1.2: Migration destination not authenticated.
 //
 #define TPM_E_MA_DESTINATION             _HRESULT_TYPEDEF_(0x8028005DL)
 
@@ -43628,7 +44104,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Migration source incorrect.
+// TPM 1.2: Migration source incorrect.
 //
 #define TPM_E_MA_SOURCE                  _HRESULT_TYPEDEF_(0x8028005EL)
 
@@ -43637,7 +44113,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Incorrect migration authority.
+// TPM 1.2: Incorrect migration authority.
 //
 #define TPM_E_MA_AUTHORITY               _HRESULT_TYPEDEF_(0x8028005FL)
 
@@ -43646,7 +44122,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Attempt to revoke the EK and the EK is not revocable.
+// TPM 1.2: Attempt to revoke the EK and the EK is not revocable.
 //
 #define TPM_E_PERMANENTEK                _HRESULT_TYPEDEF_(0x80280061L)
 
@@ -43655,7 +44131,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Bad signature of CMK ticket.
+// TPM 1.2: Bad signature of CMK ticket.
 //
 #define TPM_E_BAD_SIGNATURE              _HRESULT_TYPEDEF_(0x80280062L)
 
@@ -43664,9 +44140,621 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// There is no room in the context list for additional contexts.
+// TPM 1.2: There is no room in the context list for additional contexts.
 //
 #define TPM_E_NOCONTEXTSPACE             _HRESULT_TYPEDEF_(0x80280063L)
+
+//
+// MessageId: TPM_20_E_ASYMMETRIC
+//
+// MessageText:
+//
+// TPM 2.0: Asymmetric algorithm not supported or not correct.
+//
+#define TPM_20_E_ASYMMETRIC              _HRESULT_TYPEDEF_(0x80280081L)
+
+//
+// MessageId: TPM_20_E_ATTRIBUTES
+//
+// MessageText:
+//
+// TPM 2.0: Inconsistent attributes.
+//
+#define TPM_20_E_ATTRIBUTES              _HRESULT_TYPEDEF_(0x80280082L)
+
+//
+// MessageId: TPM_20_E_HASH
+//
+// MessageText:
+//
+// TPM 2.0: Hash algorithm not supported or not appropriate.
+//
+#define TPM_20_E_HASH                    _HRESULT_TYPEDEF_(0x80280083L)
+
+//
+// MessageId: TPM_20_E_VALUE
+//
+// MessageText:
+//
+// TPM 2.0: Value is out of range or is not correct for the context.
+//
+#define TPM_20_E_VALUE                   _HRESULT_TYPEDEF_(0x80280084L)
+
+//
+// MessageId: TPM_20_E_HIERARCHY
+//
+// MessageText:
+//
+// TPM 2.0: Hierarchy is not enabled or is not correct for the use.
+//
+#define TPM_20_E_HIERARCHY               _HRESULT_TYPEDEF_(0x80280085L)
+
+//
+// MessageId: TPM_20_E_KEY_SIZE
+//
+// MessageText:
+//
+// TPM 2.0: Key size is not supported.
+//
+#define TPM_20_E_KEY_SIZE                _HRESULT_TYPEDEF_(0x80280087L)
+
+//
+// MessageId: TPM_20_E_MGF
+//
+// MessageText:
+//
+// TPM 2.0: Mask generation function not supported.
+//
+#define TPM_20_E_MGF                     _HRESULT_TYPEDEF_(0x80280088L)
+
+//
+// MessageId: TPM_20_E_MODE
+//
+// MessageText:
+//
+// TPM 2.0: Mode of operation not supported.
+//
+#define TPM_20_E_MODE                    _HRESULT_TYPEDEF_(0x80280089L)
+
+//
+// MessageId: TPM_20_E_TYPE
+//
+// MessageText:
+//
+// TPM 2.0: The type of the value is not appropriate for the use.
+//
+#define TPM_20_E_TYPE                    _HRESULT_TYPEDEF_(0x8028008AL)
+
+//
+// MessageId: TPM_20_E_HANDLE
+//
+// MessageText:
+//
+// TPM 2.0: The Handle is not correct for the use.
+//
+#define TPM_20_E_HANDLE                  _HRESULT_TYPEDEF_(0x8028008BL)
+
+//
+// MessageId: TPM_20_E_KDF
+//
+// MessageText:
+//
+// TPM 2.0: Unsupported key derivation function or function not appropriate for use.
+//
+#define TPM_20_E_KDF                     _HRESULT_TYPEDEF_(0x8028008CL)
+
+//
+// MessageId: TPM_20_E_RANGE
+//
+// MessageText:
+//
+// TPM 2.0: Value was out of allowed range.
+//
+#define TPM_20_E_RANGE                   _HRESULT_TYPEDEF_(0x8028008DL)
+
+//
+// MessageId: TPM_20_E_AUTH_FAIL
+//
+// MessageText:
+//
+// TPM 2.0: The authorization HMAC check failed and DA counter incremented.
+//
+#define TPM_20_E_AUTH_FAIL               _HRESULT_TYPEDEF_(0x8028008EL)
+
+//
+// MessageId: TPM_20_E_NONCE
+//
+// MessageText:
+//
+// TPM 2.0: Invalid nonce size.
+//
+#define TPM_20_E_NONCE                   _HRESULT_TYPEDEF_(0x8028008FL)
+
+//
+// MessageId: TPM_20_E_PP
+//
+// MessageText:
+//
+// TPM 2.0: Authorization requires assertion of PP.
+//
+#define TPM_20_E_PP                      _HRESULT_TYPEDEF_(0x80280090L)
+
+//
+// MessageId: TPM_20_E_SCHEME
+//
+// MessageText:
+//
+// TPM 2.0: Unsupported or incompatible scheme.
+//
+#define TPM_20_E_SCHEME                  _HRESULT_TYPEDEF_(0x80280092L)
+
+//
+// MessageId: TPM_20_E_SIZE
+//
+// MessageText:
+//
+// TPM 2.0: Structure is wrong size.
+//
+#define TPM_20_E_SIZE                    _HRESULT_TYPEDEF_(0x80280095L)
+
+//
+// MessageId: TPM_20_E_SYMMETRIC
+//
+// MessageText:
+//
+// TPM 2.0: Unsupported symmetric algorithm or key size, or not appropriate for instance.
+//
+#define TPM_20_E_SYMMETRIC               _HRESULT_TYPEDEF_(0x80280096L)
+
+//
+// MessageId: TPM_20_E_TAG
+//
+// MessageText:
+//
+// TPM 2.0: Incorrect structure tag.
+//
+#define TPM_20_E_TAG                     _HRESULT_TYPEDEF_(0x80280097L)
+
+//
+// MessageId: TPM_20_E_SELECTOR
+//
+// MessageText:
+//
+// TPM 2.0: Union selector is incorrect.
+//
+#define TPM_20_E_SELECTOR                _HRESULT_TYPEDEF_(0x80280098L)
+
+//
+// MessageId: TPM_20_E_INSUFFICIENT
+//
+// MessageText:
+//
+// TPM 2.0: The TPM was unable to unmarshal a value because there were not enough octets in the input buffer.
+//
+#define TPM_20_E_INSUFFICIENT            _HRESULT_TYPEDEF_(0x8028009AL)
+
+//
+// MessageId: TPM_20_E_SIGNATURE
+//
+// MessageText:
+//
+// TPM 2.0: The signature is not valid.
+//
+#define TPM_20_E_SIGNATURE               _HRESULT_TYPEDEF_(0x8028009BL)
+
+//
+// MessageId: TPM_20_E_KEY
+//
+// MessageText:
+//
+// TPM 2.0: Key fields are not compatible with the selected use.
+//
+#define TPM_20_E_KEY                     _HRESULT_TYPEDEF_(0x8028009CL)
+
+//
+// MessageId: TPM_20_E_POLICY_FAIL
+//
+// MessageText:
+//
+// TPM 2.0: A policy check failed.
+//
+#define TPM_20_E_POLICY_FAIL             _HRESULT_TYPEDEF_(0x8028009DL)
+
+//
+// MessageId: TPM_20_E_INTEGRITY
+//
+// MessageText:
+//
+// TPM 2.0: Integrity check failed.
+//
+#define TPM_20_E_INTEGRITY               _HRESULT_TYPEDEF_(0x8028009FL)
+
+//
+// MessageId: TPM_20_E_TICKET
+//
+// MessageText:
+//
+// TPM 2.0: Invalid ticket.
+//
+#define TPM_20_E_TICKET                  _HRESULT_TYPEDEF_(0x802800A0L)
+
+//
+// MessageId: TPM_20_E_RESERVED_BITS
+//
+// MessageText:
+//
+// TPM 2.0: Reserved bits not set to zero as required.
+//
+#define TPM_20_E_RESERVED_BITS           _HRESULT_TYPEDEF_(0x802800A1L)
+
+//
+// MessageId: TPM_20_E_BAD_AUTH
+//
+// MessageText:
+//
+// TPM 2.0: Authorization failure without DA implications.
+//
+#define TPM_20_E_BAD_AUTH                _HRESULT_TYPEDEF_(0x802800A2L)
+
+//
+// MessageId: TPM_20_E_EXPIRED
+//
+// MessageText:
+//
+// TPM 2.0: The policy has expired.
+//
+#define TPM_20_E_EXPIRED                 _HRESULT_TYPEDEF_(0x802800A3L)
+
+//
+// MessageId: TPM_20_E_POLICY_CC
+//
+// MessageText:
+//
+// TPM 2.0: The command code in the policy is not the command code of the command or the command code in a policy command references a command that is not implemented.
+//
+#define TPM_20_E_POLICY_CC               _HRESULT_TYPEDEF_(0x802800A4L)
+
+//
+// MessageId: TPM_20_E_BINDING
+//
+// MessageText:
+//
+// TPM 2.0: Public and sensitive portions of an object are not cryptographically bound.
+//
+#define TPM_20_E_BINDING                 _HRESULT_TYPEDEF_(0x802800A5L)
+
+//
+// MessageId: TPM_20_E_CURVE
+//
+// MessageText:
+//
+// TPM 2.0: Curve not supported.
+//
+#define TPM_20_E_CURVE                   _HRESULT_TYPEDEF_(0x802800A6L)
+
+//
+// MessageId: TPM_20_E_ECC_POINT
+//
+// MessageText:
+//
+// TPM 2.0: Point is not on the required curve.
+//
+#define TPM_20_E_ECC_POINT               _HRESULT_TYPEDEF_(0x802800A7L)
+
+//
+// MessageId: TPM_20_E_INITIALIZE
+//
+// MessageText:
+//
+// TPM 2.0: TPM not initialized.
+//
+#define TPM_20_E_INITIALIZE              _HRESULT_TYPEDEF_(0x80280100L)
+
+//
+// MessageId: TPM_20_E_FAILURE
+//
+// MessageText:
+//
+// TPM 2.0: Commands not being accepted because of a TPM failure.
+//
+#define TPM_20_E_FAILURE                 _HRESULT_TYPEDEF_(0x80280101L)
+
+//
+// MessageId: TPM_20_E_SEQUENCE
+//
+// MessageText:
+//
+// TPM 2.0: Improper use of a sequence handle.
+//
+#define TPM_20_E_SEQUENCE                _HRESULT_TYPEDEF_(0x80280103L)
+
+//
+// MessageId: TPM_20_E_PRIVATE
+//
+// MessageText:
+//
+// TPM 2.0: TPM_RC_PRIVATE error.
+//
+#define TPM_20_E_PRIVATE                 _HRESULT_TYPEDEF_(0x8028010BL)
+
+//
+// MessageId: TPM_20_E_HMAC
+//
+// MessageText:
+//
+// TPM 2.0: TPM_RC_HMAC.
+//
+#define TPM_20_E_HMAC                    _HRESULT_TYPEDEF_(0x80280119L)
+
+//
+// MessageId: TPM_20_E_DISABLED
+//
+// MessageText:
+//
+// TPM 2.0: TPM_RC_DISABLED.
+//
+#define TPM_20_E_DISABLED                _HRESULT_TYPEDEF_(0x80280120L)
+
+//
+// MessageId: TPM_20_E_EXCLUSIVE
+//
+// MessageText:
+//
+// TPM 2.0: Command failed because audit sequence required exclusivity.
+//
+#define TPM_20_E_EXCLUSIVE               _HRESULT_TYPEDEF_(0x80280121L)
+
+//
+// MessageId: TPM_20_E_ECC_CURVE
+//
+// MessageText:
+//
+// TPM 2.0: Unsupported ECC curve.
+//
+#define TPM_20_E_ECC_CURVE               _HRESULT_TYPEDEF_(0x80280123L)
+
+//
+// MessageId: TPM_20_E_AUTH_TYPE
+//
+// MessageText:
+//
+// TPM 2.0: Authorization handle is not correct for command.
+//
+#define TPM_20_E_AUTH_TYPE               _HRESULT_TYPEDEF_(0x80280124L)
+
+//
+// MessageId: TPM_20_E_AUTH_MISSING
+//
+// MessageText:
+//
+// TPM 2.0: Command requires an authorization session for handle and is not present.
+//
+#define TPM_20_E_AUTH_MISSING            _HRESULT_TYPEDEF_(0x80280125L)
+
+//
+// MessageId: TPM_20_E_POLICY
+//
+// MessageText:
+//
+// TPM 2.0: Policy failure in Math Operation or an invalid authPolicy value.
+//
+#define TPM_20_E_POLICY                  _HRESULT_TYPEDEF_(0x80280126L)
+
+//
+// MessageId: TPM_20_E_PCR
+//
+// MessageText:
+//
+// TPM 2.0: PCR check fail.
+//
+#define TPM_20_E_PCR                     _HRESULT_TYPEDEF_(0x80280127L)
+
+//
+// MessageId: TPM_20_E_PCR_CHANGED
+//
+// MessageText:
+//
+// TPM 2.0: PCR have changed since checked.
+//
+#define TPM_20_E_PCR_CHANGED             _HRESULT_TYPEDEF_(0x80280128L)
+
+//
+// MessageId: TPM_20_E_UPGRADE
+//
+// MessageText:
+//
+// TPM 2.0: The TPM is not in the right mode for upgrade.
+//
+#define TPM_20_E_UPGRADE                 _HRESULT_TYPEDEF_(0x8028012DL)
+
+//
+// MessageId: TPM_20_E_TOO_MANY_CONTEXTS
+//
+// MessageText:
+//
+// TPM 2.0: Context ID counter is at maximum.
+//
+#define TPM_20_E_TOO_MANY_CONTEXTS       _HRESULT_TYPEDEF_(0x8028012EL)
+
+//
+// MessageId: TPM_20_E_AUTH_UNAVAILABLE
+//
+// MessageText:
+//
+// TPM 2.0: authValue or authPolicy is not available for selected entity.
+//
+#define TPM_20_E_AUTH_UNAVAILABLE        _HRESULT_TYPEDEF_(0x8028012FL)
+
+//
+// MessageId: TPM_20_E_REBOOT
+//
+// MessageText:
+//
+// TPM 2.0: A _TPM_Init and Startup(CLEAR) is required before the TPM can resume operation.
+//
+#define TPM_20_E_REBOOT                  _HRESULT_TYPEDEF_(0x80280130L)
+
+//
+// MessageId: TPM_20_E_UNBALANCED
+//
+// MessageText:
+//
+// TPM 2.0: The protection algorithms (hash and symmetric) are not reasonably balanced. The digest size of the hash must be larger than the key size of the symmetric algorithm.
+//
+#define TPM_20_E_UNBALANCED              _HRESULT_TYPEDEF_(0x80280131L)
+
+//
+// MessageId: TPM_20_E_COMMAND_SIZE
+//
+// MessageText:
+//
+// TPM 2.0: The TPM command's commandSize value is inconsistent with contents of the command buffer; either the size is not the same as the bytes loaded by the hardware interface layer or the value is not large enough to hold a command header.
+//
+#define TPM_20_E_COMMAND_SIZE            _HRESULT_TYPEDEF_(0x80280142L)
+
+//
+// MessageId: TPM_20_E_COMMAND_CODE
+//
+// MessageText:
+//
+// TPM 2.0: Command code not supported.
+//
+#define TPM_20_E_COMMAND_CODE            _HRESULT_TYPEDEF_(0x80280143L)
+
+//
+// MessageId: TPM_20_E_AUTHSIZE
+//
+// MessageText:
+//
+// TPM 2.0: The value of authorizationSize is out of range or the number of octets in the authorization Area is greater than required.
+//
+#define TPM_20_E_AUTHSIZE                _HRESULT_TYPEDEF_(0x80280144L)
+
+//
+// MessageId: TPM_20_E_AUTH_CONTEXT
+//
+// MessageText:
+//
+// TPM 2.0: Use of an authorization session with a context command or another command that cannot have an authorization session.
+//
+#define TPM_20_E_AUTH_CONTEXT            _HRESULT_TYPEDEF_(0x80280145L)
+
+//
+// MessageId: TPM_20_E_NV_RANGE
+//
+// MessageText:
+//
+// TPM 2.0: NV offset+size is out of range.
+//
+#define TPM_20_E_NV_RANGE                _HRESULT_TYPEDEF_(0x80280146L)
+
+//
+// MessageId: TPM_20_E_NV_SIZE
+//
+// MessageText:
+//
+// TPM 2.0: Requested allocation size is larger than allowed.
+//
+#define TPM_20_E_NV_SIZE                 _HRESULT_TYPEDEF_(0x80280147L)
+
+//
+// MessageId: TPM_20_E_NV_LOCKED
+//
+// MessageText:
+//
+// TPM 2.0: NV access locked.
+//
+#define TPM_20_E_NV_LOCKED               _HRESULT_TYPEDEF_(0x80280148L)
+
+//
+// MessageId: TPM_20_E_NV_AUTHORIZATION
+//
+// MessageText:
+//
+// TPM 2.0: NV access authorization fails in command actions
+//
+#define TPM_20_E_NV_AUTHORIZATION        _HRESULT_TYPEDEF_(0x80280149L)
+
+//
+// MessageId: TPM_20_E_NV_UNINITIALIZED
+//
+// MessageText:
+//
+// TPM 2.0: An NV index is used before being initialized or the state saved by TPM2_Shutdown(STATE) could not be restored.
+//
+#define TPM_20_E_NV_UNINITIALIZED        _HRESULT_TYPEDEF_(0x8028014AL)
+
+//
+// MessageId: TPM_20_E_NV_SPACE
+//
+// MessageText:
+//
+// TPM 2.0: Insufficient space for NV allocation.
+//
+#define TPM_20_E_NV_SPACE                _HRESULT_TYPEDEF_(0x8028014BL)
+
+//
+// MessageId: TPM_20_E_NV_DEFINED
+//
+// MessageText:
+//
+// TPM 2.0: NV index or persistent object already defined.
+//
+#define TPM_20_E_NV_DEFINED              _HRESULT_TYPEDEF_(0x8028014CL)
+
+//
+// MessageId: TPM_20_E_BAD_CONTEXT
+//
+// MessageText:
+//
+// TPM 2.0: Context in TPM2_ContextLoad() is not valid.
+//
+#define TPM_20_E_BAD_CONTEXT             _HRESULT_TYPEDEF_(0x80280150L)
+
+//
+// MessageId: TPM_20_E_CPHASH
+//
+// MessageText:
+//
+// TPM 2.0: chHash value already set or not correct for use.
+//
+#define TPM_20_E_CPHASH                  _HRESULT_TYPEDEF_(0x80280151L)
+
+//
+// MessageId: TPM_20_E_PARENT
+//
+// MessageText:
+//
+// TPM 2.0: Handle for parent is not a valid parent.
+//
+#define TPM_20_E_PARENT                  _HRESULT_TYPEDEF_(0x80280152L)
+
+//
+// MessageId: TPM_20_E_NEEDS_TEST
+//
+// MessageText:
+//
+// TPM 2.0: Some function needs testing.
+//
+#define TPM_20_E_NEEDS_TEST              _HRESULT_TYPEDEF_(0x80280153L)
+
+//
+// MessageId: TPM_20_E_NO_RESULT
+//
+// MessageText:
+//
+// TPM 2.0: returned when an internal function cannot process a request due to an unspecified problem. This code is usually related to invalid parameters that are not properly filtered by the input unmarshaling code.
+//
+#define TPM_20_E_NO_RESULT               _HRESULT_TYPEDEF_(0x80280154L)
+
+//
+// MessageId: TPM_20_E_SENSITIVE
+//
+// MessageText:
+//
+// TPM 2.0: The sensitive area did not unmarshal correctly after decryption - this code is used in lieu of the other unmarshaling errors so that an attacker cannot determine where the unmarshaling error occurred.
+//
+#define TPM_20_E_SENSITIVE               _HRESULT_TYPEDEF_(0x80280155L)
 
 //
 // TPM vendor specific hardware errors {0x0400..0x04ff}
@@ -43754,6 +44842,132 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // The TPM is defending against dictionary attacks and is in a time-out period.
 //
 #define TPM_E_DEFEND_LOCK_RUNNING        _HRESULT_TYPEDEF_(0x80280803L)
+
+//
+// MessageId: TPM_20_E_CONTEXT_GAP
+//
+// MessageText:
+//
+// TPM 2.0: Gap for context ID is too large.
+//
+#define TPM_20_E_CONTEXT_GAP             _HRESULT_TYPEDEF_(0x80280901L)
+
+//
+// MessageId: TPM_20_E_OBJECT_MEMORY
+//
+// MessageText:
+//
+// TPM 2.0: Out of memory for object contexts.
+//
+#define TPM_20_E_OBJECT_MEMORY           _HRESULT_TYPEDEF_(0x80280902L)
+
+//
+// MessageId: TPM_20_E_SESSION_MEMORY
+//
+// MessageText:
+//
+// TPM 2.0: Out of memory for session contexts.
+//
+#define TPM_20_E_SESSION_MEMORY          _HRESULT_TYPEDEF_(0x80280903L)
+
+//
+// MessageId: TPM_20_E_MEMORY
+//
+// MessageText:
+//
+// TPM 2.0: Out of shared object/session memory or need space for internal operations.
+//
+#define TPM_20_E_MEMORY                  _HRESULT_TYPEDEF_(0x80280904L)
+
+//
+// MessageId: TPM_20_E_SESSION_HANDLES
+//
+// MessageText:
+//
+// TPM 2.0: Out of session handles - a session must be flushed before a nes session may be created.
+//
+#define TPM_20_E_SESSION_HANDLES         _HRESULT_TYPEDEF_(0x80280905L)
+
+//
+// MessageId: TPM_20_E_OBJECT_HANDLES
+//
+// MessageText:
+//
+// TPM 2.0: Out of object handles - the handle space for objects is depleted and a reboot is required.
+//
+#define TPM_20_E_OBJECT_HANDLES          _HRESULT_TYPEDEF_(0x80280906L)
+
+//
+// MessageId: TPM_20_E_LOCALITY
+//
+// MessageText:
+//
+// TPM 2.0: Bad locality.
+//
+#define TPM_20_E_LOCALITY                _HRESULT_TYPEDEF_(0x80280907L)
+
+//
+// MessageId: TPM_20_E_YIELDED
+//
+// MessageText:
+//
+// TPM 2.0: The TPM has suspended operation on the command; forward progress was made and the command may be retried.
+//
+#define TPM_20_E_YIELDED                 _HRESULT_TYPEDEF_(0x80280908L)
+
+//
+// MessageId: TPM_20_E_CANCELED
+//
+// MessageText:
+//
+// TPM 2.0: The command was canceled.
+//
+#define TPM_20_E_CANCELED                _HRESULT_TYPEDEF_(0x80280909L)
+
+//
+// MessageId: TPM_20_E_TESTING
+//
+// MessageText:
+//
+// TPM 2.0: TPM is performing self-tests.
+//
+#define TPM_20_E_TESTING                 _HRESULT_TYPEDEF_(0x8028090AL)
+
+//
+// MessageId: TPM_20_E_NV_RATE
+//
+// MessageText:
+//
+// TPM 2.0: The TPM is rate-limiting accesses to prevent wearout of NV
+//
+#define TPM_20_E_NV_RATE                 _HRESULT_TYPEDEF_(0x80280920L)
+
+//
+// MessageId: TPM_20_E_LOCKOUT
+//
+// MessageText:
+//
+// TPM 2.0: Authorization for objects subject to DA protection are not allowed at this time because the TPM is in DA lockout mode.
+//
+#define TPM_20_E_LOCKOUT                 _HRESULT_TYPEDEF_(0x80280921L)
+
+//
+// MessageId: TPM_20_E_RETRY
+//
+// MessageText:
+//
+// TPM 2.0: The TPM was not able to start the command.
+//
+#define TPM_20_E_RETRY                   _HRESULT_TYPEDEF_(0x80280922L)
+
+//
+// MessageId: TPM_20_E_NV_UNAVAILABLE
+//
+// MessageText:
+//
+// TPM 2.0: the command may require writing of NV and NV is not current accessible.
+//
+#define TPM_20_E_NV_UNAVAILABLE          _HRESULT_TYPEDEF_(0x80280923L)
 
 //
 // TPM Base Services error codes {0x4000..0x40ff}
@@ -44237,6 +45451,132 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // The requested operation was blocked by current TPM policy. Please contact your system administrator for assistance.
 //
 #define TPMAPI_E_POLICY_DENIES_OPERATION _HRESULT_TYPEDEF_(0x8029011EL)
+
+//
+// MessageId: TPMAPI_E_NV_BITS_NOT_DEFINED
+//
+// MessageText:
+//
+// The Windows TPM NV Bits index is not defined.
+//
+#define TPMAPI_E_NV_BITS_NOT_DEFINED     _HRESULT_TYPEDEF_(0x8029011FL)
+
+//
+// MessageId: TPMAPI_E_NV_BITS_NOT_READY
+//
+// MessageText:
+//
+// The Windows TPM NV Bits index is not ready for use.
+//
+#define TPMAPI_E_NV_BITS_NOT_READY       _HRESULT_TYPEDEF_(0x80290120L)
+
+//
+// MessageId: TPMAPI_E_SEALING_KEY_NOT_AVAILABLE
+//
+// MessageText:
+//
+// The TPM key that was used to seal the data is no longer available.
+//
+#define TPMAPI_E_SEALING_KEY_NOT_AVAILABLE _HRESULT_TYPEDEF_(0x80290121L)
+
+//
+// MessageId: TPMAPI_E_NO_AUTHORIZATION_CHAIN_FOUND
+//
+// MessageText:
+//
+// An authorization chain could not be found that authorizes the PolicyAuthorize unseal.
+//
+#define TPMAPI_E_NO_AUTHORIZATION_CHAIN_FOUND _HRESULT_TYPEDEF_(0x80290122L)
+
+//
+// MessageId: TPMAPI_E_SVN_COUNTER_NOT_AVAILABLE
+//
+// MessageText:
+//
+// The SVN counter to which the authorization was bound is not available.
+//
+#define TPMAPI_E_SVN_COUNTER_NOT_AVAILABLE _HRESULT_TYPEDEF_(0x80290123L)
+
+//
+// MessageId: TPMAPI_E_OWNER_AUTH_NOT_NULL
+//
+// MessageText:
+//
+// The TPM Storage hierarchy (Owner) auth value is required to be NULL for this operation.
+//
+#define TPMAPI_E_OWNER_AUTH_NOT_NULL     _HRESULT_TYPEDEF_(0x80290124L)
+
+//
+// MessageId: TPMAPI_E_ENDORSEMENT_AUTH_NOT_NULL
+//
+// MessageText:
+//
+// The TPM Endorsement hierarchy auth value is required to be NULL for this operation.
+//
+#define TPMAPI_E_ENDORSEMENT_AUTH_NOT_NULL _HRESULT_TYPEDEF_(0x80290125L)
+
+//
+// MessageId: TPMAPI_E_AUTHORIZATION_REVOKED
+//
+// MessageText:
+//
+// The authorization to perform this operation has been revoked.
+//
+#define TPMAPI_E_AUTHORIZATION_REVOKED   _HRESULT_TYPEDEF_(0x80290126L)
+
+//
+// MessageId: TPMAPI_E_MALFORMED_AUTHORIZATION_KEY
+//
+// MessageText:
+//
+// The authorization public key is malformed.
+//
+#define TPMAPI_E_MALFORMED_AUTHORIZATION_KEY _HRESULT_TYPEDEF_(0x80290127L)
+
+//
+// MessageId: TPMAPI_E_AUTHORIZING_KEY_NOT_SUPPORTED
+//
+// MessageText:
+//
+// The authorization public key is not supported.
+//
+#define TPMAPI_E_AUTHORIZING_KEY_NOT_SUPPORTED _HRESULT_TYPEDEF_(0x80290128L)
+
+//
+// MessageId: TPMAPI_E_INVALID_AUTHORIZATION_SIGNATURE
+//
+// MessageText:
+//
+// The authorization signature is invalid.
+//
+#define TPMAPI_E_INVALID_AUTHORIZATION_SIGNATURE _HRESULT_TYPEDEF_(0x80290129L)
+
+//
+// MessageId: TPMAPI_E_MALFORMED_AUTHORIZATION_POLICY
+//
+// MessageText:
+//
+// The authorization policy is malformed.
+//
+#define TPMAPI_E_MALFORMED_AUTHORIZATION_POLICY _HRESULT_TYPEDEF_(0x8029012AL)
+
+//
+// MessageId: TPMAPI_E_MALFORMED_AUTHORIZATION_OTHER
+//
+// MessageText:
+//
+// The authorization data is malformed.
+//
+#define TPMAPI_E_MALFORMED_AUTHORIZATION_OTHER _HRESULT_TYPEDEF_(0x8029012BL)
+
+//
+// MessageId: TPMAPI_E_SEALING_KEY_CHANGED
+//
+// MessageText:
+//
+// The key used to unseal this data has changed since sealing the data. This may be the result of a TPM clear.
+//
+#define TPMAPI_E_SEALING_KEY_CHANGED     _HRESULT_TYPEDEF_(0x8029012CL)
 
 //
 // TBS implementation error codes {0x0200..0x02ff}
@@ -44822,6 +46162,42 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // The RSA key creation is blocked on this TPM due to known security vulnerabilities.
 //
 #define TPM_E_PCP_IFX_RSA_KEY_CREATION_BLOCKED _HRESULT_TYPEDEF_(0x8029041FL)
+
+//
+// MessageId: TPM_E_PCP_TICKET_MISSING
+//
+// MessageText:
+//
+// A ticket required to use a key was not provided.
+//
+#define TPM_E_PCP_TICKET_MISSING         _HRESULT_TYPEDEF_(0x80290420L)
+
+//
+// MessageId: TPM_E_PCP_RAW_POLICY_NOT_SUPPORTED
+//
+// MessageText:
+//
+// This key has a raw policy so the KSP can't authenticate against it.
+//
+#define TPM_E_PCP_RAW_POLICY_NOT_SUPPORTED _HRESULT_TYPEDEF_(0x80290421L)
+
+//
+// MessageId: TPM_E_PCP_KEY_HANDLE_INVALIDATED
+//
+// MessageText:
+//
+// The TPM key's handle was unexpectedly invalidated due to a hardware or firmware issue.
+//
+#define TPM_E_PCP_KEY_HANDLE_INVALIDATED _HRESULT_TYPEDEF_(0x80290422L)
+
+//
+// MessageId: TPM_E_PCP_UNSUPPORTED_PSS_SALT
+//
+// MessageText:
+//
+// The requested salt size for signing with RSAPSS does not match what the TPM uses.
+//
+#define TPM_E_PCP_UNSUPPORTED_PSS_SALT   _HRESULT_TYPEDEF_(0x40290423L)
 
 //
 // Misc error codes in TPM code {0x0500..0x05ff}
@@ -48328,6 +49704,15 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 #define ERROR_NDIS_REINIT_REQUIRED       _NDIS_ERROR_TYPEDEF_(0x80340030L)
 
+//
+// MessageId: ERROR_NDIS_NO_QUEUES
+//
+// MessageText:
+//
+// There are not enough queues to complete the operation.
+//
+#define ERROR_NDIS_NO_QUEUES             _NDIS_ERROR_TYPEDEF_(0x80340031L)
+
 
 //
 // NDIS error codes (802.11 wireless LAN)
@@ -48683,7 +50068,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The physical connection being used for debuggging has not recorded any receive activity since the last operation.
+// The physical connection being used for debugging has not recorded any receive activity since the last operation.
 //
 #define ERROR_HV_INACTIVE                _NDIS_ERROR_TYPEDEF_(0xC035001CL)
 
@@ -48868,6 +50253,15 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 #define ERROR_HV_NOT_ALLOWED_WITH_NESTED_VIRT_ACTIVE _NDIS_ERROR_TYPEDEF_(0xC0350072L)
 
 //
+// MessageId: ERROR_HV_INSUFFICIENT_ROOT_MEMORY
+//
+// MessageText:
+//
+// There is not enough memory in the root partition's pool to complete the operation.
+//
+#define ERROR_HV_INSUFFICIENT_ROOT_MEMORY _NDIS_ERROR_TYPEDEF_(0xC0350073L)
+
+//
 // MessageId: ERROR_HV_NOT_PRESENT
 //
 // MessageText:
@@ -48877,7 +50271,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 #define ERROR_HV_NOT_PRESENT             _NDIS_ERROR_TYPEDEF_(0xC0351000L)
 
 //
-// Virtualization error codes - these codes are used by the Virtualization Infrustructure Driver (VID) and other components
+// Virtualization error codes - these codes are used by the Virtualization Infrastructure Driver (VID) and other components
 //                              of the virtualization stack.
 //
 // VID errors (0x0001 - 0x00ff)
@@ -49269,7 +50663,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The compute system unexpectedly terminated while starting.
+// The virtual machine or container exited unexpectedly while starting.
 //
 #define ERROR_VMCOMPUTE_TERMINATED_DURING_START _NDIS_ERROR_TYPEDEF_(0xC0370100L)
 
@@ -49278,7 +50672,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The operating system of the container does not match the operating system of the host.
+// The container operating system does not match the host operating system.
 //
 #define ERROR_VMCOMPUTE_IMAGE_MISMATCH   _NDIS_ERROR_TYPEDEF_(0xC0370101L)
 
@@ -49287,7 +50681,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A Virtual Machine could not be started because Hyper-V is not installed.
+// The virtual machine could not be started because a required feature is not installed.
 //
 #define ERROR_VMCOMPUTE_HYPERV_NOT_INSTALLED _NDIS_ERROR_TYPEDEF_(0xC0370102L)
 
@@ -49314,7 +50708,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The requested compute system operation is not valid in the current state.
+// The requested virtual machine or container operation is not valid in the current state.
 //
 #define ERROR_VMCOMPUTE_INVALID_STATE    _NDIS_ERROR_TYPEDEF_(0xC0370105L)
 
@@ -49323,7 +50717,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The compute system exited unexpectedly.
+// The virtual machine or container exited unexpectedly.
 //
 #define ERROR_VMCOMPUTE_UNEXPECTED_EXIT  _NDIS_ERROR_TYPEDEF_(0xC0370106L)
 
@@ -49332,7 +50726,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The compute system was forcefully terminated.
+// The virtual machine or container was forcefully exited.
 //
 #define ERROR_VMCOMPUTE_TERMINATED       _NDIS_ERROR_TYPEDEF_(0xC0370107L)
 
@@ -49341,7 +50735,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A connection could not be established with the Virtual Machine hosting the Container.
+// A connection could not be established with the container or virtual machine.
 //
 #define ERROR_VMCOMPUTE_CONNECT_FAILED   _NDIS_ERROR_TYPEDEF_(0xC0370108L)
 
@@ -49350,7 +50744,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The operation timed out because a response was not received from the Virtual Machine hosting the Container.
+// The operation timed out because a response was not received from the virtual machine or container.
 //
 #define ERROR_VMCOMPUTE_TIMEOUT          _NDIS_ERROR_TYPEDEF_(0xC0370109L)
 
@@ -49359,7 +50753,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The connection with the Virtual Machine hosting the container was closed.
+// The connection with the virtual machine or container was closed.
 //
 #define ERROR_VMCOMPUTE_CONNECTION_CLOSED _NDIS_ERROR_TYPEDEF_(0xC037010AL)
 
@@ -49368,7 +50762,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// An unknown internal message was received by the Hyper-V Compute Service.
+// An unknown internal message was received by the virtual machine or container.
 //
 #define ERROR_VMCOMPUTE_UNKNOWN_MESSAGE  _NDIS_ERROR_TYPEDEF_(0xC037010BL)
 
@@ -49377,7 +50771,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The communication protocol version between the Hyper-V Host and Guest Compute Services is not supported.
+// The virtual machine or container does not support an available version of the communication protocol with the host.
 //
 #define ERROR_VMCOMPUTE_UNSUPPORTED_PROTOCOL_VERSION _NDIS_ERROR_TYPEDEF_(0xC037010CL)
 
@@ -49386,7 +50780,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The JSON document is invalid.
+// The virtual machine or container JSON document is invalid.
 //
 #define ERROR_VMCOMPUTE_INVALID_JSON     _NDIS_ERROR_TYPEDEF_(0xC037010DL)
 
@@ -49395,7 +50789,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A Compute System with the specified identifier does not exist.
+// A virtual machine or container with the specified identifier does not exist.
 //
 #define ERROR_VMCOMPUTE_SYSTEM_NOT_FOUND _NDIS_ERROR_TYPEDEF_(0xC037010EL)
 
@@ -49404,7 +50798,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A Compute System with the specified identifier already exists.
+// A virtual machine or container with the specified identifier already exists.
 //
 #define ERROR_VMCOMPUTE_SYSTEM_ALREADY_EXISTS _NDIS_ERROR_TYPEDEF_(0xC037010FL)
 
@@ -49413,7 +50807,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The Compute System with the specified identifier did already stop.
+// The virtual machine or container with the specified identifier is not running.
 //
 #define ERROR_VMCOMPUTE_SYSTEM_ALREADY_STOPPED _NDIS_ERROR_TYPEDEF_(0xC0370110L)
 
@@ -49422,7 +50816,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// A communication protocol error has occurred between the Hyper-V Host and Guest Compute Service.
+// A communication protocol error has occurred between the virtual machine or container and the host.
 //
 #define ERROR_VMCOMPUTE_PROTOCOL_ERROR   _NDIS_ERROR_TYPEDEF_(0xC0370111L)
 
@@ -49431,7 +50825,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The container's image contains a layer with an unrecognized format.
+// The container image contains a layer with an unrecognized format.
 //
 #define ERROR_VMCOMPUTE_INVALID_LAYER    _NDIS_ERROR_TYPEDEF_(0xC0370112L)
 
@@ -49443,6 +50837,252 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // To use this container image, you must join the Windows Insider Program. Please see https://go.microsoft.com/fwlink/?linkid=850659 for more information.
 //
 #define ERROR_VMCOMPUTE_WINDOWS_INSIDER_REQUIRED _NDIS_ERROR_TYPEDEF_(0xC0370113L)
+
+//
+// Host Compute System error codes (0x0100-0x01ff HRESULT codes)
+//
+//
+// MessageId: HCS_E_TERMINATED_DURING_START
+//
+// MessageText:
+//
+// The virtual machine or container exited unexpectedly while starting.
+//
+#define HCS_E_TERMINATED_DURING_START    _HRESULT_TYPEDEF_(0x80370100L)
+
+//
+// MessageId: HCS_E_IMAGE_MISMATCH
+//
+// MessageText:
+//
+// The container operating system does not match the host operating system.
+//
+#define HCS_E_IMAGE_MISMATCH             _HRESULT_TYPEDEF_(0x80370101L)
+
+//
+// MessageId: HCS_E_HYPERV_NOT_INSTALLED
+//
+// MessageText:
+//
+// The virtual machine could not be started because a required feature is not installed.
+//
+#define HCS_E_HYPERV_NOT_INSTALLED       _HRESULT_TYPEDEF_(0x80370102L)
+
+//
+// MessageId: HCS_E_INVALID_STATE
+//
+// MessageText:
+//
+// The requested virtual machine or container operation is not valid in the current state.
+//
+#define HCS_E_INVALID_STATE              _HRESULT_TYPEDEF_(0x80370105L)
+
+//
+// MessageId: HCS_E_UNEXPECTED_EXIT
+//
+// MessageText:
+//
+// The virtual machine or container exited unexpectedly.
+//
+#define HCS_E_UNEXPECTED_EXIT            _HRESULT_TYPEDEF_(0x80370106L)
+
+//
+// MessageId: HCS_E_TERMINATED
+//
+// MessageText:
+//
+// The virtual machine or container was forcefully exited.
+//
+#define HCS_E_TERMINATED                 _HRESULT_TYPEDEF_(0x80370107L)
+
+//
+// MessageId: HCS_E_CONNECT_FAILED
+//
+// MessageText:
+//
+// A connection could not be established with the container or virtual machine.
+//
+#define HCS_E_CONNECT_FAILED             _HRESULT_TYPEDEF_(0x80370108L)
+
+//
+// MessageId: HCS_E_CONNECTION_TIMEOUT
+//
+// MessageText:
+//
+// The operation timed out because a response was not received from the virtual machine or container.
+//
+#define HCS_E_CONNECTION_TIMEOUT         _HRESULT_TYPEDEF_(0x80370109L)
+
+//
+// MessageId: HCS_E_CONNECTION_CLOSED
+//
+// MessageText:
+//
+// The connection with the virtual machine or container was closed.
+//
+#define HCS_E_CONNECTION_CLOSED          _HRESULT_TYPEDEF_(0x8037010AL)
+
+//
+// MessageId: HCS_E_UNKNOWN_MESSAGE
+//
+// MessageText:
+//
+// An unknown internal message was received by the virtual machine or container.
+//
+#define HCS_E_UNKNOWN_MESSAGE            _HRESULT_TYPEDEF_(0x8037010BL)
+
+//
+// MessageId: HCS_E_UNSUPPORTED_PROTOCOL_VERSION
+//
+// MessageText:
+//
+// The virtual machine or container does not support an available version of the communication protocol with the host.
+//
+#define HCS_E_UNSUPPORTED_PROTOCOL_VERSION _HRESULT_TYPEDEF_(0x8037010CL)
+
+//
+// MessageId: HCS_E_INVALID_JSON
+//
+// MessageText:
+//
+// The virtual machine or container JSON document is invalid.
+//
+#define HCS_E_INVALID_JSON               _HRESULT_TYPEDEF_(0x8037010DL)
+
+//
+// MessageId: HCS_E_SYSTEM_NOT_FOUND
+//
+// MessageText:
+//
+// A virtual machine or container with the specified identifier does not exist.
+//
+#define HCS_E_SYSTEM_NOT_FOUND           _HRESULT_TYPEDEF_(0x8037010EL)
+
+//
+// MessageId: HCS_E_SYSTEM_ALREADY_EXISTS
+//
+// MessageText:
+//
+// A virtual machine or container with the specified identifier already exists.
+//
+#define HCS_E_SYSTEM_ALREADY_EXISTS      _HRESULT_TYPEDEF_(0x8037010FL)
+
+//
+// MessageId: HCS_E_SYSTEM_ALREADY_STOPPED
+//
+// MessageText:
+//
+// The virtual machine or container with the specified identifier is not running.
+//
+#define HCS_E_SYSTEM_ALREADY_STOPPED     _HRESULT_TYPEDEF_(0x80370110L)
+
+//
+// MessageId: HCS_E_PROTOCOL_ERROR
+//
+// MessageText:
+//
+// A communication protocol error has occurred between the virtual machine or container and the host.
+//
+#define HCS_E_PROTOCOL_ERROR             _HRESULT_TYPEDEF_(0x80370111L)
+
+//
+// MessageId: HCS_E_INVALID_LAYER
+//
+// MessageText:
+//
+// The container image contains a layer with an unrecognized format.
+//
+#define HCS_E_INVALID_LAYER              _HRESULT_TYPEDEF_(0x80370112L)
+
+//
+// MessageId: HCS_E_WINDOWS_INSIDER_REQUIRED
+//
+// MessageText:
+//
+// To use this container image, you must join the Windows Insider Program. Please see https://go.microsoft.com/fwlink/?linkid=850659 for more information.
+//
+#define HCS_E_WINDOWS_INSIDER_REQUIRED   _HRESULT_TYPEDEF_(0x80370113L)
+
+//
+// MessageId: HCS_E_SERVICE_NOT_AVAILABLE
+//
+// MessageText:
+//
+// The operation could not be started because a required feature is not installed.
+//
+#define HCS_E_SERVICE_NOT_AVAILABLE      _HRESULT_TYPEDEF_(0x80370114L)
+
+//
+// MessageId: HCS_E_OPERATION_NOT_STARTED
+//
+// MessageText:
+//
+// The operation has not started.
+//
+#define HCS_E_OPERATION_NOT_STARTED      _HRESULT_TYPEDEF_(0x80370115L)
+
+//
+// MessageId: HCS_E_OPERATION_ALREADY_STARTED
+//
+// MessageText:
+//
+// The operation is already running.
+//
+#define HCS_E_OPERATION_ALREADY_STARTED  _HRESULT_TYPEDEF_(0x80370116L)
+
+//
+// MessageId: HCS_E_OPERATION_PENDING
+//
+// MessageText:
+//
+// The operation is still running.
+//
+#define HCS_E_OPERATION_PENDING          _HRESULT_TYPEDEF_(0x80370117L)
+
+//
+// MessageId: HCS_E_OPERATION_TIMEOUT
+//
+// MessageText:
+//
+// The operation did not complete in time.
+//
+#define HCS_E_OPERATION_TIMEOUT          _HRESULT_TYPEDEF_(0x80370118L)
+
+//
+// MessageId: HCS_E_OPERATION_SYSTEM_CALLBACK_ALREADY_SET
+//
+// MessageText:
+//
+// An event callback has already been registered on this handle. 
+//
+#define HCS_E_OPERATION_SYSTEM_CALLBACK_ALREADY_SET _HRESULT_TYPEDEF_(0x80370119L)
+
+//
+// MessageId: HCS_E_OPERATION_RESULT_ALLOCATION_FAILED
+//
+// MessageText:
+//
+// Not enough memory available to return the result of the operation.
+//
+#define HCS_E_OPERATION_RESULT_ALLOCATION_FAILED _HRESULT_TYPEDEF_(0x8037011AL)
+
+//
+// MessageId: HCS_E_ACCESS_DENIED
+//
+// MessageText:
+//
+// Insufficient privileges. Only administrators or users that are members of the Hyper-V Administrators user group are permitted to access virtual machines or containers. To add yourself to the Hyper-V Administrators user group, please see https://aka.ms/hcsadmin for more information.
+//
+#define HCS_E_ACCESS_DENIED              _HRESULT_TYPEDEF_(0x8037011BL)
+
+//
+// MessageId: HCS_E_GUEST_CRITICAL_ERROR
+//
+// MessageText:
+//
+// The virtual machine or container reported a critical error and was stopped or restarted.
+//
+#define HCS_E_GUEST_CRITICAL_ERROR       _HRESULT_TYPEDEF_(0x8037011CL)
 
 //
 // Virtual networking errors (0x0200-0x02ff)
@@ -49560,6 +51200,27 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // A virtual processor register with the specified name does not exist.
 //
 #define WHV_E_INVALID_VP_REGISTER_NAME   _HRESULT_TYPEDEF_(0x80370309L)
+
+//
+// Virtual storage error codes (0x0400-0x04ff)
+//
+//
+// MessageId: ERROR_VSMB_SAVED_STATE_FILE_NOT_FOUND
+//
+// MessageText:
+//
+// Cannot restore this virtual machine because a file read from the vSMB saved state data could not be found. Delete the saved state data and then try to start the virtual machine.
+//
+#define ERROR_VSMB_SAVED_STATE_FILE_NOT_FOUND _NDIS_ERROR_TYPEDEF_(0xC0370400L)
+
+//
+// MessageId: ERROR_VSMB_SAVED_STATE_CORRUPT
+//
+// MessageText:
+//
+// Cannot restore this virtual machine because the vSMB saved state data cannot be read. Delete the saved state data and then try to start the virtual machine.
+//
+#define ERROR_VSMB_SAVED_STATE_CORRUPT   _NDIS_ERROR_TYPEDEF_(0xC0370401L)
 
 
 //
@@ -49694,7 +51355,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The disk layout contains non-basic partitions which appear after basic paritions. This is an invalid disk layout.
+// The disk layout contains non-basic partitions which appear after basic partitions. This is an invalid disk layout.
 //
 #define ERROR_VOLMGR_DISK_LAYOUT_NON_BASIC_BETWEEN_BASIC_PARTITIONS _NDIS_ERROR_TYPEDEF_(0xC038000CL)
 
@@ -49712,7 +51373,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The disk layout contains partitions which are samller than the minimum size.
+// The disk layout contains partitions which are smaller than the minimum size.
 //
 #define ERROR_VOLMGR_DISK_LAYOUT_PARTITIONS_TOO_SMALL _NDIS_ERROR_TYPEDEF_(0xC038000EL)
 
@@ -49847,7 +51508,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The specifed volume extent is not sector aligned.
+// The specified volume extent is not sector aligned.
 //
 #define ERROR_VOLMGR_EXTENT_NOT_SECTOR_ALIGNED _NDIS_ERROR_TYPEDEF_(0xC038001DL)
 
@@ -49856,7 +51517,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The specified parition overlaps an EBR (the first track of an extended partition on a MBR disks).
+// The specified partition overlaps an EBR (the first track of an extended partition on an MBR disk).
 //
 #define ERROR_VOLMGR_EXTENT_OVERLAPS_EBR_PARTITION _NDIS_ERROR_TYPEDEF_(0xC038001EL)
 
@@ -50859,278 +52520,377 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 
 //
 // =======================================================
-// Host Network Service (HNS) Error Messages
+// Host Network Service (HNS/GNS) Error Messages
 // =======================================================
 //
 //
-// MessageId: HNS_NETWORK_NOT_FOUND
+// MessageId: HCN_E_NETWORK_NOT_FOUND
 //
 // MessageText:
 //
 // The network was not found.
 //
-#define HNS_NETWORK_NOT_FOUND            _HRESULT_TYPEDEF_(0xC03B0001L)
+#define HCN_E_NETWORK_NOT_FOUND          _HRESULT_TYPEDEF_(0x803B0001L)
 
 //
-// MessageId: HNS_ENDPOINT_NOT_FOUND
+// MessageId: HCN_E_ENDPOINT_NOT_FOUND
 //
 // MessageText:
 //
 // The endpoint was not found.
 //
-#define HNS_ENDPOINT_NOT_FOUND           _HRESULT_TYPEDEF_(0xC03B0002L)
+#define HCN_E_ENDPOINT_NOT_FOUND         _HRESULT_TYPEDEF_(0x803B0002L)
 
 //
-// MessageId: HNS_LAYER_NOT_FOUND
+// MessageId: HCN_E_LAYER_NOT_FOUND
 //
 // MessageText:
 //
 // The network's underlying layer was not found.
 //
-#define HNS_LAYER_NOT_FOUND              _HRESULT_TYPEDEF_(0xC03B0003L)
+#define HCN_E_LAYER_NOT_FOUND            _HRESULT_TYPEDEF_(0x803B0003L)
 
 //
-// MessageId: HNS_SWITCH_NOT_FOUND
+// MessageId: HCN_E_SWITCH_NOT_FOUND
 //
 // MessageText:
 //
 // The virtual switch was not found.
 //
-#define HNS_SWITCH_NOT_FOUND             _HRESULT_TYPEDEF_(0xC03B0004L)
+#define HCN_E_SWITCH_NOT_FOUND           _HRESULT_TYPEDEF_(0x803B0004L)
 
 //
-// MessageId: HNS_SUBNET_NOT_FOUND
+// MessageId: HCN_E_SUBNET_NOT_FOUND
 //
 // MessageText:
 //
 // The network does not have a subnet for this endpoint.
 //
-#define HNS_SUBNET_NOT_FOUND             _HRESULT_TYPEDEF_(0xC03B0005L)
+#define HCN_E_SUBNET_NOT_FOUND           _HRESULT_TYPEDEF_(0x803B0005L)
 
 //
-// MessageId: HNS_ADAPTER_NOT_FOUND
+// MessageId: HCN_E_ADAPTER_NOT_FOUND
 //
 // MessageText:
 //
 // An adapter was not found.
 //
-#define HNS_ADAPTER_NOT_FOUND            _HRESULT_TYPEDEF_(0xC03B0006L)
+#define HCN_E_ADAPTER_NOT_FOUND          _HRESULT_TYPEDEF_(0x803B0006L)
 
 //
-// MessageId: HNS_PORT_NOT_FOUND
+// MessageId: HCN_E_PORT_NOT_FOUND
 //
 // MessageText:
 //
 // The switch-port was not found.
 //
-#define HNS_PORT_NOT_FOUND               _HRESULT_TYPEDEF_(0xC03B0007L)
+#define HCN_E_PORT_NOT_FOUND             _HRESULT_TYPEDEF_(0x803B0007L)
 
 //
-// MessageId: HNS_POLICY_NOT_FOUND
+// MessageId: HCN_E_POLICY_NOT_FOUND
 //
 // MessageText:
 //
 // An expected policy was not found.
 //
-#define HNS_POLICY_NOT_FOUND             _HRESULT_TYPEDEF_(0xC03B0008L)
+#define HCN_E_POLICY_NOT_FOUND           _HRESULT_TYPEDEF_(0x803B0008L)
 
 //
-// MessageId: HNS_VFP_PORTSETTING_NOT_FOUND
+// MessageId: HCN_E_VFP_PORTSETTING_NOT_FOUND
 //
 // MessageText:
 //
 // A required VFP port setting was not found.
 //
-#define HNS_VFP_PORTSETTING_NOT_FOUND    _HRESULT_TYPEDEF_(0xC03B0009L)
+#define HCN_E_VFP_PORTSETTING_NOT_FOUND  _HRESULT_TYPEDEF_(0x803B0009L)
 
 //
-// MessageId: HNS_INVALID_NETWORK
+// MessageId: HCN_E_INVALID_NETWORK
 //
 // MessageText:
 //
 // The provided network configuration is invalid or missing parameters.
 //
-#define HNS_INVALID_NETWORK              _HRESULT_TYPEDEF_(0xC03B000AL)
+#define HCN_E_INVALID_NETWORK            _HRESULT_TYPEDEF_(0x803B000AL)
 
 //
-// MessageId: HNS_INVALID_NETWORK_TYPE
+// MessageId: HCN_E_INVALID_NETWORK_TYPE
 //
 // MessageText:
 //
 // Invalid network type.
 //
-#define HNS_INVALID_NETWORK_TYPE         _HRESULT_TYPEDEF_(0xC03B000BL)
+#define HCN_E_INVALID_NETWORK_TYPE       _HRESULT_TYPEDEF_(0x803B000BL)
 
 //
-// MessageId: HNS_INVALID_ENDPOINT
+// MessageId: HCN_E_INVALID_ENDPOINT
 //
 // MessageText:
 //
 // The provided endpoint configuration is invalid or missing parameters.
 //
-#define HNS_INVALID_ENDPOINT             _HRESULT_TYPEDEF_(0xC03B000CL)
+#define HCN_E_INVALID_ENDPOINT           _HRESULT_TYPEDEF_(0x803B000CL)
 
 //
-// MessageId: HNS_INVALID_POLICY
+// MessageId: HCN_E_INVALID_POLICY
 //
 // MessageText:
 //
 // The provided policy configuration is invalid or missing parameters.
 //
-#define HNS_INVALID_POLICY               _HRESULT_TYPEDEF_(0xC03B000DL)
+#define HCN_E_INVALID_POLICY             _HRESULT_TYPEDEF_(0x803B000DL)
 
 //
-// MessageId: HNS_INVALID_POLICY_TYPE
+// MessageId: HCN_E_INVALID_POLICY_TYPE
 //
 // MessageText:
 //
 // Invalid policy type.
 //
-#define HNS_INVALID_POLICY_TYPE          _HRESULT_TYPEDEF_(0xC03B000EL)
+#define HCN_E_INVALID_POLICY_TYPE        _HRESULT_TYPEDEF_(0x803B000EL)
 
 //
-// MessageId: HNS_INVALID_REMOTE_ENDPOINT_OPERATION
+// MessageId: HCN_E_INVALID_REMOTE_ENDPOINT_OPERATION
 //
 // MessageText:
 //
 // This requested operation is invalid for a remote endpoint.
 //
-#define HNS_INVALID_REMOTE_ENDPOINT_OPERATION _HRESULT_TYPEDEF_(0xC03B000FL)
+#define HCN_E_INVALID_REMOTE_ENDPOINT_OPERATION _HRESULT_TYPEDEF_(0x803B000FL)
 
 //
-// MessageId: HNS_NETWORK_ALREADY_EXISTS
+// MessageId: HCN_E_NETWORK_ALREADY_EXISTS
 //
 // MessageText:
 //
 // A network with this name already exists.
 //
-#define HNS_NETWORK_ALREADY_EXISTS       _HRESULT_TYPEDEF_(0xC03B0010L)
+#define HCN_E_NETWORK_ALREADY_EXISTS     _HRESULT_TYPEDEF_(0x803B0010L)
 
 //
-// MessageId: HNS_LAYER_ALREADY_EXISTS
+// MessageId: HCN_E_LAYER_ALREADY_EXISTS
 //
 // MessageText:
 //
 // A network with this name already exists.
 //
-#define HNS_LAYER_ALREADY_EXISTS         _HRESULT_TYPEDEF_(0xC03B0011L)
+#define HCN_E_LAYER_ALREADY_EXISTS       _HRESULT_TYPEDEF_(0x803B0011L)
 
 //
-// MessageId: HNS_POLICY_ALREADY_EXISTS
+// MessageId: HCN_E_POLICY_ALREADY_EXISTS
 //
 // MessageText:
 //
 // Policy information already exists on this object.
 //
-#define HNS_POLICY_ALREADY_EXISTS        _HRESULT_TYPEDEF_(0xC03B0012L)
+#define HCN_E_POLICY_ALREADY_EXISTS      _HRESULT_TYPEDEF_(0x803B0012L)
 
 //
-// MessageId: HNS_PORT_ALREADY_EXISTS
+// MessageId: HCN_E_PORT_ALREADY_EXISTS
 //
 // MessageText:
 //
 // The specified port already exists.
 //
-#define HNS_PORT_ALREADY_EXISTS          _HRESULT_TYPEDEF_(0xC03B0013L)
+#define HCN_E_PORT_ALREADY_EXISTS        _HRESULT_TYPEDEF_(0x803B0013L)
 
 //
-// MessageId: HNS_ENDPOINT_ALREADY_ATTACHED
+// MessageId: HCN_E_ENDPOINT_ALREADY_ATTACHED
 //
 // MessageText:
 //
 // This endpoint is already attached to the switch.
 //
-#define HNS_ENDPOINT_ALREADY_ATTACHED    _HRESULT_TYPEDEF_(0xC03B0014L)
+#define HCN_E_ENDPOINT_ALREADY_ATTACHED  _HRESULT_TYPEDEF_(0x803B0014L)
 
 //
-// MessageId: HNS_REQUEST_UNSUPPORTED
+// MessageId: HCN_E_REQUEST_UNSUPPORTED
 //
 // MessageText:
 //
 // The specified request is unsupported.
 //
-#define HNS_REQUEST_UNSUPPORTED          _HRESULT_TYPEDEF_(0xC03B0015L)
+#define HCN_E_REQUEST_UNSUPPORTED        _HRESULT_TYPEDEF_(0x803B0015L)
 
 //
-// MessageId: HNS_MAPPING_NOT_SUPPORTED
+// MessageId: HCN_E_MAPPING_NOT_SUPPORTED
 //
 // MessageText:
 //
 // Port mapping is not supported on the given network.
 //
-#define HNS_MAPPING_NOT_SUPPORTED        _HRESULT_TYPEDEF_(0xC03B0016L)
+#define HCN_E_MAPPING_NOT_SUPPORTED      _HRESULT_TYPEDEF_(0x803B0016L)
 
 //
-// MessageId: HNS_DEGRADED_OPERATION
+// MessageId: HCN_E_DEGRADED_OPERATION
 //
 // MessageText:
 //
 // There was an operation attempted on a degraded object.
 //
-#define HNS_DEGRADED_OPERATION           _HRESULT_TYPEDEF_(0xC03B0017L)
+#define HCN_E_DEGRADED_OPERATION         _HRESULT_TYPEDEF_(0x803B0017L)
 
 //
-// MessageId: HNS_SHARED_SWITCH_MODIFICATION
+// MessageId: HCN_E_SHARED_SWITCH_MODIFICATION
 //
 // MessageText:
 //
 // Cannot modify a switch shared by multiple networks.
 //
-#define HNS_SHARED_SWITCH_MODIFICATION   _HRESULT_TYPEDEF_(0xC03B0018L)
+#define HCN_E_SHARED_SWITCH_MODIFICATION _HRESULT_TYPEDEF_(0x803B0018L)
 
 //
-// MessageId: HNS_GUID_CONVERSION_FAILURE
+// MessageId: HCN_E_GUID_CONVERSION_FAILURE
 //
 // MessageText:
 //
 // Failed to interpret a parameter as a GUID.
 //
-#define HNS_GUID_CONVERSION_FAILURE      _HRESULT_TYPEDEF_(0xC03B0019L)
+#define HCN_E_GUID_CONVERSION_FAILURE    _HRESULT_TYPEDEF_(0x803B0019L)
 
 //
-// MessageId: HNS_REGKEY_FAILURE
+// MessageId: HCN_E_REGKEY_FAILURE
 //
 // MessageText:
 //
 // Failed to process registry key.
 //
-#define HNS_REGKEY_FAILURE               _HRESULT_TYPEDEF_(0xC03B001AL)
+#define HCN_E_REGKEY_FAILURE             _HRESULT_TYPEDEF_(0x803B001AL)
 
 //
-// MessageId: HNS_INVALID_JSON
+// MessageId: HCN_E_INVALID_JSON
 //
 // MessageText:
 //
-// Invalid Json document string.
+// Invalid JSON document string.
 //
-#define HNS_INVALID_JSON                 _HRESULT_TYPEDEF_(0xC03B001BL)
+#define HCN_E_INVALID_JSON               _HRESULT_TYPEDEF_(0x803B001BL)
 
 //
-// MessageId: HNS_INVALID_JSON_REFERENCE
+// MessageId: HCN_E_INVALID_JSON_REFERENCE
 //
 // MessageText:
 //
-// The reference is invalid in the json document.
+// The reference is invalid in the JSON document.
 //
-#define HNS_INVALID_JSON_REFERENCE       _HRESULT_TYPEDEF_(0xC03B001CL)
+#define HCN_E_INVALID_JSON_REFERENCE     _HRESULT_TYPEDEF_(0x803B001CL)
 
 //
-// MessageId: HNS_ENDPOINT_SHARING_DISABLED
+// MessageId: HCN_E_ENDPOINT_SHARING_DISABLED
 //
 // MessageText:
 //
 // Endpoint sharing is disabled.
 //
-#define HNS_ENDPOINT_SHARING_DISABLED    _HRESULT_TYPEDEF_(0xC03B001DL)
+#define HCN_E_ENDPOINT_SHARING_DISABLED  _HRESULT_TYPEDEF_(0x803B001DL)
 
 //
-// MessageId: HNS_INVALID_IP
+// MessageId: HCN_E_INVALID_IP
 //
 // MessageText:
 //
 // IP address is either invalid or not part of any configured subnet(s).
 //
-#define HNS_INVALID_IP                   _HRESULT_TYPEDEF_(0xC03B001EL)
+#define HCN_E_INVALID_IP                 _HRESULT_TYPEDEF_(0x803B001EL)
+
+//
+// MessageId: HCN_E_SWITCH_EXTENSION_NOT_FOUND
+//
+// MessageText:
+//
+// The specified switch extension does not exist on this switch.
+//
+#define HCN_E_SWITCH_EXTENSION_NOT_FOUND _HRESULT_TYPEDEF_(0x803B001FL)
+
+//
+// MessageId: HCN_E_MANAGER_STOPPED
+//
+// MessageText:
+//
+// Operation cannot be performed while service is stopping.
+//
+#define HCN_E_MANAGER_STOPPED            _HRESULT_TYPEDEF_(0x803B0020L)
+
+//
+// MessageId: GCN_E_MODULE_NOT_FOUND
+//
+// MessageText:
+//
+// Operation cannot be performed while service module not found.
+//
+#define GCN_E_MODULE_NOT_FOUND           _HRESULT_TYPEDEF_(0x803B0021L)
+
+//
+// MessageId: GCN_E_NO_REQUEST_HANDLERS
+//
+// MessageText:
+//
+// Request Handlers not present to handle the JSON request.
+//
+#define GCN_E_NO_REQUEST_HANDLERS        _HRESULT_TYPEDEF_(0x803B0022L)
+
+//
+// MessageId: GCN_E_REQUEST_UNSUPPORTED
+//
+// MessageText:
+//
+// The specified request is unsupported.
+//
+#define GCN_E_REQUEST_UNSUPPORTED        _HRESULT_TYPEDEF_(0x803B0023L)
+
+//
+// MessageId: GCN_E_RUNTIMEKEYS_FAILED
+//
+// MessageText:
+//
+// Add runtime keys to container failed.
+//
+#define GCN_E_RUNTIMEKEYS_FAILED         _HRESULT_TYPEDEF_(0x803B0024L)
+
+//
+// MessageId: GCN_E_NETADAPTER_TIMEOUT
+//
+// MessageText:
+//
+// Timeout while waiting for network adapter with the given instance id
+//
+#define GCN_E_NETADAPTER_TIMEOUT         _HRESULT_TYPEDEF_(0x803B0025L)
+
+//
+// MessageId: GCN_E_NETADAPTER_NOT_FOUND
+//
+// MessageText:
+//
+// Network adapter not found for the given instance id
+//
+#define GCN_E_NETADAPTER_NOT_FOUND       _HRESULT_TYPEDEF_(0x803B0026L)
+
+//
+// MessageId: GCN_E_NETCOMPARTMENT_NOT_FOUND
+//
+// MessageText:
+//
+// Network compartment not found for the given  id
+//
+#define GCN_E_NETCOMPARTMENT_NOT_FOUND   _HRESULT_TYPEDEF_(0x803B0027L)
+
+//
+// MessageId: GCN_E_NETINTERFACE_NOT_FOUND
+//
+// MessageText:
+//
+// Network interface not found for the given  id
+//
+#define GCN_E_NETINTERFACE_NOT_FOUND     _HRESULT_TYPEDEF_(0x803B0028L)
+
+//
+// MessageId: GCN_E_DEFAULTNAMESPACE_EXISTS
+//
+// MessageText:
+//
+// Default Namespace already exists
+//
+#define GCN_E_DEFAULTNAMESPACE_EXISTS    _HRESULT_TYPEDEF_(0x803B0029L)
 
 //
 // =======================================================
@@ -51620,7 +53380,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Requested data class is not avaialable.
+// Requested data class is not available.
 //
 #define E_MBN_DATA_CLASS_NOT_AVAILABLE   _HRESULT_TYPEDEF_(0x80548203L)
 
@@ -51888,7 +53648,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The compoment has not been initialized.
+// The component has not been initialized.
 //
 #define PEER_E_NOT_INITIALIZED           _HRESULT_TYPEDEF_(0x80630002L)
 
@@ -51897,7 +53657,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The required service canot be started.
+// The required service cannot be started.
 //
 #define PEER_E_CANNOT_START_SERVICE      _HRESULT_TYPEDEF_(0x80630003L)
 
@@ -52170,7 +53930,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The search atributes are invalid.
+// The search attributes are invalid.
 //
 #define PEER_E_INVALID_ATTRIBUTES        _HRESULT_TYPEDEF_(0x80630602L)
 
@@ -52181,7 +53941,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The invitiation is not trusted.
+// The invitation is not trusted.
 //
 #define PEER_E_INVITATION_NOT_TRUSTED    _HRESULT_TYPEDEF_(0x80630701L)
 
@@ -52226,7 +53986,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The specified PNRP cloud deos not exist.
+// The specified PNRP cloud does not exist.
 //
 #define PEER_E_NO_CLOUD                  _HRESULT_TYPEDEF_(0x80631001L)
 
@@ -52244,7 +54004,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The record is invlaid.
+// The record is invalid.
 //
 #define PEER_E_INVALID_RECORD            _HRESULT_TYPEDEF_(0x80632010L)
 
@@ -52271,7 +54031,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The record validation has been defered.
+// The record validation has been deferred.
 //
 #define PEER_E_DEFERRED_VALIDATION       _HRESULT_TYPEDEF_(0x80632030L)
 
@@ -52280,7 +54040,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The group properies are invalid.
+// The group properties are invalid.
 //
 #define PEER_E_INVALID_GROUP_PROPERTIES  _HRESULT_TYPEDEF_(0x80632040L)
 
@@ -52325,7 +54085,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Invalid classifer property.
+// Invalid classifier property.
 //
 #define PEER_E_INVALID_CLASSIFIER_PROPERTY _HRESULT_TYPEDEF_(0x80632072L)
 
@@ -52334,7 +54094,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Invlaid record expiration.
+// Invalid record expiration.
 //
 #define PEER_E_INVALID_RECORD_EXPIRATION _HRESULT_TYPEDEF_(0x80632080L)
 
@@ -52343,7 +54103,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Invlaid credential info.
+// Invalid credential info.
 //
 #define PEER_E_INVALID_CREDENTIAL_INFO   _HRESULT_TYPEDEF_(0x80632081L)
 
@@ -52442,7 +54202,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The service is not availible.
+// The service is not available.
 //
 #define PEER_E_SERVICE_NOT_AVAILABLE     _HRESULT_TYPEDEF_(0x806320A1L)
 
@@ -53244,6 +55004,33 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 #define STATEREPOSTORY_E_NESTED_TRANSACTION_NOT_SUPPORTED _HRESULT_TYPEDEF_(0x80670011L)
 
 //
+// MessageId: STATEREPOSITORY_ERROR_CACHE_CORRUPTED
+//
+// MessageText:
+//
+// The StateRepository cache is not valid.
+//
+#define STATEREPOSITORY_ERROR_CACHE_CORRUPTED _HRESULT_TYPEDEF_(0x80670012L)
+
+//
+// MessageId: STATEREPOSITORY_TRANSACTION_CALLER_ID_CHANGED
+//
+// MessageText:
+//
+// The transaction caller id has changed.
+//
+#define STATEREPOSITORY_TRANSACTION_CALLER_ID_CHANGED _HRESULT_TYPEDEF_(0x00670013L)
+
+//
+// MessageId: STATEREPOSITORY_TRANSACTION_IN_PROGRESS
+//
+// MessageText:
+//
+// A transaction is in progress for the database connection.
+//
+#define STATEREPOSITORY_TRANSACTION_IN_PROGRESS _HRESULT_TYPEDEF_(0x00670014L)
+
+//
 // Spaceport errors
 //
 // Success
@@ -53409,6 +55196,24 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // The OperationalState of the physical disk is invalid for this operation.
 //
 #define ERROR_SPACES_DRIVE_OPERATIONAL_STATE_INVALID _HRESULT_TYPEDEF_(0x80E70012L)
+
+//
+// MessageId: ERROR_SPACES_ENTRY_INCOMPLETE
+//
+// MessageText:
+//
+// The specified log entry is not complete.
+//
+#define ERROR_SPACES_ENTRY_INCOMPLETE    _HRESULT_TYPEDEF_(0x80E70013L)
+
+//
+// MessageId: ERROR_SPACES_ENTRY_INVALID
+//
+// MessageText:
+//
+// The specified log entry is not valid.
+//
+#define ERROR_SPACES_ENTRY_INVALID       _HRESULT_TYPEDEF_(0x80E70014L)
 
 //
 // Volsnap errors
@@ -53886,7 +55691,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The DXGI outuput (monitor) to which the swapchain content was restricted, has been disconnected or changed.
+// The DXGI output (monitor) to which the swapchain content was restricted, has been disconnected or changed.
 //
 #define DXGI_ERROR_RESTRICT_TO_OUTPUT_STALE _HRESULT_TYPEDEF_(0x887A0029L)
 
@@ -55264,7 +57069,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// No algorithm avaliable to render text with this device
+// No algorithm available to render text with this device
 //
 #define MILERR_DEVICECANNOTRENDERTEXT    _HRESULT_TYPEDEF_(0x88980088L)
 
@@ -55892,7 +57697,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 #define MILAVERR_UNKNOWNHARDWAREERROR    _HRESULT_TYPEDEF_(0x8898050EL)
 
-// MIL Bitmap Effet errors
+// MIL Bitmap Effect errors
 //
 // MessageId: MILEFFECTSERR_UNKNOWNPROPERTY
 //
@@ -56301,7 +58106,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// This app has mulitple extensions registered to support the specified contract. Activation by AppUserModelId is ambiguous.
+// This app has multiple extensions registered to support the specified contract. Activation by AppUserModelId is ambiguous.
 //
 #define E_MULTIPLE_EXTENSIONS_FOR_APPLICATION _HRESULT_TYPEDEF_(0x80270255L)
 
@@ -57202,7 +59007,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// Subrotocol is not supported.
+// Subprotocol is not supported.
 //
 #define E_SUBPROTOCOL_NOT_SUPPORTED      _HRESULT_TYPEDEF_(0x83760004L)
 
@@ -57585,7 +59390,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The 3rd party provider has been installed, but cannot activate encryption beacuse a license has not been activated.
+// The 3rd party provider has been installed, but cannot activate encryption because a license has not been activated.
 //
 #define WEP_E_NO_LICENSE                 _HRESULT_TYPEDEF_(0x88010006L)
 
@@ -58188,7 +59993,7 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 //
 // MessageText:
 //
-// The protocol scheme has changed during a redirect operaiton
+// The protocol scheme has changed during a redirect operation
 //
 #define WININET_E_REDIRECT_SCHEME_CHANGE _HRESULT_TYPEDEF_(0x80072F10L)
 
@@ -59792,5 +61597,253 @@ FORCEINLINE _Translates_Win32_to_HRESULT_(x) HRESULT HRESULT_FROM_WIN32(unsigned
 // Querying a scenario definition exceeded the specified maximum timeout.
 //
 #define UTC_E_TRY_GET_SCENARIO_TIMEOUT_EXCEEDED _HRESULT_TYPEDEF_(0x87C5103EL)
+
+//
+// MessageId: UTC_E_CERT_REV_FAILED
+//
+// MessageText:
+//
+// Certification revocation checking has been enabled, but the revocation check failed to verify whether a certificate has been revoked. The server used to check for revocation might be unreachable.
+//
+#define UTC_E_CERT_REV_FAILED            _HRESULT_TYPEDEF_(0x87C5103FL)
+
+//
+// MessageId: UTC_E_FAILED_TO_START_NDISCAP
+//
+// MessageText:
+//
+// Failed to start NDISCAP service for network packet capture trace.
+//
+#define UTC_E_FAILED_TO_START_NDISCAP    _HRESULT_TYPEDEF_(0x87C51040L)
+
+//
+// MessageId: UTC_E_KERNELDUMP_LIMIT_REACHED
+//
+// MessageText:
+//
+// UTC can perform no more than one KernelDump action on a device every 24 hours.
+//
+#define UTC_E_KERNELDUMP_LIMIT_REACHED   _HRESULT_TYPEDEF_(0x87C51041L)
+
+//
+// MessageId: UTC_E_MISSING_AGGREGATE_EVENT_TAG
+//
+// MessageText:
+//
+// The event contained an aggregation or differential privacy structure, but did not specify MICROSOFT_EVENTTAG_AGGREGATE.
+//
+#define UTC_E_MISSING_AGGREGATE_EVENT_TAG _HRESULT_TYPEDEF_(0x87C51042L)
+
+//
+// MessageId: UTC_E_INVALID_AGGREGATION_STRUCT
+//
+// MessageText:
+//
+// The event contained an invalid aggregation or differential privacy structure.
+//
+#define UTC_E_INVALID_AGGREGATION_STRUCT _HRESULT_TYPEDEF_(0x87C51043L)
+
+//
+// MessageId: UTC_E_ACTION_NOT_SUPPORTED_IN_DESTINATION
+//
+// MessageText:
+//
+// The action cannot be completed in the specified destination.
+//
+#define UTC_E_ACTION_NOT_SUPPORTED_IN_DESTINATION _HRESULT_TYPEDEF_(0x87C51044L)
+
+//
+// MessageId: UTC_E_FILTER_MISSING_ATTRIBUTE
+//
+// MessageText:
+//
+// Filter command is missing a required attribute.
+//
+#define UTC_E_FILTER_MISSING_ATTRIBUTE   _HRESULT_TYPEDEF_(0x87C51045L)
+
+//
+// MessageId: UTC_E_FILTER_INVALID_TYPE
+//
+// MessageText:
+//
+// Filter command contains an unsupported type.
+//
+#define UTC_E_FILTER_INVALID_TYPE        _HRESULT_TYPEDEF_(0x87C51046L)
+
+//
+// MessageId: UTC_E_FILTER_VARIABLE_NOT_FOUND
+//
+// MessageText:
+//
+// Filter variable does not exist at point of evaluation.
+//
+#define UTC_E_FILTER_VARIABLE_NOT_FOUND  _HRESULT_TYPEDEF_(0x87C51047L)
+
+//
+// MessageId: UTC_E_FILTER_FUNCTION_RESTRICTED
+//
+// MessageText:
+//
+// Filter command is not allowed in the current context.
+//
+#define UTC_E_FILTER_FUNCTION_RESTRICTED _HRESULT_TYPEDEF_(0x87C51048L)
+
+//
+// MessageId: UTC_E_FILTER_VERSION_MISMATCH
+//
+// MessageText:
+//
+// Requested filter version is incompatible with available version.
+//
+#define UTC_E_FILTER_VERSION_MISMATCH    _HRESULT_TYPEDEF_(0x87C51049L)
+
+//
+// MessageId: UTC_E_FILTER_INVALID_FUNCTION
+//
+// MessageText:
+//
+// Filter does not support this function.
+//
+#define UTC_E_FILTER_INVALID_FUNCTION    _HRESULT_TYPEDEF_(0x87C51050L)
+
+//
+// MessageId: UTC_E_FILTER_INVALID_FUNCTION_PARAMS
+//
+// MessageText:
+//
+// Filter function does not accept the provided parameter types and/or count.
+//
+#define UTC_E_FILTER_INVALID_FUNCTION_PARAMS _HRESULT_TYPEDEF_(0x87C51051L)
+
+//
+// MessageId: UTC_E_FILTER_INVALID_COMMAND
+//
+// MessageText:
+//
+// Filter command does not exist or is incorrectly formatted.
+//
+#define UTC_E_FILTER_INVALID_COMMAND     _HRESULT_TYPEDEF_(0x87C51052L)
+
+//
+// MessageId: UTC_E_FILTER_ILLEGAL_EVAL
+//
+// MessageText:
+//
+// Filter types can not be compared to each other.
+//
+#define UTC_E_FILTER_ILLEGAL_EVAL        _HRESULT_TYPEDEF_(0x87C51053L)
+
+//
+// MessageId: UTC_E_TTTRACER_RETURNED_ERROR
+//
+// MessageText:
+//
+// TTTracer executable returned a code other than ERROR_SUCCESS.
+//
+#define UTC_E_TTTRACER_RETURNED_ERROR    _HRESULT_TYPEDEF_(0x87C51054L)
+
+//
+// MessageId: UTC_E_AGENT_DIAGNOSTICS_TOO_LARGE
+//
+// MessageText:
+//
+// The total size of the compressed escalation data payload exceeded the allowable limit.
+//
+#define UTC_E_AGENT_DIAGNOSTICS_TOO_LARGE _HRESULT_TYPEDEF_(0x87C51055L)
+
+//
+// MessageId: UTC_E_FAILED_TO_RECEIVE_AGENT_DIAGNOSTICS
+//
+// MessageText:
+//
+// Escalation data was not completely transferred from agent to host.
+//
+#define UTC_E_FAILED_TO_RECEIVE_AGENT_DIAGNOSTICS _HRESULT_TYPEDEF_(0x87C51056L)
+
+//
+// MessageId: UTC_E_SCENARIO_HAS_NO_ACTIONS
+//
+// MessageText:
+//
+// An escalation was requested for a scenario which has no actions for the passed type.
+//
+#define UTC_E_SCENARIO_HAS_NO_ACTIONS    _HRESULT_TYPEDEF_(0x87C51057L)
+
+//
+// MessageId: UTC_E_TTTRACER_STORAGE_FULL
+//
+// MessageText:
+//
+// UTC allocated space for TTTracer escalations is full.
+//
+#define UTC_E_TTTRACER_STORAGE_FULL      _HRESULT_TYPEDEF_(0x87C51058L)
+
+//
+// MessageId: UTC_E_INSUFFICIENT_SPACE_TO_START_TRACE
+//
+// MessageText:
+//
+// Disk needs minimum of 15GB to start TTD recording session.
+//
+#define UTC_E_INSUFFICIENT_SPACE_TO_START_TRACE _HRESULT_TYPEDEF_(0x87C51059L)
+
+//
+// MessageId: UTC_E_ESCALATION_CANCELLED_AT_SHUTDOWN
+//
+// MessageText:
+//
+// Escalation was cancelled due to component shutdown.
+//
+#define UTC_E_ESCALATION_CANCELLED_AT_SHUTDOWN _HRESULT_TYPEDEF_(0x87C5105AL)
+
+//
+// MessageId: UTC_E_GETFILEINFOACTION_FILE_NOT_APPROVED
+//
+// MessageText:
+//
+// The file for the GetFileInfo action must be under the \Windows, \Program Files, or \Program Files (x86) directories.
+//
+#define UTC_E_GETFILEINFOACTION_FILE_NOT_APPROVED _HRESULT_TYPEDEF_(0x87C5105BL)
+
+
+//
+// WinML
+//
+
+//
+// MessageId: WINML_ERR_INVALID_DEVICE
+//
+// MessageText:
+//
+// The device is invalid or does not support machine learning.
+//
+#define WINML_ERR_INVALID_DEVICE         _HRESULT_TYPEDEF_(0x88900001L)
+
+//
+// MessageId: WINML_ERR_INVALID_BINDING
+//
+// MessageText:
+//
+// The binding is incomplete or does not match the input/output description.
+//
+#define WINML_ERR_INVALID_BINDING        _HRESULT_TYPEDEF_(0x88900002L)
+
+//
+// MessageId: WINML_ERR_VALUE_NOTFOUND
+//
+// MessageText:
+//
+// An attempt was made to bind an unknown input or output.
+//
+#define WINML_ERR_VALUE_NOTFOUND         _HRESULT_TYPEDEF_(0x88900003L)
+
+//
+// MessageId: WINML_ERR_SIZE_MISMATCH
+//
+// MessageText:
+//
+// The size of the buffer provided for a bound variable is invalid.
+//
+#define WINML_ERR_SIZE_MISMATCH          _HRESULT_TYPEDEF_(0x88900004L)
 
 #endif//_WINERROR_

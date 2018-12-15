@@ -211,6 +211,15 @@
 //
 #define WU_S_METADATA_IGNORED_SIGNATURE_VERIFICATION _HRESULT_TYPEDEF_(0x00247102L)
 
+//
+// MessageId: WU_S_SEARCH_LOAD_SHEDDING
+//
+// MessageText:
+//
+// Search operation completed successfully but one or more services were shedding load.
+//
+#define WU_S_SEARCH_LOAD_SHEDDING        _HRESULT_TYPEDEF_(0x00248001L)
+
 ///////////////////////////////////////////////////////////////////////////////
 // Windows Update Error Codes
 ///////////////////////////////////////////////////////////////////////////////
@@ -1031,6 +1040,15 @@
 #define WU_E_UPDATE_NOT_APPROVED         _HRESULT_TYPEDEF_(0x80240062L)
 
 //
+// MessageId: WU_E_CALL_CANCELLED_BY_INTERACTIVE_SEARCH
+//
+// MessageText:
+//
+// The search call was cancelled by another interactive search against the same service.
+//
+#define WU_E_CALL_CANCELLED_BY_INTERACTIVE_SEARCH _HRESULT_TYPEDEF_(0x80240063L)
+
+//
 // MessageId: WU_E_UNEXPECTED
 //
 // MessageText:
@@ -1508,6 +1526,15 @@
 // Same as ERROR_WINHTTP_NAME_NOT_RESOLVED - the proxy server or target server name cannot be resolved.
 //
 #define WU_E_PT_WINHTTP_NAME_NOT_RESOLVED _HRESULT_TYPEDEF_(0x8024402CL)
+
+//
+// MessageId: WU_E_PT_LOAD_SHEDDING
+//
+// MessageText:
+//
+// The server is shedding load.
+//
+#define WU_E_PT_LOAD_SHEDDING            _HRESULT_TYPEDEF_(0x8024402DL)
 
 //
 // MessageId: WU_E_PT_SAME_REDIR_ID
@@ -2013,9 +2040,18 @@
 //
 // MessageText:
 //
-// Post-reboot install failed. 
+// Post-reboot install failed.
 //
 #define WU_E_SIH_POST_REBOOT_INSTALL_FAILED _HRESULT_TYPEDEF_(0x80245109L)
+
+//
+// MessageId: WU_E_SIH_POST_REBOOT_NO_CACHED_SLS_RESPONSE
+//
+// MessageText:
+//
+// There were pending reboot actions, but cached SLS response was not found post-reboot.
+//
+#define WU_E_SIH_POST_REBOOT_NO_CACHED_SLS_RESPONSE _HRESULT_TYPEDEF_(0x8024510AL)
 
 //
 // MessageId: WU_E_SIH_UNEXPECTED
@@ -2379,6 +2415,114 @@
 // A data store operation did not complete because it was requested with an impersonated identity.
 //
 #define WU_E_DS_IMPERSONATED             _HRESULT_TYPEDEF_(0x8024801DL)
+
+//
+// MessageId: WU_E_DS_DATANOTAVAILABLE
+//
+// MessageText:
+//
+// An operation against update metadata did not complete because the data was never received from server.
+//
+#define WU_E_DS_DATANOTAVAILABLE         _HRESULT_TYPEDEF_(0x8024801EL)
+
+//
+// MessageId: WU_E_DS_DATANOTLOADED
+//
+// MessageText:
+//
+// An operation against update metadata did not complete because the data was available but not loaded from datastore.
+//
+#define WU_E_DS_DATANOTLOADED            _HRESULT_TYPEDEF_(0x8024801FL)
+
+//
+// MessageId: WU_E_DS_NODATA_NOSUCHREVISION
+//
+// MessageText:
+//
+// A data store operation did not complete because no such update revision is known.
+//
+#define WU_E_DS_NODATA_NOSUCHREVISION    _HRESULT_TYPEDEF_(0x80248020L)
+
+//
+// MessageId: WU_E_DS_NODATA_NOSUCHUPDATE
+//
+// MessageText:
+//
+// A data store operation did not complete because no such update is known.
+//
+#define WU_E_DS_NODATA_NOSUCHUPDATE      _HRESULT_TYPEDEF_(0x80248021L)
+
+//
+// MessageId: WU_E_DS_NODATA_EULA
+//
+// MessageText:
+//
+// A data store operation did not complete because an update's EULA information is missing.
+//
+#define WU_E_DS_NODATA_EULA              _HRESULT_TYPEDEF_(0x80248022L)
+
+//
+// MessageId: WU_E_DS_NODATA_SERVICE
+//
+// MessageText:
+//
+// A data store operation did not complete because a service's information is missing.
+//
+#define WU_E_DS_NODATA_SERVICE           _HRESULT_TYPEDEF_(0x80248023L)
+
+//
+// MessageId: WU_E_DS_NODATA_COOKIE
+//
+// MessageText:
+//
+// A data store operation did not complete because a service's synchronization information is missing.
+//
+#define WU_E_DS_NODATA_COOKIE            _HRESULT_TYPEDEF_(0x80248024L)
+
+//
+// MessageId: WU_E_DS_NODATA_TIMER
+//
+// MessageText:
+//
+// A data store operation did not complete because a timer's information is missing.
+//
+#define WU_E_DS_NODATA_TIMER             _HRESULT_TYPEDEF_(0x80248025L)
+
+//
+// MessageId: WU_E_DS_NODATA_CCR
+//
+// MessageText:
+//
+// A data store operation did not complete because a download's information is missing.
+//
+#define WU_E_DS_NODATA_CCR               _HRESULT_TYPEDEF_(0x80248026L)
+
+//
+// MessageId: WU_E_DS_NODATA_FILE
+//
+// MessageText:
+//
+// A data store operation did not complete because a file's information is missing.
+//
+#define WU_E_DS_NODATA_FILE              _HRESULT_TYPEDEF_(0x80248027L)
+
+//
+// MessageId: WU_E_DS_NODATA_DOWNLOADJOB
+//
+// MessageText:
+//
+// A data store operation did not complete because a download job's information is missing.
+//
+#define WU_E_DS_NODATA_DOWNLOADJOB       _HRESULT_TYPEDEF_(0x80248028L)
+
+//
+// MessageId: WU_E_DS_NODATA_TMI
+//
+// MessageText:
+//
+// A data store operation did not complete because a service's timestamp information is missing.
+//
+#define WU_E_DS_NODATA_TMI               _HRESULT_TYPEDEF_(0x80248029L)
 
 //
 // MessageId: WU_E_DS_UNEXPECTED
@@ -3102,6 +3246,15 @@
 // The hash of the update's sandbox does not match the expected value.
 //
 #define WU_E_DM_SANDBOX_HASH_MISMATCH    _HRESULT_TYPEDEF_(0x8024601CL)
+
+//
+// MessageId: WU_E_DM_HARDRESERVEID_CONFLICT
+//
+// MessageText:
+//
+// The hard reserve id specified conflicts with an id from another caller.
+//
+#define WU_E_DM_HARDRESERVEID_CONFLICT   _HRESULT_TYPEDEF_(0x8024601DL)
 
 //
 // MessageId: WU_E_DM_UNEXPECTED
@@ -4032,5 +4185,20 @@
 // Installing merged updates only. So skipping non mergeable updates.
 //
 #define WU_E_SKIPPED_UPDATE_INSTALLATION _HRESULT_TYPEDEF_(0x8024B105L)
+
+//////////////////////////////////////////////////////////////////////////////
+// SLS related errors - 0xB201
+////
+///////
+// SLS General errors 0xB201 - 0xB2FF
+///////
+//
+// MessageId: WU_E_SLS_INVALID_REVISION
+//
+// MessageText:
+//
+// SLS response returned invalid revision number.
+//
+#define WU_E_SLS_INVALID_REVISION        _HRESULT_TYPEDEF_(0x8024B201L)
 
 #endif //_WUERROR_

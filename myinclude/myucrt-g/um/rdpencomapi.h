@@ -3957,6 +3957,15 @@ EXTERN_C const IID IID_IRDPViewerRenderingSurface;
 #endif 	/* __IRDPViewerRenderingSurface_INTERFACE_DEFINED__ */
 
 
+/* interface __MIDL_itf_rdpencomapi_0000_0021 */
+/* [local] */ 
+
+#pragma deprecated(IRDPViewerRenderingSurface)
+
+
+extern RPC_IF_HANDLE __MIDL_itf_rdpencomapi_0000_0021_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_rdpencomapi_0000_0021_v0_0_s_ifspec;
+
 #ifndef __IRDPViewerInputSink_INTERFACE_DEFINED__
 #define __IRDPViewerInputSink_INTERFACE_DEFINED__
 
@@ -5509,6 +5518,11 @@ RDPTransportStreamEvents;
 /* interface __MIDL_itf_rdpencomapi_0000_0029 */
 /* [local] */ 
 
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#pragma deprecated(RDPViewer)
+#pragma deprecated(IRDPSRAPIViewer)
+#pragma deprecated(IRDPViewerInputSink)
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) */
 #pragma endregion
 

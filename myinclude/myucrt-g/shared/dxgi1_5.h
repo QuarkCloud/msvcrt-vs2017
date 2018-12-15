@@ -419,7 +419,8 @@ typedef
 enum DXGI_HDR_METADATA_TYPE
     {
         DXGI_HDR_METADATA_TYPE_NONE	= 0,
-        DXGI_HDR_METADATA_TYPE_HDR10	= 1
+        DXGI_HDR_METADATA_TYPE_HDR10	= 1,
+        DXGI_HDR_METADATA_TYPE_HDR10PLUS	= 2
     } 	DXGI_HDR_METADATA_TYPE;
 
 typedef struct DXGI_HDR_METADATA_HDR10
@@ -433,6 +434,11 @@ typedef struct DXGI_HDR_METADATA_HDR10
     UINT16 MaxContentLightLevel;
     UINT16 MaxFrameAverageLightLevel;
     } 	DXGI_HDR_METADATA_HDR10;
+
+typedef struct DXGI_HDR_METADATA_HDR10PLUS
+    {
+    BYTE Data[ 72 ];
+    } 	DXGI_HDR_METADATA_HDR10PLUS;
 
 
 

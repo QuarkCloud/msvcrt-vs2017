@@ -66,7 +66,7 @@ public:
         {
             ++(*(_Mybase *)this);
         }
-        while (this->_Ptr != NULL && this->_Ptr->_Is_dummy());
+        while (this->_Ptr != nullptr && this->_Ptr->_Is_dummy());
 
         return (*this);
     }
@@ -78,25 +78,16 @@ public:
         {
             ++*this;
         }
-        while (this->_Ptr != NULL && this->_Ptr->_Is_dummy());
+        while (this->_Ptr != nullptr && this->_Ptr->_Is_dummy());
 
         return (_Tmp);
     }
+
+    _Solist_const_iterator _Unwrapped() const
+    {   // preserve our type when being unwrapped
+        return (*this);
+    }
 };
-
-template<class _Mylist> inline
-_Solist_const_iterator<_Mylist>& _Rechecked(_Solist_const_iterator<_Mylist>& _Iter,
-    const _Solist_const_iterator<_Mylist> _Right)
-{   // preserve our type when being _Rechecked
-    _Iter._Ptr = _Right._Ptr;
-    return (_Iter);
-}
-
-template<class _Mylist> inline
-_Solist_const_iterator<_Mylist> _Unchecked(const _Solist_const_iterator<_Mylist>& _Iter)
-{   // preserve our type when being _Unchecked
-    return (_Iter);
-}
 
 template<class _Mylist>
 class _Solist_iterator : public _Solist_const_iterator<_Mylist>
@@ -138,7 +129,7 @@ public:
         {
             ++(*(_Mybase *)this);
         }
-        while (this->_Ptr != NULL && this->_Ptr->_Is_dummy());
+        while (this->_Ptr != nullptr && this->_Ptr->_Is_dummy());
 
         return (*this);
     }
@@ -150,26 +141,16 @@ public:
         {
             ++*this;
         }
-        while (this->_Ptr != NULL && this->_Ptr->_Is_dummy());
+        while (this->_Ptr != nullptr && this->_Ptr->_Is_dummy());
 
         return (_Tmp);
     }
+
+    _Solist_iterator _Unwrapped() const
+    {   // preserve our type when being unwrapped
+        return (*this);
+    }
 };
-
-template<class _Mylist> inline
-_Solist_iterator<_Mylist>& _Rechecked(_Solist_iterator<_Mylist>& _Iter,
-    const typename _Solist_iterator<_Mylist>::_Unchecked_type _Right)
-{   // preserve our type when being _Rechecked
-    _Iter._Ptr = _Right._Ptr;
-    return (_Iter);
-}
-
-template<class _Mylist> inline
-typename _Solist_iterator<_Mylist>::_Unchecked_type
-    _Unchecked(const _Solist_iterator<_Mylist>& _Iter)
-{   // preserve our type when being _Unchecked
-    return (_Iter);
-}
 
 // Forward type and class definitions
 typedef size_t _Map_key;
@@ -179,12 +160,15 @@ template<typename _Element_type, typename _Allocator_type>
 class _Split_order_list_node : public std::_Container_base
 {
 public:
-    typedef typename _Allocator_type::template rebind<_Element_type>::other _Allocator_type;
-    typedef typename _Allocator_type::size_type size_type;
-    typedef typename _Element_type value_type;
+    typedef typename std::allocator_traits<_Allocator_type>::template rebind_alloc<_Element_type> _Allocator_type;
+    typedef std::allocator_traits<_Allocator_type> _Al_traits;
+    typedef typename _Al_traits::size_type size_type;
+    typedef _Element_type value_type;
 
     struct _Node;
     typedef _Node * _Nodeptr;
+    typedef typename _Al_traits::template rebind_alloc<_Node> _Alnode;
+    typedef std::allocator_traits<_Alnode> _Alnode_traits;
 
     // Node that holds the element in a split-ordered list
     struct _Node
@@ -193,7 +177,7 @@ public:
         void _Init(_Split_order_key _Order_key)
         {
             _M_order_key = _Order_key;
-            _Next = NULL;
+            _Next = nullptr;
         }
 
         // Return the order key (needed for hashing)
@@ -242,31 +226,33 @@ public:
 #else  /* _ITERATOR_DEBUG_LEVEL == 0 */
     _Split_order_list_node(_Allocator_type _Allocator) : _M_node_allocator(_Allocator), _M_value_allocator(_Allocator)
     {
-        typename _Allocator_type::template rebind<std::_Container_proxy>::other _Alproxy(_M_node_allocator);
+        using _Alproxy_traits = typename _Al_traits::template rebind_traits<std::_Container_proxy>;
+        typename _Alproxy_traits::allocator_type _Alproxy(_M_node_allocator);
         _Myproxy = _Alproxy.allocate(1);
-        _Alproxy.construct(_Myproxy, std::_Container_proxy());
+        _Alproxy_traits::construct(_Alproxy, _Myproxy, std::_Container_proxy());
         _Myproxy->_Mycont = this;
     }
 
     ~_Split_order_list_node()
     {
-        typename _Allocator_type::template rebind<std::_Container_proxy>::other _Alproxy(_M_node_allocator);
+        using _Alproxy_traits = typename _Al_traits::template rebind_traits<std::_Container_proxy>;
+        typename _Alproxy_traits::allocator_type _Alproxy(_M_node_allocator);
         _Orphan_all();
-        _Alproxy.destroy(_Myproxy);
+        _Alproxy_traits::destroy(_Alproxy, _Myproxy);
         _Alproxy.deallocate(_Myproxy, 1);
         _Myproxy = 0;
     }
 #endif  /* _ITERATOR_DEBUG_LEVEL == 0 */
 
-    _Nodeptr _Before_head() const _NOEXCEPT
+    _Nodeptr _Before_head() const noexcept
     {
         // return pointer to the "before begin" pseudo node
         return &(reinterpret_cast<_Node&>(const_cast<_Nodeptr&>(_Myhead)));
     }
 
-    _Nodeptr                                                _Myhead;            // pointer to head node
-    typename _Allocator_type::template rebind<_Node>::other _M_node_allocator;  // allocator object for nodes
-    _Allocator_type                                         _M_value_allocator; // allocator object for element values
+    _Nodeptr         _Myhead;            // pointer to head node
+    _Alnode          _M_node_allocator;  // allocator object for nodes
+    _Allocator_type  _M_value_allocator; // allocator object for element values
 };
 
 template<typename _Element_type, typename _Allocator_type>
@@ -274,16 +260,18 @@ class _Split_order_list_value : public _Split_order_list_node<_Element_type, _Al
 {
 public:
     typedef _Split_order_list_node<_Element_type, _Allocator_type> _Mybase;
-    typedef typename _Mybase::_Nodeptr _Nodeptr;
-    typedef typename _Allocator_type::template rebind<_Element_type>::other _Allocator_type;
+    using typename _Mybase::_Nodeptr;
+    using typename _Mybase::_Allocator_type;
+    using typename _Mybase::_Al_traits;
+    using typename _Mybase::_Alnode_traits;
 
-    typedef typename _Allocator_type::size_type size_type;
-    typedef typename _Allocator_type::difference_type difference_type;
-    typedef typename _Allocator_type::pointer pointer;
-    typedef typename _Allocator_type::const_pointer const_pointer;
-    typedef typename _Allocator_type::reference reference;
-    typedef typename _Allocator_type::const_reference const_reference;
+    typedef typename _Al_traits::size_type size_type;
+    typedef typename _Al_traits::difference_type difference_type;
+    typedef typename _Al_traits::pointer pointer;
+    typedef typename _Al_traits::const_pointer const_pointer;
     typedef typename _Allocator_type::value_type value_type;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
 
     _Split_order_list_value(_Allocator_type _Allocator = _Allocator_type()) : _Mybase(_Allocator)
     {
@@ -304,7 +292,8 @@ public:
 
         try
         {
-            this->_M_value_allocator.construct(std::addressof(_Pnode->_Myval), std::forward<_ValTy>(_Value));
+            _Al_traits::construct(
+                this->_M_value_allocator, std::addressof(_Pnode->_Myval), std::forward<_ValTy>(_Value));
             _Pnode->_Init(_Order_key);
         }
         catch(...)
@@ -333,17 +322,19 @@ class _Split_ordered_list : _Split_order_list_value<_Element_type, _Element_allo
 public:
     typedef _Split_ordered_list<_Element_type, _Element_allocator_type> _Mytype;
     typedef _Split_order_list_value<_Element_type, _Element_allocator_type> _Mybase;
-    typedef typename _Mybase::_Allocator_type _Allocator_type;
-    typedef typename _Mybase::_Nodeptr _Nodeptr;
+    using typename _Mybase::_Allocator_type;
+    typedef std::allocator_traits<_Allocator_type> _Al_traits;
+    using typename _Mybase::_Nodeptr;
+    using typename _Mybase::_Alnode_traits;
 
     typedef _Allocator_type allocator_type;
-    typedef typename _Allocator_type::size_type size_type;
-    typedef typename _Allocator_type::difference_type difference_type;
-    typedef typename _Allocator_type::pointer pointer;
-    typedef typename _Allocator_type::const_pointer const_pointer;
-    typedef typename _Allocator_type::reference reference;
-    typedef typename _Allocator_type::const_reference const_reference;
-    typedef typename _Allocator_type::value_type value_type;
+    using typename _Mybase::size_type;
+    using typename _Mybase::difference_type;
+    using typename _Mybase::pointer;
+    using typename _Mybase::const_pointer;
+    using typename _Mybase::reference;
+    using typename _Mybase::const_reference;
+    using typename _Mybase::value_type;
 
     typedef _Solist_const_iterator<_Mybase> const_iterator;
     typedef _Solist_iterator<_Mybase> iterator;
@@ -362,9 +353,9 @@ public:
 
         // Remove the head element which is not cleared by clear()
         _Nodeptr _Pnode = this->_Myhead;
-        this->_Myhead = NULL;
+        this->_Myhead = nullptr;
 
-        _ASSERT_EXPR(_Pnode != NULL && _Pnode->_Next == NULL, L"Invalid head list node");
+        _ASSERT_EXPR(_Pnode != nullptr && _Pnode->_Next == nullptr, L"Invalid head list node");
 
         _Erase(_Pnode);
     }
@@ -385,12 +376,12 @@ public:
         _Nodeptr _Pnext;
         _Nodeptr _Pnode = this->_Myhead;
 
-        _ASSERT_EXPR(this->_Myhead != NULL, L"Invalid head list node");
+        _ASSERT_EXPR(this->_Myhead != nullptr, L"Invalid head list node");
         _Pnext = _Pnode->_Next;
-        _Pnode->_Next = NULL;
+        _Pnode->_Next = nullptr;
         _Pnode = _Pnext;
 
-        while (_Pnode != NULL)
+        while (_Pnode != nullptr)
         {
             _Pnext = _Pnode->_Next;
             _Erase(_Pnode);
@@ -449,7 +440,7 @@ public:
     // Returns the maximum size of the list, determined by the allocator
     size_type max_size() const
     {
-        return this->_M_value_allocator.max_size();
+        return _Al_traits::max_size(this->_M_value_allocator);
     }
 
     // Swaps 'this' list with the passed in one
@@ -509,7 +500,7 @@ public:
     // be a dummy private iterator.
     iterator _Get_iterator(_Full_iterator _Iterator)
     {
-        _ASSERT_EXPR(_Iterator._Ptr != NULL && !_Iterator._Ptr->_Is_dummy(), L"Invalid user node (dummy)");
+        _ASSERT_EXPR(_Iterator._Ptr != nullptr && !_Iterator._Ptr->_Is_dummy(), L"Invalid user node (dummy)");
         return iterator(_Iterator._Ptr, this);
     }
 
@@ -517,7 +508,7 @@ public:
     // be a dummy private iterator.
     const_iterator _Get_iterator(_Full_const_iterator _Iterator) const
     {
-        _ASSERT_EXPR(_Iterator._Ptr != NULL && !_Iterator._Ptr->_Is_dummy(), L"Invalid user node (dummy)");
+        _ASSERT_EXPR(_Iterator._Ptr != nullptr && !_Iterator._Ptr->_Is_dummy(), L"Invalid user node (dummy)");
         return const_iterator(_Iterator._Ptr, this);
     }
 
@@ -565,7 +556,7 @@ public:
         if (!_Delete_node->_Is_dummy())
         {
             // Dummy nodes have nothing constructed, thus should not be destroyed.
-            this->_M_node_allocator.destroy(_Delete_node);
+            _Alnode_traits::destroy(this->_M_node_allocator, _Delete_node);
         }
         this->_M_node_allocator.deallocate(_Delete_node, 1);
     }
@@ -658,10 +649,7 @@ public:
     void _Erase(_Full_iterator _Previous, _Full_const_iterator& _Where)
     {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        if (_Where._Getcont() != this || _Where._Ptr == this->_Myhead)
-        {
-            _DEBUG_ERROR("list erase iterator outside range");
-        }
+        _STL_VERIFY(_Where._Getcont() == this && _Where._Ptr != this->_Myhead, "list erase iterator outside range");
         _Nodeptr _Pnode = (_Where++)._Ptr;
         _Orphan_ptr(*this, _Pnode);
 #else  /* _ITERATOR_DEBUG_LEVEL == 2 */
@@ -705,8 +693,8 @@ public:
             _Nodeptr _Node = _Iterator._Ptr;
 
             _Nodeptr _Dummy_node = _Node->_Is_dummy() ? _Buynode(_Node->_Get_order_key()) : _Buynode(_Node->_Get_order_key(), _Node->_Myval);
-            _Previous_node = _Insert(_Previous_node, _Dummy_node, NULL);
-            _ASSERT_EXPR(_Previous_node != NULL, L"Insertion must succeed");
+            _Previous_node = _Insert(_Previous_node, _Dummy_node, nullptr);
+            _ASSERT_EXPR(_Previous_node != nullptr, L"Insertion must succeed");
             _Full_const_iterator _Where = _Iterator++;
             _Source_list._Erase(_Get_iterator(_Begin_iterator), _Where);
         }

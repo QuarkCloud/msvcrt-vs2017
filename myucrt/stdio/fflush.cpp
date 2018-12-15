@@ -200,9 +200,9 @@ extern "C" int __cdecl _fflush_nolock(FILE* const public_stream)
     // Perform the lowio commit to ensure data is written to disk:
     if (stream.has_all_of(_IOCOMMIT))
     {
-        //if (_commit(_fileno(public_stream)))
+        if (_commit(_fileno(public_stream)))
         {
-            //return EOF;
+            return EOF;
         }
     }
 
@@ -232,12 +232,12 @@ extern "C" int __cdecl __acrt_stdio_flush_nolock(FILE* const public_stream)
         return 0;
     }
 
-    //int const bytes_written = _write(_fileno(stream.public_stream()), stream->_base, bytes_to_write);
-    //if (bytes_to_write != bytes_written)
-    //{
-    //    stream.set_flags(_IOERROR);
-    //    return EOF;
-    //}
+    int const bytes_written = _write(_fileno(stream.public_stream()), stream->_base, bytes_to_write);
+    if (bytes_to_write != bytes_written)
+    {
+        stream.set_flags(_IOERROR);
+        return EOF;
+    }
 
     // If this is a read/write file, clear _IOWRITE so that the next operation can
     // be a read:

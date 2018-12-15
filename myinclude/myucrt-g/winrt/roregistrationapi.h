@@ -1,4 +1,3 @@
- 
 /*****************************************************************************
  **                                                                         **
  ** RoRegistrationApi.h - Header for Windows Runtime catalog registrations. **
@@ -27,24 +26,7 @@
 #include <activationregistration.h>
 
 #include <sdkddkver.h>
-
 #if (NTDDI_VERSION >= NTDDI_WIN8)
-
-/* APISET_NAME: api-ms-win-core-winrt-registration-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_RO_REGISTRATION_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_RO_REGISTRATION_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
 
 #ifdef _ROAPI_
 #define ROAPI
@@ -76,7 +58,7 @@ HRESULT
 WINAPI
 RoGetActivatableClassRegistration(
     _In_ HSTRING activatableClassId,
-    _COM_Outptr_ PActivatableClassRegistration * activatableClassRegistration
+    _COM_Outptr_ PActivatableClassRegistration* activatableClassRegistration
     );
 
 
@@ -87,10 +69,9 @@ HRESULT
 WINAPI
 RoGetServerActivatableClasses(
     _In_ HSTRING serverName,
-    _Outptr_result_buffer_(*count) HSTRING ** activatableClassIds,
-    _Out_ DWORD * count
+    _When_(return >= 0, _Outptr_result_buffer_(*count)) HSTRING** activatableClassIds,
+    _Out_ DWORD* count
     );
-
 
 
 #ifdef __cplusplus
@@ -98,7 +79,6 @@ RoGetServerActivatableClasses(
 #endif
 
 #ifdef __cplusplus
-
 
 #ifndef ROREGISTRATION_NO_ABI_PREFIX
 namespace ABI
@@ -123,7 +103,7 @@ namespace ABI
             _Check_return_ 
             inline HRESULT GetServerActivatableClasses( 
                        _In_ HSTRING serverName, 
-                       _Outptr_result_buffer_(*count) HSTRING **activatableClassIds,
+                       _When_(return >= 0, _Outptr_result_buffer_(*count)) HSTRING **activatableClassIds,
                        _Out_ DWORD *count)
             {
                 return RoGetServerActivatableClasses(serverName, activatableClassIds, count);

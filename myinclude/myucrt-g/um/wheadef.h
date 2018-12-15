@@ -97,6 +97,7 @@ typedef enum _WHEA_ERROR_SOURCE_STATE {
 #define WHEA_NOTIFICATION_TYPE_ARMV8_SEA                 8
 #define WHEA_NOTIFICATION_TYPE_ARMV8_SEI                 9
 #define WHEA_NOTIFICATION_TYPE_EXTERNALINTERRUPT_GSIV    10
+#define WHEA_NOTIFICATION_TYPE_SDEI                      11
 
 #include <pshpack1.h>
 

@@ -12,8 +12,8 @@
 #include <eh.h>
 #include <ehassert.h>
 #include <ehdata.h>
+#include <ehdata4.h>
 #include <ehhooks.h>
-#include <ehstate.h>
 #include <trnsctrl.h>
 #include "ehhelpers.h"
 
@@ -54,16 +54,60 @@ extern "C" void __cdecl _SetThrowImageBase(uintptr_t NewThrowImageBase)
 #endif
 
 #if defined(_M_X64) || defined(_M_ARM_NT) || defined(_M_ARM64) || defined(_CHPE_X86_ARM64_EH_)
+uintptr_t __FuncToImageRelOffset(
+    DispatcherContext   *pDC,
+    unsigned int        funcRelOffset
+)
+{
+    return (uintptr_t)(pDC->ImageBase + pDC->FunctionEntry->BeginAddress + funcRelOffset);
+}
 
 //
 // Returns the establisher frame pointers. For catch handlers it is the parent's frame pointer.
 //
-EHRegistrationNode * __cdecl RENAME_EH_EXTERN(_GetEstablisherFrame)(
+EHRegistrationNode * RENAME_EH_EXTERN(__FrameHandler4)::GetEstablisherFrame
+(
+    EHRegistrationNode  *pRN,
+    DispatcherContext   *pDC,
+    FuncInfo4           *pFuncInfo,
+    EHRegistrationNode  *pEstablisher
+    )
+{
+
+    *pEstablisher = *pRN;
+
+    if (RENAME_EH_EXTERN(__FrameHandler4)::ExecutionInCatch(pDC, pFuncInfo))
+    {
+
+#if defined(_M_X64)
+
+        *pEstablisher = *(EHRegistrationNode *)OffsetToAddress(pFuncInfo->dispFrame, *pRN);
+
+#elif defined(_M_ARM_NT) || defined(_M_ARM64) || defined(_CHPE_X86_ARM64_EH_)
+
+        *pEstablisher = *(EHRegistrationNode *)*pEstablisher;
+
+#else
+
+#error Unknown processor architecture.
+
+#endif
+    }
+
+    return pEstablisher;
+}
+
+
+//
+// Returns the establisher frame pointers. For catch handlers it is the parent's frame pointer.
+//
+EHRegistrationNode * RENAME_EH_EXTERN(__FrameHandler3)::GetEstablisherFrame(
     EHRegistrationNode  *pRN,
     DispatcherContext   *pDC,
     FuncInfo            *pFuncInfo,
     EHRegistrationNode  *pEstablisher
-) {
+    )
+{
     TryBlockMapEntry *pEntry;
     HandlerType *pHandler;
     ULONG_PTR HandlerAdd, ImageBase;
@@ -71,7 +115,7 @@ EHRegistrationNode * __cdecl RENAME_EH_EXTERN(_GetEstablisherFrame)(
     unsigned index, i;
     __ehstate_t curState;
 
-    curState = RENAME_EH_EXTERN(__StateFromControlPc)(pFuncInfo, pDC);
+    curState = StateFromControlPc(pFuncInfo, pDC);
     *pEstablisher = *pRN;
     for (index = num_of_try_blocks; index > 0; index--) {
         pEntry = FUNC_PTRYBLOCK(*pFuncInfo, index -1, pDC->ImageBase);
@@ -112,7 +156,7 @@ EHRegistrationNode * __cdecl RENAME_EH_EXTERN(_GetEstablisherFrame)(
 // This function returns the try block for the given state if the state is in a
 // catch; otherwise, nullptr is returned.
 
-static __inline TryBlockMapEntry * __cdecl _CatchTryBlock(
+TryBlockMapEntry * RENAME_EH_EXTERN(__FrameHandler3)::CatchTryBlock(
     FuncInfo            *pFuncInfo,
     __ehstate_t         curState
 ) {
@@ -134,12 +178,21 @@ static __inline TryBlockMapEntry * __cdecl _CatchTryBlock(
 // This routine returns TRUE if we are executing from within a catch.  Otherwise, FALSE is returned.
 //
 
-BOOL RENAME_EH_EXTERN(_ExecutionInCatch)(
+bool RENAME_EH_EXTERN(__FrameHandler4)::ExecutionInCatch(
+    DispatcherContext*  /*pDC*/,
+    FuncInfo4           *pFuncInfo
+    )
+{
+    return pFuncInfo->header.infoType == FuncInfoHeader::type::CATCH;
+}
+
+bool RENAME_EH_EXTERN(__FrameHandler3)::ExecutionInCatch(
     DispatcherContext   *pDC,
     FuncInfo            *pFuncInfo
-) {
-    __ehstate_t curState =  RENAME_EH_EXTERN(__StateFromControlPc)(pFuncInfo, pDC);
-    return _CatchTryBlock(pFuncInfo, curState)? TRUE : FALSE;
+    )
+{
+    __ehstate_t curState = StateFromControlPc(pFuncInfo, pDC);
+    return CatchTryBlock(pFuncInfo, curState)? TRUE : FALSE;
 }
 
 // The name of this function is rather misleading. This function won't really unwind
@@ -157,25 +210,39 @@ BOOL RENAME_EH_EXTERN(_ExecutionInCatch)(
 // __FrameUnwindToState will be 2 not -1. This way we are able to unwind the stack block
 // by block not the whole function in single call.
 
-void __cdecl RENAME_EH_EXTERN(__FrameUnwindToEmptyState)(
+void RENAME_EH_EXTERN(__FrameHandler4)::FrameUnwindToEmptyState(
+    EHRegistrationNode *pRN,
+    DispatcherContext  *pDC,
+    FuncInfo4          *pFuncInfo
+    )
+{
+    EHRegistrationNode EstablisherFramePointers, *pEstablisher;
+
+    pEstablisher = GetEstablisherFrame(pRN, pDC, pFuncInfo, &EstablisherFramePointers);
+
+    FrameUnwindToState(pEstablisher, pDC, pFuncInfo, EH_EMPTY_STATE);
+}
+
+void RENAME_EH_EXTERN(__FrameHandler3)::FrameUnwindToEmptyState(
     EHRegistrationNode *pRN,
     DispatcherContext  *pDC,
     FuncInfo           *pFuncInfo
-) {
+    )
+{
     __ehstate_t         stateFromControlPC;
     TryBlockMapEntry    *pEntry;
     EHRegistrationNode  EstablisherFramePointers, *pEstablisher;
 
-    pEstablisher = RENAME_EH_EXTERN(_GetEstablisherFrame)(pRN,
-                                                          pDC,
-                                                          pFuncInfo,
-                                                          &EstablisherFramePointers);
+    pEstablisher = GetEstablisherFrame(pRN,
+                                       pDC,
+                                       pFuncInfo,
+                                       &EstablisherFramePointers);
 
-    stateFromControlPC = RENAME_EH_EXTERN(__StateFromControlPc)(pFuncInfo, pDC);
-    pEntry = _CatchTryBlock(pFuncInfo, stateFromControlPC);
+    stateFromControlPC = StateFromControlPc(pFuncInfo, pDC);
+    pEntry = CatchTryBlock(pFuncInfo, stateFromControlPC);
 
-    RENAME_EH_EXTERN(__FrameUnwindToState)(pEstablisher, pDC, pFuncInfo,
-                         pEntry == nullptr ? EH_EMPTY_STATE : TBME_HIGH(*pEntry));
+    FrameUnwindToState(pEstablisher, pDC, pFuncInfo,
+                       pEntry == nullptr ? EH_EMPTY_STATE : TBME_HIGH(*pEntry));
 }
 
 //
@@ -200,7 +267,29 @@ extern "C" DECLSPEC_GUARD_SUPPRESS EXCEPTION_DISPOSITION __cdecl RENAME_EH_EXTER
     _ThrowImageBase = (uintptr_t)pExcept->params.pThrowImageBase;
 #endif
     pFuncInfo = (FuncInfo*)(_ImageBase +*(PULONG)pDC->HandlerData);
-    result = RENAME_EH_EXTERN(__InternalCxxFrameHandler)( pExcept, &EstablisherFrame, pContext, pDC, pFuncInfo, 0, nullptr, FALSE );
+    result = __InternalCxxFrameHandler<RENAME_EH_EXTERN(__FrameHandler3)>(pExcept, &EstablisherFrame, pContext, pDC, pFuncInfo, 0, nullptr, FALSE);
+    return result;
+}
+
+extern "C" DECLSPEC_GUARD_SUPPRESS EXCEPTION_DISPOSITION __cdecl RENAME_EH_EXTERN_HYBRID(__CxxFrameHandler4)(
+    EHExceptionRecord  *pExcept,         // Information for this exception
+    EHRegistrationNode RN,               // Dynamic information for this frame
+    CONTEXT            *pContext,        // Context info
+    DispatcherContext  *pDC              // More dynamic info for this frame
+    ) {
+    FuncInfo4               FuncInfo;
+    EXCEPTION_DISPOSITION   result;
+    EHRegistrationNode      EstablisherFrame = RN;
+
+    _ImageBase = pDC->ImageBase;
+#ifdef _ThrowImageBase
+    _ThrowImageBase = (uintptr_t)pExcept->params.pThrowImageBase;
+#endif
+    PBYTE buffer = (PBYTE)(_ImageBase + *(PULONG)pDC->HandlerData);
+
+    DecompFuncInfo(buffer, FuncInfo);
+
+    result = __InternalCxxFrameHandler<RENAME_EH_EXTERN(__FrameHandler4)>(pExcept, &EstablisherFrame, pContext, pDC, &FuncInfo, 0, nullptr, FALSE);
     return result;
 }
 
@@ -232,21 +321,21 @@ extern "C" DECLSPEC_GUARD_SUPPRESS EXCEPTION_DISPOSITION __cdecl __CxxFrameHandl
 #endif
 
 // Call the SEH to EH translator.
-static int __cdecl __SehTransFilter(
+template <class T>
+static int SehTransFilter(
     EXCEPTION_POINTERS    *ExPtrs,
     EHExceptionRecord     *pExcept,
     EHRegistrationNode    *pRN,
     CONTEXT               *pContext,
     DispatcherContext     *pDC,
-    FuncInfo              *pFuncInfo,
+    typename T::FuncInfo  *pFuncInfo,
     BOOL                  *pResult
 ) {
         _pForeignExcept = pExcept;
 #ifdef _ThrowImageBase
         _ThrowImageBase = (uintptr_t)((EHExceptionRecord *)ExPtrs->ExceptionRecord)->params.pThrowImageBase;
 #endif
-        RENAME_EH_EXTERN(__InternalCxxFrameHandler)(
-                                  (EHExceptionRecord *)ExPtrs->ExceptionRecord,
+        __InternalCxxFrameHandler<T>((EHExceptionRecord *)ExPtrs->ExceptionRecord,
                                    pRN,
                                    pContext,
                                    pDC,
@@ -259,15 +348,17 @@ static int __cdecl __SehTransFilter(
         return EXCEPTION_EXECUTE_HANDLER;
 }
 
-BOOL __cdecl RENAME_EH_EXTERN(_CallSETranslator)(
-    EHExceptionRecord   *pExcept,    // The exception to be translated
-    EHRegistrationNode  *pRN,        // Dynamic info of function with catch
-    CONTEXT             *pContext,   // Context info
-    DispatcherContext   *pDC,        // More dynamic info of function with catch (ignored)
-    FuncInfo            *pFuncInfo,  // Static info of function with catch
-    ULONG               CatchDepth,  // How deeply nested in catch blocks are we?
-    EHRegistrationNode  *pMarkerRN   // Marker for parent context
-) {
+template <class T>
+BOOL _CallSETranslator(
+    EHExceptionRecord    *pExcept,    // The exception to be translated
+    EHRegistrationNode   *pRN,        // Dynamic info of function with catch
+    CONTEXT              *pContext,   // Context info
+    DispatcherContext    *pDC,        // More dynamic info of function with catch (ignored)
+    typename T::FuncInfo *pFuncInfo,  // Static info of function with catch
+    ULONG                CatchDepth,  // How deeply nested in catch blocks are we?
+    EHRegistrationNode   *pMarkerRN   // Marker for parent context
+    )
+{
     UNREFERENCED_PARAMETER(pMarkerRN);
 
     BOOL result = FALSE;
@@ -285,7 +376,7 @@ BOOL __cdecl RENAME_EH_EXTERN(_CallSETranslator)(
         pSETranslator = __pSETranslator;
         pSETranslator(PER_CODE(pExcept), &excptr);
         result = FALSE;
-    } __except(__SehTransFilter( exception_info(),
+    } __except(SehTransFilter<T>(exception_info(),
                                  pExcept,
                                  pRN,
                                  pContext,
@@ -299,9 +390,31 @@ BOOL __cdecl RENAME_EH_EXTERN(_CallSETranslator)(
     return result;
 }
 
+template
+BOOL _CallSETranslator<RENAME_EH_EXTERN(__FrameHandler4)>(
+    EHExceptionRecord    *pExcept,    // The exception to be translated
+    EHRegistrationNode   *pRN,        // Dynamic info of function with catch
+    CONTEXT              *pContext,   // Context info
+    DispatcherContext    *pDC,        // More dynamic info of function with catch (ignored)
+    FuncInfo4            *pFuncInfo,  // Static info of function with catch
+    ULONG                CatchDepth,  // How deeply nested in catch blocks are we?
+    EHRegistrationNode   *pMarkerRN   // Marker for parent context
+    );
+
+template
+BOOL _CallSETranslator<RENAME_EH_EXTERN(__FrameHandler3)>(
+    EHExceptionRecord    *pExcept,    // The exception to be translated
+    EHRegistrationNode   *pRN,        // Dynamic info of function with catch
+    CONTEXT              *pContext,   // Context info
+    DispatcherContext    *pDC,        // More dynamic info of function with catch (ignored)
+    FuncInfo             *pFuncInfo,  // Static info of function with catch
+    ULONG                CatchDepth,  // How deeply nested in catch blocks are we?
+    EHRegistrationNode   *pMarkerRN   // Marker for parent context
+);
+
 /////////////////////////////////////////////////////////////////////////////
 //
-// _GetRangeOfTrysToCheck - determine which try blocks are of interest.
+// GetRangeOfTrysToCheck - determine which try blocks are of interest.
 //
 // The try blocks of interest are the ones in current catch block or function block.
 // We will not try to call the catch that are outside the scope of this block. Consider
@@ -334,26 +447,51 @@ BOOL __cdecl RENAME_EH_EXTERN(_CallSETranslator)(
 //      Address of first try block of interest is returned
 //      pStart and pEnd get the indices of the range in question
 //
-TryBlockMapEntry* __cdecl RENAME_EH_EXTERN(_GetRangeOfTrysToCheck)(
-        EHRegistrationNode  *pRN,
-        FuncInfo            *pFuncInfo,
-        int                 CatchDepth,
-        __ehstate_t         curState,
-        unsigned            *pStart,
-        unsigned            *pEnd,
-        DispatcherContext   *pDC
-) {
-    UNREFERENCED_PARAMETER(pRN);
-    UNREFERENCED_PARAMETER(CatchDepth);
 
+RENAME_EH_EXTERN(__FrameHandler4)::TryBlockMap::IteratorPair RENAME_EH_EXTERN(__FrameHandler4)::GetRangeOfTrysToCheck(
+    TryBlockMap    &tryBlockMap,
+    __ehstate_t    curState,
+    int            /*CatchDepth*/
+)
+{
+    auto iterStart = tryBlockMap.begin();
+    auto iterEnd = tryBlockMap.begin();
+    tryBlockMap.setBuffer(iterStart);
+
+    for (auto iter = tryBlockMap.begin(); iter != tryBlockMap.end(); ++iter)
+    {
+        auto tryBlock = *iter;
+        if (curState >= tryBlock->tryLow && curState <= tryBlock->tryHigh) {
+            if (iterStart != tryBlockMap.begin()) {
+                iterStart = iter;
+            }
+            iterEnd = iter;
+        }
+    }
+    // change to be (start, end]
+    iterEnd.incrementToSentinel();
+    // Reset so when we start reading it starts at the correct location
+    tryBlockMap.setBuffer(iterStart);
+    return TryBlockMap::IteratorPair(iterStart, iterEnd);
+}
+
+RENAME_EH_EXTERN(__FrameHandler3)::TryBlockMap::IteratorPair RENAME_EH_EXTERN(__FrameHandler3)::GetRangeOfTrysToCheck(
+    TryBlockMap    &tryBlockMap,
+    __ehstate_t    curState,
+    int            /*CatchDepth*/
+    )
+{
     TryBlockMapEntry *pEntry, *pCurCatchEntry = nullptr;
+    FuncInfo *pFuncInfo = tryBlockMap.getFuncInfo();
+    DispatcherContext * pDC = tryBlockMap.getpDC();
     unsigned num_of_try_blocks = FUNC_NTRYBLOCKS(*pFuncInfo);
     unsigned int index;
-    __ehstate_t ipState = RENAME_EH_EXTERN(__StateFromControlPc)(pFuncInfo, pDC);
+    __ehstate_t ipState = StateFromControlPc(pFuncInfo, pDC);
 
     DASSERT( num_of_try_blocks > 0 );
 
-    *pStart = *pEnd = static_cast<unsigned>(-1);
+    unsigned start = static_cast<unsigned>(-1);
+    unsigned end = start;
     for (index = num_of_try_blocks; index > 0; index--) {
         pEntry = FUNC_PTRYBLOCK(*pFuncInfo, index -1, pDC->ImageBase);
         if (ipState > TBME_HIGH(*pEntry) && ipState <= TBME_CATCHHIGH(*pEntry)) {
@@ -372,20 +510,24 @@ TryBlockMapEntry* __cdecl RENAME_EH_EXTERN(_GetRangeOfTrysToCheck)(
                 continue;
         }
         if( curState >= TBME_LOW(*pEntry) && curState <= TBME_HIGH(*pEntry) ) {
-           if (*pStart == -1) {
-               *pStart = index;
+           if (start == -1) {
+               start = index;
            }
-           *pEnd = index+1;
+           end = index;
         }
     }
 
-    if ( *pStart == -1){
-        *pStart = 0;
-        *pEnd = 0;
-        return nullptr;
+    // change to be (start, end]
+    ++end;
+    if (start == -1){
+        start = 0;
+        end = 0;
     }
-    else
-        return FUNC_PTRYBLOCK(*pFuncInfo, *pStart, pDC->ImageBase);
+
+    auto iterStart = TryBlockMap::iterator(tryBlockMap, start);
+    auto iterEnd = TryBlockMap::iterator(tryBlockMap, end);
+
+    return TryBlockMap::IteratorPair(iterStart, iterEnd);
 }
 
 extern "C" FRAMEINFO * __cdecl RENAME_EH_EXTERN(_CreateFrameInfo)(
@@ -424,18 +566,112 @@ extern "C" void __cdecl RENAME_EH_EXTERN(_FindAndUnlinkFrame)(
     DASSERT(0);
 }
 
-extern "C" void __cdecl RENAME_EH_EXTERN(_UnwindNestedFrames)(
+void RENAME_EH_EXTERN(__FrameHandler4)::UnwindNestedFrames(
     EHRegistrationNode  *pFrame,            // Unwind up to (but not including) this frame
     EHExceptionRecord   *pExcept,           // The exception that initiated this unwind
     CONTEXT             *pContext,          // Context info for current exception
     EHRegistrationNode  *pEstablisher,
     void                *Handler,
+    FuncInfo4*          /*pFuncInfo*/,
     __ehstate_t         TargetUnwindState,
-    FuncInfo            *pFuncInfo,
+    __ehstate_t         CatchState,        // State outside of current try but inside of any enclosing trys
+    HandlerType4        *pCatch,
     DispatcherContext   *pDC,
     BOOLEAN             recursive
+    )
+{
+    static const EXCEPTION_RECORD ExceptionTemplate = // A generic exception record
+    {
+        STATUS_UNWIND_CONSOLIDATE,         // STATUS_UNWIND_CONSOLIDATE
+        EXCEPTION_NONCONTINUABLE,          // Exception flags (we don't do resume)
+        nullptr,                           // Additional record (none)
+        nullptr,                           // Address of exception (OS fills in)
+        15,                                // Number of parameters
+        { EH_MAGIC_NUMBER1,                // Our version control magic number
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0
+        }                                  // pThrowInfo
+    };
 
-) {
+#if defined(_M_X64)
+
+    CONTEXT Context;
+
+    PCONTEXT UnwindContext = &Context;
+
+#elif defined(_M_ARM_NT) || defined(_M_ARM64) || defined(_CHPE_X86_ARM64_EH_)
+
+    PCONTEXT UnwindContext = pDC->ContextRecord;
+
+#else
+
+#error Unknown processor architecture
+
+#endif
+
+
+    EXCEPTION_RECORD ExceptionRecord = ExceptionTemplate;
+    ExceptionRecord.ExceptionInformation[0] = (ULONG_PTR)CxxCallCatchBlock;
+    // Address of call back function
+    ExceptionRecord.ExceptionInformation[1] = (ULONG_PTR)pEstablisher;
+    // Used by callback function
+    ExceptionRecord.ExceptionInformation[2] = (ULONG_PTR)Handler;
+    // Used by callback function to call catch block
+    ExceptionRecord.ExceptionInformation[3] = (ULONG_PTR)TargetUnwindState;
+    // Used by CxxFrameHandler to unwind to target_state
+    ExceptionRecord.ExceptionInformation[4] = (ULONG_PTR)pContext;
+    // used to set pCurrentExContext in callback function
+    ExceptionRecord.ExceptionInformation[5] = pCatch->continuationAddress[0] ? __FuncToImageRelOffset(pDC, pCatch->continuationAddress[0]): 0;
+    // Used in callback function for continuation address lookup
+    ExceptionRecord.ExceptionInformation[6] = (ULONG_PTR)pExcept;
+    // Used for passing current Exception
+    ExceptionRecord.ExceptionInformation[7] = (ULONG_PTR)recursive;
+    // Used for translated Exceptions
+    ExceptionRecord.ExceptionInformation[8] = EH_MAGIC_NUMBER1;
+    // Used in __InternalCxxFrameHandler to detected if it's being
+    // called from _UnwindNestedFrames.
+
+    // TODO: make these contiguous
+    ExceptionRecord.ExceptionInformation[9] = pCatch->continuationAddress[0] ? __FuncToImageRelOffset(pDC, pCatch->continuationAddress[1]) : 0;
+    // Used in callback function for continuation address lookup
+
+#if defined(_M_ARM_NT) || defined(_M_ARM64) || defined(_CHPE_X86_ARM64_EH_)
+
+    ExceptionRecord.ExceptionInformation[10] = static_cast<ULONG_PTR>(-1);
+    // ARM/ARM64-specific: used to hold a pointer to the non-volatile
+    // registers
+
+#elif !defined(_M_X64)
+
+#error Unknown processor architecture.
+
+#endif
+
+    // Used to associate Catch Handler state to parent state
+    ExceptionRecord.ExceptionInformation[11] = CatchState;
+
+    RtlUnwindEx((void *)*pFrame,
+        (void *)pDC->ControlPc,    // Address where control left function
+        &ExceptionRecord,
+        nullptr,
+        UnwindContext,
+        (PUNWIND_HISTORY_TABLE)pDC->HistoryTable);
+}
+
+void RENAME_EH_EXTERN(__FrameHandler3)::UnwindNestedFrames(
+    EHRegistrationNode  *pFrame,            // Unwind up to (but not including) this frame
+    EHExceptionRecord   *pExcept,           // The exception that initiated this unwind
+    CONTEXT             *pContext,          // Context info for current exception
+    EHRegistrationNode  *pEstablisher,
+    void                *Handler,
+    FuncInfo            *pFuncInfo,
+    __ehstate_t         TargetUnwindState,
+    __ehstate_t         /*CatchState*/,
+    HandlerType*        /*pCatch*/,
+    DispatcherContext   *pDC,
+    BOOLEAN             recursive
+    )
+{
     static const EXCEPTION_RECORD ExceptionTemplate = // A generic exception record
     {
         STATUS_UNWIND_CONSOLIDATE,         // STATUS_UNWIND_CONSOLIDATE
@@ -467,7 +703,7 @@ extern "C" void __cdecl RENAME_EH_EXTERN(_UnwindNestedFrames)(
 
 
     EXCEPTION_RECORD ExceptionRecord = ExceptionTemplate;
-    ExceptionRecord.ExceptionInformation[0] = (ULONG_PTR)RENAME_EH_EXTERN(__CxxCallCatchBlock);
+    ExceptionRecord.ExceptionInformation[0] = (ULONG_PTR)CxxCallCatchBlock;
                 // Address of call back function
     ExceptionRecord.ExceptionInformation[1] = (ULONG_PTR)pEstablisher;
                 // Used by callback function

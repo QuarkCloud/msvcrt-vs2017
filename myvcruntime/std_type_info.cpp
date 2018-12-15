@@ -9,12 +9,12 @@
 #include <vcruntime_internal.h>
 #include <vcruntime_string.h>
 #include <vcruntime_typeinfo.h>
-//#include <undname.h>
+#include <undname.h>
 
 
 
 
-/**
+
 extern "C" int __cdecl __std_type_info_compare(
     __std_type_info_data const* const lhs,
     __std_type_info_data const* const rhs
@@ -27,7 +27,7 @@ extern "C" int __cdecl __std_type_info_compare(
 
     return strcmp(lhs->_DecoratedName + 1, rhs->_DecoratedName + 1);
 }
-*/
+
 extern "C" size_t __cdecl __std_type_info_hash(
     __std_type_info_data const* const data
     )
@@ -75,7 +75,7 @@ extern "C" char const* __cdecl __std_type_info_name(
             return cached_undecorated_name;
         }
     }
-    /**
+
     __crt_unique_heap_ptr<char> undecorated_name(__unDName(
         nullptr,
         data->_DecoratedName + 1,
@@ -88,16 +88,13 @@ extern "C" char const* __cdecl __std_type_info_name(
     {
         return nullptr; // CRT_REFACTOR TODO This is nonconforming
     }
-    */
 
-    size_t undecorated_name_length = 0; // strlen(undecorated_name.get());
-    /**
+    size_t undecorated_name_length = strlen(undecorated_name.get());
     while (undecorated_name_length != 0 && undecorated_name.get()[undecorated_name_length - 1] == ' ')
     {
         undecorated_name.get()[undecorated_name_length - 1] = '\0';
         --undecorated_name_length;
     }
-    */
 
     size_t const undecorated_name_count = undecorated_name_length + 1;
     size_t const node_size = sizeof(SLIST_ENTRY) + undecorated_name_count;
@@ -112,7 +109,7 @@ extern "C" char const* __cdecl __std_type_info_name(
     char*        const node_string = reinterpret_cast<char*>(node_header + 1);
 
     *node_header = SLIST_ENTRY{};
-    //strcpy_s(node_string, undecorated_name_count, undecorated_name.get());
+    strcpy_s(node_string, undecorated_name_count, undecorated_name.get());
 
     char const* const cached_undecorated_name = __crt_interlocked_compare_exchange_pointer(
         &data->_UndecoratedName,

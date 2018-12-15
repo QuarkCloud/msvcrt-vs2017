@@ -1,7 +1,3 @@
- 
- 
-// begin_1_0
-// begin_1_1
 /********************************************************************************
 *                                                                               *
 * libloaderapi.h -- ApiSet Contract for api-ms-win-core-libraryloader-l1        *
@@ -22,38 +18,11 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-libraryloader-l1 */
-/* APISET_TAG: public */
-
-
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_LIBLOADER_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS1
-#define _APISET_LIBLOADER_VER 0x0202
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_LIBLOADER_VER 0x0201
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINBLUE
-#define _APISET_LIBLOADER_VER 0x0200
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_LIBLOADER_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_LIBLOADER_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 #define  FIND_RESOURCE_DIRECTORY_TYPES       (0x0100)
@@ -155,12 +124,7 @@ typedef ENUMRESLANGPROCA ENUMRESLANGPROC;
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-// end_1_1
-// begin_1_0
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -175,7 +139,6 @@ DisableThreadLibraryCalls(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -198,9 +161,7 @@ FindResourceExW(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN7)
 
@@ -241,7 +202,6 @@ FreeLibraryAndExitThread(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -256,28 +216,27 @@ FreeResource(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
 _Success_(return != 0)
-_Ret_range_(1, nSize)
+_Ret_range_(1,nSize)
 DWORD
 WINAPI
 GetModuleFileNameA(
     _In_opt_ HMODULE hModule,
-    _Out_writes_to_(nSize, ((return < nSize) ? (return + 1) : nSize)) LPSTR lpFilename,
+    _Out_writes_to_(nSize,((return < nSize) ? (return + 1) : nSize)) LPSTR lpFilename,
     _In_ DWORD nSize
     );
 
 WINBASEAPI
 _Success_(return != 0)
-_Ret_range_(1, nSize)
+_Ret_range_(1,nSize)
 DWORD
 WINAPI
 GetModuleFileNameW(
     _In_opt_ HMODULE hModule,
-    _Out_writes_to_(nSize, ((return < nSize) ? (return + 1) : nSize)) LPWSTR lpFilename,
+    _Out_writes_to_(nSize,((return < nSize) ? (return + 1) : nSize)) LPWSTR lpFilename,
     _In_ DWORD nSize
     );
 
@@ -291,12 +250,11 @@ GetModuleFileNameW(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
-_When_(lpModuleName == NULL, _Ret_notnull_)
-_When_(lpModuleName != NULL, _Ret_maybenull_)
+_When_(lpModuleName == NULL,_Ret_notnull_)
+_When_(lpModuleName != NULL,_Ret_maybenull_)
 HMODULE
 WINAPI
 GetModuleHandleA(
@@ -304,8 +262,8 @@ GetModuleHandleA(
     );
 
 WINBASEAPI
-_When_(lpModuleName == NULL, _Ret_notnull_)
-_When_(lpModuleName != NULL, _Ret_maybenull_)
+_When_(lpModuleName == NULL,_Ret_notnull_)
+_When_(lpModuleName != NULL,_Ret_maybenull_)
 HMODULE
 WINAPI
 GetModuleHandleW(
@@ -317,7 +275,6 @@ GetModuleHandleW(
 #else
 #define GetModuleHandle  GetModuleHandleA
 #endif // !UNICODE
-
 
 #if !defined(RC_INVOKED)
 
@@ -353,7 +310,7 @@ WINAPI
 GetModuleHandleExA(
     _In_ DWORD dwFlags,
     _In_opt_ LPCSTR lpModuleName,
-    _Out_ HMODULE * phModule
+    _Out_ HMODULE* phModule
     );
 
 WINBASEAPI
@@ -362,7 +319,7 @@ WINAPI
 GetModuleHandleExW(
     _In_ DWORD dwFlags,
     _In_opt_ LPCWSTR lpModuleName,
-    _Out_ HMODULE * phModule
+    _Out_ HMODULE* phModule
     );
 
 #ifdef UNICODE
@@ -377,7 +334,6 @@ GetModuleHandleExW(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -389,11 +345,28 @@ GetProcAddress(
     );
 
 
+#define CURRENT_IMPORT_REDIRECTION_VERSION      1
+
+typedef struct _REDIRECTION_FUNCTION_DESCRIPTOR {
+    PCSTR DllName;
+    PCSTR FunctionName;
+    PVOID RedirectionTarget;
+} REDIRECTION_FUNCTION_DESCRIPTOR, *PREDIRECTION_FUNCTION_DESCRIPTOR;
+
+typedef const REDIRECTION_FUNCTION_DESCRIPTOR *PCREDIRECTION_FUNCTION_DESCRIPTOR;
+
+typedef struct _REDIRECTION_DESCRIPTOR {
+    ULONG Version;
+    ULONG FunctionCount;
+    PCREDIRECTION_FUNCTION_DESCRIPTOR Redirections;
+} REDIRECTION_DESCRIPTOR, *PREDIRECTION_DESCRIPTOR;
+
+typedef const REDIRECTION_DESCRIPTOR *PCREDIRECTION_DESCRIPTOR;
+
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -436,7 +409,6 @@ LoadLibraryExW(
 #define LOAD_LIBRARY_SEARCH_SYSTEM32        0x00000800
 #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS    0x00001000
 
-
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
 #define LOAD_LIBRARY_SAFE_CURRENT_DIRS      0x00002000
@@ -453,7 +425,6 @@ LoadLibraryExW(
 #define LOAD_LIBRARY_SEARCH_SYSTEM32_NO_FORWARDER   LOAD_LIBRARY_SEARCH_SYSTEM32
 
 #endif // (_APISET_LIBLOADER_VER >= 0x0202)
-
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 
@@ -474,10 +445,7 @@ LoadResource(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-// end_1_0
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINUSERAPI
@@ -486,7 +454,7 @@ WINAPI
 LoadStringA(
     _In_opt_ HINSTANCE hInstance,
     _In_ UINT uID,
-    _Out_writes_to_(cchBufferMax, return + 1) LPSTR lpBuffer,
+    _Out_writes_to_(cchBufferMax,return + 1) LPSTR lpBuffer,
     _In_ int cchBufferMax
     );
 
@@ -496,7 +464,7 @@ WINAPI
 LoadStringW(
     _In_opt_ HINSTANCE hInstance,
     _In_ UINT uID,
-    _Out_writes_to_(cchBufferMax, return + 1) LPWSTR lpBuffer,
+    _Out_writes_to_(cchBufferMax,return + 1) LPWSTR lpBuffer,
     _In_ int cchBufferMax
     );
 
@@ -509,10 +477,7 @@ LoadStringW(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-// begin_1_0
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -535,10 +500,7 @@ SizeofResource(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-// end_1_0
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 typedef PVOID DLL_DIRECTORY_COOKIE, *PDLL_DIRECTORY_COOKIE;
@@ -570,15 +532,8 @@ SetDefaultDllDirectories(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-// begin_1_1
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0101)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
 
@@ -677,15 +632,7 @@ EnumResourceTypesExW(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0101)
-
-// end_1_1
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0201)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -728,13 +675,7 @@ LoadLibraryW(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0201)
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0202)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -754,11 +695,6 @@ EnumResourceNamesW(
 
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
-
-#endif // !defined(_CONTRACT_GEN) || (_APISET_LIBLOADER_VER >= 0x0202)
-
-// begin_1_0
-// begin_1_1
 
 #ifdef __cplusplus
 }

@@ -98,7 +98,7 @@ namespace details
             _My_early_size = 0;
             _My_first_block = 0; // here is not _Default_initial_segments
             for( _Segment_index_t _I = 0; _I < _Pointers_per_short_table; _I++)
-                _My_storage[_I]._My_array = NULL;
+                _My_storage[_I]._My_array = nullptr;
             _My_segment = _My_storage;
         }
         _CONCRTIMP ~_Concurrent_vector_base_v4();
@@ -204,7 +204,7 @@ namespace details
         template<typename _Ty, class _Ax>
         friend class ::Concurrency::concurrent_vector;
 
-        _Vector_iterator( const _Container& _Vec, size_t _Index, void* _Ptr = NULL )
+        _Vector_iterator( const _Container& _Vec, size_t _Index, void* _Ptr = nullptr )
             : _My_vector(const_cast<_Container*>(&_Vec)),
               _My_index(_Index),
               _My_item(static_cast<_Value*>(_Ptr))
@@ -214,7 +214,7 @@ namespace details
     public:
         // Default constructor
         _Vector_iterator()
-            : _My_vector(NULL), _My_index(~size_t(0)), _My_item(NULL)
+            : _My_vector(nullptr), _My_index(~size_t(0)), _My_item(nullptr)
         {
         }
 
@@ -232,7 +232,7 @@ namespace details
         _Vector_iterator& operator+=( ptrdiff_t _Offset )
         {
             _My_index+=_Offset;
-            _My_item = NULL;
+            _My_item = nullptr;
             return *this;
         }
         _Vector_iterator operator-( ptrdiff_t _Offset ) const
@@ -242,7 +242,7 @@ namespace details
         _Vector_iterator& operator-=( ptrdiff_t _Offset )
         {
             _My_index-=_Offset;
-            _My_item = NULL;
+            _My_item = nullptr;
             return *this;
         }
         _Value& operator*() const
@@ -272,7 +272,7 @@ namespace details
                 if( (_K& (_K-2))==0 )
                 {
                     // _K is a power of two that is at least _K-2.
-                    _My_item= NULL;
+                    _My_item= nullptr;
                 }
                 else
                 {
@@ -293,7 +293,7 @@ namespace details
                 if( (_K& (_K-2))==0 )
                 {
                     // k is a power of two that is at least k-2.
-                    _My_item= NULL;
+                    _My_item= nullptr;
                 }
                 else
                 {
@@ -326,12 +326,6 @@ namespace details
         typedef _Value* pointer;
         typedef _Value& reference;
         typedef std::random_access_iterator_tag iterator_category;
-    };
-
-    template<typename _Container, typename _Value>
-    struct std::_Is_checked_helper<_Vector_iterator<_Container, _Value> >
-        : public true_type
-    {   // mark _Vector_iterator as checked. This suppresses warning C4996
     };
 
     template<typename _Container, typename _Ty>
@@ -386,8 +380,10 @@ namespace details
     class _Allocator_base
     {
     public:
-        typedef typename _Ax::template
-            rebind<_Ty>::other _Allocator_type;
+        typedef typename std::allocator_traits<_Ax>::template
+            rebind_alloc<_Ty> _Allocator_type;
+        using _Allocator_traits = std::allocator_traits<_Allocator_type>;
+
         _Allocator_type _My_allocator;
 
         _Allocator_base()
@@ -426,6 +422,7 @@ class concurrent_vector: protected details::_Allocator_base<_Ty, _Ax>,
 {
 private:
     typedef concurrent_vector<_Ty, _Ax> _Myt;
+    using typename details::_Allocator_base<_Ty, _Ax>::_Allocator_traits;
 
     template<typename _C, typename _U>
     friend class details::_Vector_iterator;
@@ -638,7 +635,7 @@ public:
         if ( !_N ) return;
         _Internal_reserve(_N, sizeof(_Ty), max_size()); _My_early_size = _N;
         _CONCRT_ASSERT( _My_first_block == _Segment_index_of(_N-1)+1 );
-        _Initialize_array(static_cast<_Ty*>(_My_segment[0]._My_array), NULL, _N);
+        _Initialize_array(static_cast<_Ty*>(_My_segment[0]._My_array), nullptr, _N);
     }
 
     /// <summary>
@@ -783,7 +780,7 @@ public:
     /**/
     iterator grow_by( size_type _Delta )
     {
-        return iterator(*this, _Delta ? _Internal_grow_by( _Delta, sizeof(_Ty), &_Initialize_array, NULL ) : _My_early_size);
+        return iterator(*this, _Delta ? _Internal_grow_by( _Delta, sizeof(_Ty), &_Initialize_array, nullptr ) : _My_early_size);
     }
 
     /// <summary>
@@ -823,7 +820,7 @@ public:
         size_type _M = 0;
         if( _N )
         {
-            _M = _Internal_grow_to_at_least_with_result( _N, sizeof(_Ty), &_Initialize_array, NULL );
+            _M = _Internal_grow_to_at_least_with_result( _N, sizeof(_Ty), &_Initialize_array, nullptr );
             if( _M > _N )
                 _M = _N;
         }
@@ -1059,7 +1056,7 @@ public:
     /**/
     void resize(size_type _N)
     {
-        _Internal_resize( _N, sizeof(_Ty), max_size(), _Destroy_array, _Initialize_array, NULL);
+        _Internal_resize( _N, sizeof(_Ty), max_size(), _Destroy_array, _Initialize_array, nullptr);
     }
 
     /// <summary>
@@ -1429,7 +1426,7 @@ private:
     // Allocate _K items
     static void * __cdecl _Internal_allocator(::Concurrency::details::_Concurrent_vector_base_v4 &_Vb, size_t _K)
     {
-        return static_cast<concurrent_vector<_Ty, _Ax>&>(_Vb)._My_allocator.allocate(_K);
+        return static_cast<concurrent_vector&>(_Vb)._My_allocator.allocate(_K);
     }
     // Free _K segments from table
     void _Internal_free_segments(void *_Table[], _Segment_index_t _K, _Segment_index_t _First_block);
@@ -1557,7 +1554,7 @@ void concurrent_vector<_Ty, _Ax>::_Internal_free_segments(void *_Table[], _Segme
     {
         --_K;
         _Ty* _Array = static_cast<_Ty*>(_Table[_K]);
-        _Table[_K] = NULL;
+        _Table[_K] = nullptr;
         if( _Array > _BAD_ALLOC_MARKER ) // check for correct segment pointer
             this->_My_allocator.deallocate( _Array, _Segment_size(_K) );
     }
@@ -1566,7 +1563,7 @@ void concurrent_vector<_Ty, _Ax>::_Internal_free_segments(void *_Table[], _Segme
     {
         _CONCRT_ASSERT( _First_block > 0 );
         while(_K > 0)
-            _Table[--_K] = NULL;
+            _Table[--_K] = nullptr;
         this->_My_allocator.deallocate( _Array, _Segment_size(_First_block) );
     }
 }
@@ -1581,7 +1578,7 @@ _Ty& concurrent_vector<_Ty, _Ax>::_Internal_subscript( size_type _Index ) const
     // no need in load_with_acquire because the thread works in its own space or gets
     _Ty* _Array = static_cast<_Ty*>(_My_segment[_K]._My_array);
     _CONCRT_ASSERT( _Array != _BAD_ALLOC_MARKER ); // instance may be broken by bad allocation; use at() instead
-    _CONCRT_ASSERT( _Array != NULL ); // index is being allocated
+    _CONCRT_ASSERT( _Array != nullptr ); // index is being allocated
     return _Array[_J];
 }
 

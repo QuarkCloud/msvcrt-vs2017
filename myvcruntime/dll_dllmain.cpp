@@ -29,7 +29,8 @@ static int __proc_attached = 0;
 
 
 
-static BOOL __cdecl dllmain_crt_process_attach(HMODULE const instance, LPVOID const reserved) throw()
+static BOOL __cdecl dllmain_crt_process_attach(HMODULE const instance,
+    LPVOID const reserved)
 {
     if (!__scrt_initialize_crt(__scrt_module_type::dll))
         return FALSE;
@@ -87,7 +88,7 @@ static BOOL __cdecl dllmain_crt_process_attach(HMODULE const instance, LPVOID co
     return TRUE;
 }
 
-static BOOL __cdecl dllmain_crt_process_detach(bool const is_terminating) throw()
+static BOOL __cdecl dllmain_crt_process_detach(bool const is_terminating)
 {
     // If the attach did not complete successfully, or if the detach was already
     // executed, do not execute the detach:
@@ -130,7 +131,7 @@ static BOOL WINAPI dllmain_crt_dispatch(
     HINSTANCE const instance,
     DWORD     const reason,
     LPVOID    const reserved
-    ) throw()
+    )
 {
     switch (reason)
     {
@@ -157,7 +158,7 @@ static BOOL WINAPI dllmain_raw(
     HINSTANCE const instance,
     DWORD     const reason,
     LPVOID    const reserved
-    ) throw()
+    )
 {
     if (!_pRawDllMain)
         return TRUE;
@@ -171,7 +172,7 @@ static BOOL __cdecl dllmain_dispatch(
     HINSTANCE const instance,
     DWORD     const reason,
     LPVOID    const reserved
-    ) throw()
+    )
 {
     // If this is a process detach notification, check that there was a prior
     // process attach notification that was processed successfully.  This is

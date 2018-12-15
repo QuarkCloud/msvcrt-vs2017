@@ -14,7 +14,6 @@
 #include <corecrt_internal_fltintrn.h>
 #include <string.h>
 #include <stddef.h>
-#include <suppress.h>
 
 
 #pragma warning(disable:__WARNING_UNRELATED_LOOP_TERMINATION) // 22102

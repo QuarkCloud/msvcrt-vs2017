@@ -21,8 +21,8 @@ Abstract:
 #endif
 #include <winapifamily.h>
 
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+#pragma region Desktop Family, OneCore Family, or App Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 
 
 #include <cfg.h>
@@ -1373,7 +1373,7 @@ typedef __callback DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(
 
 #endif // (WINVER >= _WIN32_WINNT_WIN8)
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
 #pragma region Desktop Family
@@ -2684,6 +2684,13 @@ CM_Get_Device_Interface_Alias_ExW(
 #define CM_Get_Device_Interface_Alias_Ex  CM_Get_Device_Interface_Alias_ExA
 #endif // UNICODE
 
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
+#pragma endregion
+
+
+#pragma region Desktop Family, OneCore Family, or App Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
+
 CMAPI
 CONFIGRET
 WINAPI
@@ -2694,13 +2701,6 @@ CM_Get_Device_Interface_ListA(
     _In_  ULONG         BufferLen,
     _In_  ULONG         ulFlags
     );
-
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 CMAPI
 CONFIGRET
 WINAPI
@@ -2711,8 +2711,13 @@ CM_Get_Device_Interface_ListW(
     _In_  ULONG         BufferLen,
     _In_  ULONG         ulFlags
     );
+#ifdef UNICODE
+#define CM_Get_Device_Interface_List     CM_Get_Device_Interface_ListW
+#else
+#define CM_Get_Device_Interface_List     CM_Get_Device_Interface_ListA
+#endif // UNICODE
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
 #pragma region Desktop Family
@@ -2741,12 +2746,16 @@ CM_Get_Device_Interface_List_ExW(
     _In_opt_ HMACHINE   hMachine
     );
 #ifdef UNICODE
-#define CM_Get_Device_Interface_List     CM_Get_Device_Interface_ListW
 #define CM_Get_Device_Interface_List_Ex  CM_Get_Device_Interface_List_ExW
 #else
-#define CM_Get_Device_Interface_List     CM_Get_Device_Interface_ListA
 #define CM_Get_Device_Interface_List_Ex  CM_Get_Device_Interface_List_ExA
 #endif // UNICODE
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
+#pragma endregion
+
+#pragma region Desktop Family, OneCore Family, or App Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 
 CMAPI
 CONFIGRET
@@ -2757,13 +2766,6 @@ CM_Get_Device_Interface_List_SizeA(
     _In_opt_ DEVINSTID_A pDeviceID,
     _In_  ULONG         ulFlags
     );
-
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
-#pragma endregion
-
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 CMAPI
 CONFIGRET
 WINAPI
@@ -2773,8 +2775,13 @@ CM_Get_Device_Interface_List_SizeW(
     _In_opt_ DEVINSTID_W pDeviceID,
     _In_  ULONG         ulFlags
     );
+#ifdef UNICODE
+#define CM_Get_Device_Interface_List_Size     CM_Get_Device_Interface_List_SizeW
+#else
+#define CM_Get_Device_Interface_List_Size     CM_Get_Device_Interface_List_SizeA
+#endif // UNICODE
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
 #pragma region Desktop Family
@@ -2801,10 +2808,8 @@ CM_Get_Device_Interface_List_Size_ExW(
     _In_opt_ HMACHINE   hMachine
     );
 #ifdef UNICODE
-#define CM_Get_Device_Interface_List_Size     CM_Get_Device_Interface_List_SizeW
 #define CM_Get_Device_Interface_List_Size_Ex  CM_Get_Device_Interface_List_Size_ExW
 #else
-#define CM_Get_Device_Interface_List_Size     CM_Get_Device_Interface_List_SizeA
 #define CM_Get_Device_Interface_List_Size_Ex  CM_Get_Device_Interface_List_Size_ExA
 #endif // UNICODE
 
@@ -4462,8 +4467,8 @@ CM_WaitNoPendingInstallEvents(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
 #pragma endregion
 
-#pragma region Desktop Family or OneCore Family
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+#pragma region Desktop Family, OneCore Family, or App Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP)
 
 #if (WINVER >= _WIN32_WINNT_WIN8)
 
@@ -4577,7 +4582,7 @@ CM_MapCrToWin32Err(
 }
 #endif
 
-#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM | WINAPI_PARTITION_APP) */
 #pragma endregion
 
 #endif // _CFGMGR32_H_

@@ -1,10 +1,3 @@
- 
-// begin_1_0
-// begin_1_1
-// begin_1_2
-// begin_1_3
-// begin_1_4
-// begin_1_5
 /********************************************************************************
 *                                                                               *
 * memoryapi.h -- ApiSet Contract for api-ms-win-core-memory-l1-1-0              *
@@ -25,37 +18,9 @@
 #include <minwindef.h>
 #include <minwinbase.h>
 
-/* APISET_NAME: api-ms-win-core-memory-l1 */
-/* APISET_TAG: public */
-
-#if !defined(RC_INVOKED)
-
-#ifndef _APISET_MEMORY_VER
-#ifdef _APISET_TARGET_VERSION
-#if _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS2
-#define _APISET_MEMORY_VER 0x0105
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN10_RS1
-#define _APISET_MEMORY_VER 0x0104
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINTHRESHOLD
-#define _APISET_MEMORY_VER 0x0103
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WINBLUE
-#define _APISET_MEMORY_VER 0x0102
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN8
-#define _APISET_MEMORY_VER 0x0101
-#elif _APISET_TARGET_VERSION >= _APISET_TARGET_VERSION_WIN7
-#define _APISET_MEMORY_VER 0x0100
-#endif
-#endif
-#endif
-
-#endif // !defined(RC_INVOKED)
-
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 #if _MSC_VER >= 1200
 #pragma warning(push)
@@ -63,7 +28,6 @@ extern "C" {
 #endif
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 #define FILE_MAP_WRITE            SECTION_MAP_WRITE
@@ -81,20 +45,12 @@ extern "C" {
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-// end_1_1
-// end_1_2
-// end_1_3
-// end_1_4
-// end_1_5
-// begin_1_0
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
-_Ret_maybenull_ _Post_writable_byte_size_(dwSize)
+_Ret_maybenull_
+_Post_writable_byte_size_(dwSize)
 LPVOID
 WINAPI
 VirtualAlloc(
@@ -121,7 +77,6 @@ VirtualProtect(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 _When_(((dwFreeType&(MEM_RELEASE|MEM_DECOMMIT)))==(MEM_RELEASE|MEM_DECOMMIT),
@@ -137,7 +92,7 @@ WINBASEAPI
 BOOL
 WINAPI
 VirtualFree(
-    _Pre_notnull_ _When_(dwFreeType == MEM_DECOMMIT, _Post_invalid_) _When_(dwFreeType == MEM_RELEASE, _Post_ptr_invalid_) LPVOID lpAddress,
+    _Pre_notnull_ _When_(dwFreeType == MEM_DECOMMIT,_Post_invalid_) _When_(dwFreeType == MEM_RELEASE,_Post_ptr_invalid_) LPVOID lpAddress,
     _In_ SIZE_T dwSize,
     _In_ DWORD dwFreeType
     );
@@ -148,7 +103,7 @@ SIZE_T
 WINAPI
 VirtualQuery(
     _In_opt_ LPCVOID lpAddress,
-    _Out_writes_bytes_to_(dwLength, return) PMEMORY_BASIC_INFORMATION lpBuffer,
+    _Out_writes_bytes_to_(dwLength,return) PMEMORY_BASIC_INFORMATION lpBuffer,
     _In_ SIZE_T dwLength
     );
 
@@ -157,11 +112,11 @@ VirtualQuery(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
-_Ret_maybenull_ _Post_writable_byte_size_(dwSize)
+_Ret_maybenull_
+_Post_writable_byte_size_(dwSize)
 LPVOID
 WINAPI
 VirtualAllocEx(
@@ -170,29 +125,6 @@ VirtualAllocEx(
     _In_ SIZE_T dwSize,
     _In_ DWORD flAllocationType,
     _In_ DWORD flProtect
-    );
-
-
-_When_(((dwFreeType&(MEM_RELEASE|MEM_DECOMMIT)))==(MEM_RELEASE|MEM_DECOMMIT),
-    __drv_reportError("Passing both MEM_RELEASE and MEM_DECOMMIT to VirtualFree is not allowed. This results in the failure of this call"))
-
-_When_(dwFreeType==0,
-    __drv_reportError("Passing zero as the dwFreeType parameter to VirtualFree is not allowed. This results in the failure of this call"))
-
-_When_(((dwFreeType&MEM_RELEASE))!=0 && dwSize!=0,
-    __drv_reportError("Passing MEM_RELEASE and a non-zero dwSize parameter to VirtualFree is not allowed. This results in the failure of this call"))
-
-_When_(((dwFreeType&MEM_DECOMMIT))!=0,
-    __drv_reportError("Calling VirtualFreeEx without the MEM_RELEASE flag frees memory but not address descriptors (VADs); results in address space leaks"))
-_Success_(return != FALSE)
-WINBASEAPI
-BOOL
-WINAPI
-VirtualFreeEx(
-    _In_ HANDLE hProcess,
-    _Pre_notnull_ _When_(dwFreeType == MEM_DECOMMIT, _Post_invalid_) _When_(dwFreeType == MEM_RELEASE, _Post_ptr_invalid_) LPVOID lpAddress,
-    _In_ SIZE_T dwSize,
-    _In_ DWORD dwFreeType
     );
 
 
@@ -215,7 +147,7 @@ WINAPI
 VirtualQueryEx(
     _In_ HANDLE hProcess,
     _In_opt_ LPCVOID lpAddress,
-    _Out_writes_bytes_to_(dwLength, return) PMEMORY_BASIC_INFORMATION lpBuffer,
+    _Out_writes_bytes_to_(dwLength,return) PMEMORY_BASIC_INFORMATION lpBuffer,
     _In_ SIZE_T dwLength
     );
 
@@ -227,9 +159,9 @@ WINAPI
 ReadProcessMemory(
     _In_ HANDLE hProcess,
     _In_ LPCVOID lpBaseAddress,
-    _Out_writes_bytes_to_(nSize, *lpNumberOfBytesRead) LPVOID lpBuffer,
+    _Out_writes_bytes_to_(nSize,*lpNumberOfBytesRead) LPVOID lpBuffer,
     _In_ SIZE_T nSize,
-    _Out_opt_ SIZE_T * lpNumberOfBytesRead
+    _Out_opt_ SIZE_T* lpNumberOfBytesRead
     );
 
 
@@ -242,7 +174,7 @@ WriteProcessMemory(
     _In_ LPVOID lpBaseAddress,
     _In_reads_bytes_(nSize) LPCVOID lpBuffer,
     _In_ SIZE_T nSize,
-    _Out_opt_ SIZE_T * lpNumberOfBytesWritten
+    _Out_opt_ SIZE_T* lpNumberOfBytesWritten
     );
 
 
@@ -310,8 +242,30 @@ MapViewOfFileEx(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
+
+_When_(((dwFreeType&(MEM_RELEASE|MEM_DECOMMIT)))==(MEM_RELEASE|MEM_DECOMMIT),
+    __drv_reportError("Passing both MEM_RELEASE and MEM_DECOMMIT to VirtualFree is not allowed. This results in the failure of this call"))
+
+_When_(dwFreeType==0,
+    __drv_reportError("Passing zero as the dwFreeType parameter to VirtualFree is not allowed. This results in the failure of this call"))
+
+_When_(((dwFreeType&MEM_RELEASE))!=0 && dwSize!=0,
+    __drv_reportError("Passing MEM_RELEASE and a non-zero dwSize parameter to VirtualFree is not allowed. This results in the failure of this call"))
+
+_When_(((dwFreeType&MEM_DECOMMIT))!=0,
+    __drv_reportError("Calling VirtualFreeEx without the MEM_RELEASE flag frees memory but not address descriptors (VADs); results in address space leaks"))
+_Success_(return != FALSE)
+WINBASEAPI
+BOOL
+WINAPI
+VirtualFreeEx(
+    _In_ HANDLE hProcess,
+    _Pre_notnull_ _When_(dwFreeType == MEM_DECOMMIT,_Post_invalid_) _When_(dwFreeType == MEM_RELEASE,_Post_ptr_invalid_) LPVOID lpAddress,
+    _In_ SIZE_T dwSize,
+    _In_ DWORD dwFreeType
+    );
+
 
 WINBASEAPI
 BOOL
@@ -333,14 +287,7 @@ UnmapViewOfFile(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-// end_1_0
-// begin_1_1
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0101)
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -378,7 +325,6 @@ SetProcessWorkingSetSizeEx(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -403,7 +349,6 @@ VirtualUnlock(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 WINBASEAPI
@@ -414,8 +359,8 @@ GetWriteWatch(
     _In_ DWORD dwFlags,
     _In_ PVOID lpBaseAddress,
     _In_ SIZE_T dwRegionSize,
-    _Out_writes_to_opt_(*lpdwCount, *lpdwCount) PVOID * lpAddresses,
-    _Inout_opt_ ULONG_PTR * lpdwCount,
+    _Out_writes_to_opt_(*lpdwCount,*lpdwCount) PVOID* lpAddresses,
+    _Inout_opt_ ULONG_PTR* lpdwCount,
     _Out_opt_ LPDWORD lpdwGranularity
     );
 
@@ -433,9 +378,7 @@ ResetWriteWatch(
 #pragma endregion
 
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINXP)
 
@@ -464,7 +407,6 @@ QueryMemoryResourceNotification(
 
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_WINXP)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WS03)
 
@@ -497,7 +439,6 @@ SetSystemFileCacheSize(
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_WS03)
 
-
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
 
 WINBASEAPI
@@ -520,7 +461,6 @@ CreateFileMappingNumaW(
 #endif
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
@@ -546,9 +486,7 @@ PrefetchVirtualMemory(
 #pragma endregion
 
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
@@ -591,18 +529,8 @@ UnmapViewOfFileEx(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0101)
-
-// end_1_1
-// begin_1_2
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0102)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINXP)
 
@@ -613,7 +541,7 @@ WINAPI
 AllocateUserPhysicalPages(
     _In_ HANDLE hProcess,
     _Inout_ PULONG_PTR NumberOfPages,
-    _Out_writes_to_(*NumberOfPages, *NumberOfPages) PULONG_PTR PageArray
+    _Out_writes_to_(*NumberOfPages,*NumberOfPages) PULONG_PTR PageArray
     );
 
 
@@ -641,7 +569,6 @@ MapUserPhysicalPages(
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_WINXP)
 
-
 #if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
 
 WINBASEAPI
@@ -651,7 +578,7 @@ WINAPI
 AllocateUserPhysicalPagesNuma(
     _In_ HANDLE hProcess,
     _Inout_ PULONG_PTR NumberOfPages,
-    _Out_writes_to_(*NumberOfPages, *NumberOfPages) PULONG_PTR PageArray,
+    _Out_writes_to_(*NumberOfPages,*NumberOfPages) PULONG_PTR PageArray,
     _In_ DWORD nndPreferred
     );
 
@@ -671,7 +598,6 @@ VirtualAllocExNuma(
 
 
 #endif // (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
@@ -719,14 +645,7 @@ UnregisterBadMemoryNotification(
 #endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0102)
-// end_1_2
-
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0102)
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
 // This API is not actually available in all blue builds since it is part
@@ -735,9 +654,7 @@ UnregisterBadMemoryNotification(
 // BLUE builds callers will need to use LoadLibrary and GetProcAddress to 
 // check for the existance of the API's before calling them.
 
-
 #if (_WIN32_WINNT >= _WIN32_WINNT_WINBLUE)
-
 
 #if ((NTDDI_VERSION > NTDDI_WINBLUE) || (NTDDI_VERSION == NTDDI_WINBLUE && defined(WINBLUE_KBSPRING14)))
 
@@ -760,7 +677,7 @@ OfferVirtualMemory(
 DWORD
 WINAPI
 ReclaimVirtualMemory(
-    _In_reads_(Size) void const * VirtualAddress,
+    _In_reads_(Size) void const* VirtualAddress,
     _In_ SIZE_T Size
     );
 
@@ -780,16 +697,8 @@ DiscardVirtualMemory(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0102)
-
-// begin_1_3
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0103)
-
 #pragma region Application Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
 
@@ -806,7 +715,22 @@ SetProcessValidCallTargets(
 
 
 WINBASEAPI
-_Ret_maybenull_ _Post_writable_byte_size_(Size)
+BOOL
+WINAPI
+SetProcessValidCallTargetsForMappedView(
+    _In_ HANDLE Process,
+    _In_ PVOID VirtualAddress,
+    _In_ SIZE_T RegionSize,
+    _In_ ULONG NumberOfOffsets,
+    _Inout_updates_(NumberOfOffsets) PCFG_CALL_TARGET_INFO OffsetInformation,
+    _In_ HANDLE Section,
+    _In_ ULONG64 ExpectedFileOffset
+    );
+
+
+WINBASEAPI
+_Ret_maybenull_
+_Post_writable_byte_size_(Size)
 PVOID
 WINAPI
 VirtualAllocFromApp(
@@ -846,9 +770,7 @@ OpenFileMappingFromApp(
 #pragma endregion
 
 #pragma region Application Family
-
 #if WINAPI_PARTITION_APP && !(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
 
@@ -893,7 +815,6 @@ MapViewOfFile(
 }
 
 #endif
-
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
 
@@ -945,24 +866,14 @@ OpenFileMappingW(
 #endif  /* WINAPI_PARTITION_APP && !(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0103)
-// end_1_3
-
-// begin_1_4
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0104)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS1)
 
 typedef enum WIN32_MEMORY_INFORMATION_CLASS {
     MemoryRegionInfo
 } WIN32_MEMORY_INFORMATION_CLASS;
-
 
 #if _MSC_VER >= 1200
 #pragma warning(push)
@@ -992,7 +903,6 @@ typedef struct WIN32_MEMORY_REGION_INFORMATION {
     SIZE_T CommitSize;
 } WIN32_MEMORY_REGION_INFORMATION;
 
-
 #if _MSC_VER >= 1200
 #pragma warning(pop)
 #endif
@@ -1003,7 +913,7 @@ BOOL
 WINAPI
 QueryVirtualMemoryInformation(
     _In_ HANDLE Process,
-    _In_ const VOID * VirtualAddress,
+    _In_ const VOID* VirtualAddress,
     _In_ WIN32_MEMORY_INFORMATION_CLASS MemoryInformationClass,
     _Out_writes_bytes_(MemoryInformationSize) PVOID MemoryInformation,
     _In_ SIZE_T MemoryInformationSize,
@@ -1016,17 +926,8 @@ QueryVirtualMemoryInformation(
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0104)
-// end_1_4
-
-// begin_1_5
-
-#if !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0105)
-
 #pragma region Desktop Family or OneCore Family
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 
 #if (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 
@@ -1044,7 +945,6 @@ MapViewOfFileNuma2(
     _In_ ULONG PageProtection,
     _In_ ULONG PreferredNode
     );
-
 
 
 #if !defined(MIDL_PASS)
@@ -1074,31 +974,145 @@ MapViewOfFile2(
 
 #endif // !defined(MIDL_PASS)
 
-WINBASEAPI
-BOOL
-WINAPI
-UnmapViewOfFile2(
-    _In_ HANDLE ProcessHandle,
-    _In_ PVOID BaseAddress,
-    _In_ ULONG UnmapFlags
-    );
-
-
 #endif // (NTDDI_VERSION >= NTDDI_WIN10_RS2)
 
 #endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
 #pragma endregion
 
-#endif // !defined(_CONTRACT_GEN) || (_APISET_MEMORY_VER >= 0x0105)
-// end_1_5
+#pragma region Application Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
 
-// begin_1_0
-// begin_1_1
-// begin_1_2
-// begin_1_3
-// begin_1_4
-// begin_1_5
+WINBASEAPI
+BOOL
+WINAPI
+UnmapViewOfFile2(
+    _In_ HANDLE Process,
+    _In_ PVOID BaseAddress,
+    _In_ ULONG UnmapFlags
+    );
 
+
+WINBASEAPI
+BOOL
+WINAPI
+VirtualUnlockEx(
+    _In_opt_ HANDLE Process,
+    _In_ LPVOID Address,
+    _In_ SIZE_T Size
+    );
+
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+#pragma region Desktop Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+
+WINBASEAPI
+_Ret_maybenull_
+_Post_writable_byte_size_(Size)
+PVOID
+WINAPI
+VirtualAlloc2(
+    _In_opt_ HANDLE Process,
+    _In_opt_ PVOID BaseAddress,
+    _In_ SIZE_T Size,
+    _In_ ULONG AllocationType,
+    _In_ ULONG PageProtection,
+    _Inout_updates_opt_(ParameterCount) MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    _In_ ULONG ParameterCount
+    );
+
+
+WINBASEAPI
+_Ret_maybenull_  __out_data_source(FILE)
+PVOID
+WINAPI
+MapViewOfFile3(
+    _In_ HANDLE FileMapping,
+    _In_opt_ HANDLE Process,
+    _In_opt_ PVOID BaseAddress,
+    _In_ ULONG64 Offset,
+    _In_ SIZE_T ViewSize,
+    _In_ ULONG AllocationType,
+    _In_ ULONG PageProtection,
+    _Inout_updates_opt_(ParameterCount) MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    _In_ ULONG ParameterCount
+    );
+
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#pragma region Application Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM)
+
+WINBASEAPI
+_Ret_maybenull_
+_Post_writable_byte_size_(Size)
+PVOID
+WINAPI
+VirtualAlloc2FromApp(
+    _In_opt_ HANDLE Process,
+    _In_opt_ PVOID BaseAddress,
+    _In_ SIZE_T Size,
+    _In_ ULONG AllocationType,
+    _In_ ULONG PageProtection,
+    _Inout_updates_opt_(ParameterCount) MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    _In_ ULONG ParameterCount
+    );
+
+
+WINBASEAPI
+_Ret_maybenull_  __out_data_source(FILE)
+PVOID
+WINAPI
+MapViewOfFile3FromApp(
+    _In_ HANDLE FileMapping,
+    _In_opt_ HANDLE Process,
+    _In_opt_ PVOID BaseAddress,
+    _In_ ULONG64 Offset,
+    _In_ SIZE_T ViewSize,
+    _In_ ULONG AllocationType,
+    _In_ ULONG PageProtection,
+    _Inout_updates_opt_(ParameterCount) MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    _In_ ULONG ParameterCount
+    );
+
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS4)
+
+#if (NTDDI_VERSION >= NTDDI_WIN10_RS5)
+
+#pragma region Desktop Family or OneCore Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
+
+WINBASEAPI
+_Ret_maybenull_
+HANDLE
+WINAPI
+CreateFileMapping2(
+    _In_ HANDLE File,
+    _In_opt_ SECURITY_ATTRIBUTES* SecurityAttributes,
+    _In_ ULONG DesiredAccess,
+    _In_ ULONG PageProtection,
+    _In_ ULONG AllocationAttributes,
+    _In_ ULONG64 MaximumSize,
+    _In_opt_ PCWSTR Name,
+    _Inout_updates_opt_(ParameterCount) MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    _In_ ULONG ParameterCount
+    );
+
+
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP | WINAPI_PARTITION_SYSTEM) */
+#pragma endregion
+
+#endif // (NTDDI_VERSION >= NTDDI_WIN10_RS5)
 
 #if _MSC_VER >= 1200
 #pragma warning(pop)
@@ -1109,9 +1123,3 @@ UnmapViewOfFile2(
 #endif
 
 #endif // _MEMORYAPI_H_
-// end_1_0
-// end_1_1
-// end_1_2
-// end_1_3
-// end_1_4
-// end_1_5
