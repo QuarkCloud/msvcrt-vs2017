@@ -87,7 +87,20 @@ extern "C++"
     namespace __crt_state_management
     {
         template <typename T>
-        class dual_state_global;
+		class dual_state_global {
+		public:
+			inline const T& value() const { return value_; }
+			inline T& value() { return value_; }
+			inline void initialize(const T& p) { value_ = p; }
+			inline void initialize_from_array(const T * arrs) { value_ = arrs[0]; }
+			inline T* dangerous_get_state_array() { return &value_; }
+		private:
+			T value_;
+		};
+
+		static const size_t state_index_count = 0;
+
+		inline int get_current_state_index(const DWORD & last_error) { return 0; }
     }
 }
 #endif
@@ -1876,4 +1889,4 @@ windowing_model_policy __cdecl __acrt_get_windowing_model_policy(void);
 
 _CRT_END_C_HEADER
 
-#include <corecrt_internal_state_isolation.h>
+//#include <corecrt_internal_state_isolation.h>

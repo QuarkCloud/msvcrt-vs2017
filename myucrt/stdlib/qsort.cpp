@@ -92,7 +92,7 @@ static void __fileDECL shortsort(
     // array to sort.
 
     // Reentrancy diligence: Save (and unset) global-state mode to the stack before making callout to 'compare'
-    __crt_state_management::scoped_global_state_reset saved_state;
+    //__crt_state_management::scoped_global_state_reset saved_state;
 
     while (hi > lo)
     {

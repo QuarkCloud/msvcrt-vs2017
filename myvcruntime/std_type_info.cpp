@@ -9,7 +9,7 @@
 #include <vcruntime_internal.h>
 #include <vcruntime_string.h>
 #include <vcruntime_typeinfo.h>
-#include <undname.h>
+//#include <undname.h>
 
 
 
@@ -66,69 +66,7 @@ extern "C" char const* __cdecl __std_type_info_name(
     __type_info_node*     const root_node
     )
 {
-    // First check to see if we've already cached the undecorated name; if we
-    // have, we can just return it:
-    {
-        char const* const cached_undecorated_name = __crt_interlocked_read_pointer(&data->_UndecoratedName);
-        if (cached_undecorated_name)
-        {
-            return cached_undecorated_name;
-        }
-    }
-
-    __crt_unique_heap_ptr<char> undecorated_name(__unDName(
-        nullptr,
-        data->_DecoratedName + 1,
-        0,
-        [](size_t const n) { return _malloc_crt(n); },
-        [](void*  const p) { return _free_crt(p);   },
-        UNDNAME_32_BIT_DECODE | UNDNAME_TYPE_ONLY));
-
-    if (!undecorated_name)
-    {
-        return nullptr; // CRT_REFACTOR TODO This is nonconforming
-    }
-
-    size_t undecorated_name_length = strlen(undecorated_name.get());
-    while (undecorated_name_length != 0 && undecorated_name.get()[undecorated_name_length - 1] == ' ')
-    {
-        undecorated_name.get()[undecorated_name_length - 1] = '\0';
-        --undecorated_name_length;
-    }
-
-    size_t const undecorated_name_count = undecorated_name_length + 1;
-    size_t const node_size = sizeof(SLIST_ENTRY) + undecorated_name_count;
-
-    __crt_unique_heap_ptr<void> node_block(_malloc_crt(node_size));
-    if (!node_block)
-    {
-        return nullptr; // CRT_REFACTOR TODO This is nonconforming
-    }
-
-    PSLIST_ENTRY const node_header = static_cast<PSLIST_ENTRY>(node_block.get());
-    char*        const node_string = reinterpret_cast<char*>(node_header + 1);
-
-    *node_header = SLIST_ENTRY{};
-    strcpy_s(node_string, undecorated_name_count, undecorated_name.get());
-
-    char const* const cached_undecorated_name = __crt_interlocked_compare_exchange_pointer(
-        &data->_UndecoratedName,
-        node_string,
-        nullptr);
-
-    // If the cache already contained an undecorated name pointer, another
-    // thread must have cached it while we were computing the undecorated
-    // name.  Discard the string we created and return the cached string:
-    if (cached_undecorated_name)
-    {
-        return cached_undecorated_name;
-    }
-
-    // Otherwise, we've successfully cached our string; link it into the list
-    // and return it:
-    node_block.detach();
-    InterlockedPushEntrySList(&root_node->_Header, node_header);
-    return node_string;
+	return NULL;
 }
 
 // This function is called during module unload to clean up all of the undecorated

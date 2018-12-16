@@ -81,6 +81,8 @@ extern "C" int __cdecl _initialize_onexit_table(_onexit_table_t* const table)
 // in calling code.
 extern "C" int __cdecl _register_onexit_function(_onexit_table_t* const table, _onexit_t const function)
 {
+	return 0;
+	/**
     return __acrt_lock_and_call(__acrt_select_exit_lock(), [&]
     {
         if (!table)
@@ -146,6 +148,7 @@ extern "C" int __cdecl _register_onexit_function(_onexit_table_t* const table, _
 
         return 0;
     });
+	*/
 }
 
 
@@ -157,6 +160,8 @@ extern "C" int __cdecl _register_onexit_function(_onexit_table_t* const table, _
 // so that it is uninitialized.  Returns 0 on success; -1 on failure.
 extern "C" int __cdecl _execute_onexit_table(_onexit_table_t* const table)
 {
+	return 0;
+	/**
     return __acrt_lock_and_call(__acrt_select_exit_lock(), [&]
     {
         if (!table)
@@ -177,7 +182,7 @@ extern "C" int __cdecl _execute_onexit_table(_onexit_table_t* const table)
         // are the only non-trivial calls, so we can do this once for the entire
         // loop.)
         {
-            __crt_state_management::scoped_global_state_reset saved_state;
+            //__crt_state_management::scoped_global_state_reset saved_state;
 
             _PVFV const encoded_nullptr = __crt_fast_encode_pointer(nullptr);
 
@@ -228,4 +233,5 @@ extern "C" int __cdecl _execute_onexit_table(_onexit_table_t* const table)
 
         return 0;
     });
+	*/
 }

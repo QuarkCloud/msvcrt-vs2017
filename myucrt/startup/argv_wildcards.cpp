@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wrl/wrappers/corewrappers.h>
+//#include <wrl/wrappers/corewrappers.h>
 
 
 

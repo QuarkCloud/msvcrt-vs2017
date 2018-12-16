@@ -46,7 +46,7 @@ char * __cdecl strchr (
 
 #else
 
-char * __cdecl strchr (
+const char * __cdecl strchr (
         const char * string,
         int ch
         )

@@ -117,6 +117,7 @@ extern "C" void __cdecl __acrt_uninitialize_locale()
 {
     __acrt_lock_and_call(__acrt_locale_lock, [&]
     {
+		/*
         __acrt_current_locale_data.uninitialize([](__crt_locale_data*& locale)
         {
             if (locale == &__acrt_initial_locale_data)
@@ -126,6 +127,7 @@ extern "C" void __cdecl __acrt_uninitialize_locale()
 
             locale = _updatetlocinfoEx_nolock(&locale, &__acrt_initial_locale_data);
         });
+		*/
     });
 }
 

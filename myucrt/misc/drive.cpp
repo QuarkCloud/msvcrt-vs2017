@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <direct.h>
 #include <errno.h>
+#include <suppress.h>
 
 static int __cdecl get_drive_number_from_path(wchar_t const* const path) throw()
 {

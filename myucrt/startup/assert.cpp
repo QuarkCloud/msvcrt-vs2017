@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <suppress.h>
 
 #undef NDEBUG
 #define _ASSERT_OK

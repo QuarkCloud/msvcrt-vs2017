@@ -6,14 +6,22 @@
 // Definitions of wrappers for Windows API functions that cannot be called
 // directly because they are not available on all supported operating systems.
 //
+#define _X86_
+#include <minwindef.h>
+#include <suppress.h>
 
-#include <nt.h>
-#include <ntrtl.h>
-#include <nturtl.h>
+typedef LONG NTSTATUS;
+typedef NTSTATUS *PNTSTATUS;
+#define STATUS_NOT_FOUND 0
+
+//#include <nt.h>
+//#include <ntrtl.h>
+//#include <nturtl.h>
 #include <ntsecapi.h>
 #include <corecrt_internal.h>
 #include <appmodel.h>
 #include <roapi.h>
+
 
 // The XState APIs are declared by the Windows headers only when building for
 // x86 and x64.  We declare them here unconditionally so that we can share the

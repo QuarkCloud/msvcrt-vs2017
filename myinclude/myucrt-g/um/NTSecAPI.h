@@ -880,7 +880,7 @@ extern "C" {
 #endif
 
 #ifndef _NTDEF_
-typedef _Return_type_success_(return >= 0) LONG NTSTATUS, *PNTSTATUS;
+//typedef _Return_type_success_(return >= 0) LONG NTSTATUS, *PNTSTATUS;
 #endif
 
 #include <lsalookup.h>

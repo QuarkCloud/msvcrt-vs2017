@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <suppress.h>
 
 #pragma warning(disable:__WARNING_RETVAL_IGNORED_FUNC_COULD_FAIL) // 6031 return value ignored
 

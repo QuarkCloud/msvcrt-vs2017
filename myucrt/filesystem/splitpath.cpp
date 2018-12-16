@@ -313,10 +313,10 @@ static void __cdecl common_splitpath(
 {
     component_buffers<Character> components =
     {
-        drive,     drive     ? _MAX_DRIVE : 0,
-        directory, directory ? _MAX_DIR   : 0,
-        file_name, file_name ? _MAX_FNAME : 0,
-        extension, extension ? _MAX_EXT   : 0
+        drive,     drive     ? (size_t)_MAX_DRIVE : 0,
+        directory, directory ? (size_t)_MAX_DIR   : 0,
+        file_name, file_name ? (size_t)_MAX_FNAME : 0,
+        extension, extension ? (size_t)_MAX_EXT   : 0
     };
 
     common_splitpath_internal(path, &components, [](Character* const buffer, size_t const buffer_count)

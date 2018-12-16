@@ -270,7 +270,7 @@ static __forceinline __acrt_ptd* __cdecl internal_getptd_noexit() throw()
         return nullptr;
     }
 
-    return ptd_head + __crt_state_management::get_current_state_index(last_error_reset);
+    return ptd_head + __crt_state_management::get_current_state_index(0);
 }
 
 extern "C" __acrt_ptd* __cdecl __acrt_getptd_noexit()

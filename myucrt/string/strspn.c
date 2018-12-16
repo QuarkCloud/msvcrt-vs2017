@@ -16,6 +16,7 @@
 *******************************************************************************/
 
 #include <string.h>
+#include <suppress.h>
 
 #pragma warning(disable:__WARNING_POTENTIAL_BUFFER_OVERFLOW_NULLTERMINATED) // 26018 Prefast doesn't understand reading past buffer but staying on same page.
 #pragma warning(disable:__WARNING_RETURNING_BAD_RESULT) // 28196
@@ -104,7 +105,7 @@ size_t __cdecl strspn (
 #elif ROUTINE == _STRCSPN
 size_t __cdecl strcspn (
 #else  /* ROUTINE == _STRCSPN */
-char * __cdecl strpbrk (
+const char * __cdecl strpbrk (
 #endif  /* ROUTINE == _STRCSPN */
         const char * string,
         const char * control

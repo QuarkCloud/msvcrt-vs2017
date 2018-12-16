@@ -9,8 +9,9 @@
 #include <corecrt_internal_securecrt.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <suppress.h>
 
-#pragma warning(disable:__WARNING_NOT_SATISFIED) // 28020 Prefast thinks that 18446744073709551615 < 1.
+//#pragma warning(disable:__WARNING_NOT_SATISFIED) // 28020 Prefast thinks that 18446744073709551615 < 1.
 #pragma warning(disable:__WARNING_RANGE_PRECONDITION_VIOLATION) // 26060 Prefast thinks that 18446744073709551615 < 1.
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

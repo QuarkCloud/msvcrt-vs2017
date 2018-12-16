@@ -11,7 +11,7 @@
 #include <corecrt_internal_traits.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <corecrt_internal.h>
 
 
 // The global environment data.  The initial environments store the pointer to
@@ -215,8 +215,8 @@ static void __cdecl uninitialize_environment_internal(Character**& environment) 
 
 extern "C" void __cdecl __dcrt_uninitialize_environments_nolock()
 {
-    _environ_table .uninitialize(uninitialize_environment_internal<char>);
-    _wenviron_table.uninitialize(uninitialize_environment_internal<wchar_t>);
+    //_environ_table .uninitialize(uninitialize_environment_internal<char>);
+    //_wenviron_table.uninitialize(uninitialize_environment_internal<wchar_t>);
 
     free_environment(__dcrt_initial_narrow_environment);
     free_environment(__dcrt_initial_wide_environment);
