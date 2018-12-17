@@ -11,7 +11,9 @@
 #include <corecrt_internal.h>
 #include <locale.h>
 
+
 extern "C" {
+
 
 static const char _first_127char[] = {
         1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,

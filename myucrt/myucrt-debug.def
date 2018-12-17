@@ -26,6 +26,7 @@ _crt_at_quick_exit
 __std_type_info_destroy_list
 terminate
 memset
+memcmp
 strcpy_s
 strcat_s
 __stdio_common_vsprintf_s

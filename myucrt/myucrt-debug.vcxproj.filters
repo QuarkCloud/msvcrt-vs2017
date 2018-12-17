@@ -58,6 +58,9 @@
     <Filter Include="源文件\mbstring">
       <UniqueIdentifier>{1e38ea70-9e22-4dff-aaf6-f173bdf3f602}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\initializers">
+      <UniqueIdentifier>{c638fd1f-855e-4cdf-a3d6-822213d9bf82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="startup\abort.cpp">
@@ -500,6 +503,45 @@
     </ClCompile>
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp">
       <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memcmp.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\wcstombs.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\wcrtomb.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\c16rtomb.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\c32rtomb.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcscmp.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcscspn.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsicmp.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\get_qualified_locale.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\getqloc_downlevel.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsnicmp.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\atox.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="initializers\locale_initializer.cpp">
+      <Filter>源文件\initializers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

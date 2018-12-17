@@ -31,7 +31,6 @@
 _CRT_BEGIN_C_HEADER
 
 
-
 #define _DEFINE_SET_FUNCTION(function_name, type, variable_name) \
     __inline void function_name(type value)                      \
     {                                                            \
@@ -1886,6 +1885,9 @@ typedef enum
 } windowing_model_policy;
 
 windowing_model_policy __cdecl __acrt_get_windowing_model_policy(void);
+
+int __cdecl memcmp(void const* src,void const* dst,size_t size);
+
 
 _CRT_END_C_HEADER
 

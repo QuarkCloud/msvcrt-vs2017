@@ -11,6 +11,7 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
+#include <suppress.h>
 
 extern "C" {
 
