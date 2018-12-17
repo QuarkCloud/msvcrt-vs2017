@@ -9,6 +9,7 @@
 *******************************************************************************/
 #include <corecrt_internal.h>
 #include <locale.h>
+#include <suppress.h>
 
 /***
 *int __cdecl __acrt_LCMapStringA - Get type information about an ANSI string.

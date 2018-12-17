@@ -55,6 +55,9 @@
     <Filter Include="源文件\filesystem">
       <UniqueIdentifier>{32f96c73-1cda-4e1a-a029-d3359f9c51e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\mbstring">
+      <UniqueIdentifier>{1e38ea70-9e22-4dff-aaf6-f173bdf3f602}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="startup\abort.cpp">
@@ -437,6 +440,66 @@
     </ClCompile>
     <ClCompile Include="stdio\output.cpp">
       <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="string\strcmp.c">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\trnsctrl.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\GetStringTypeA.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\MultiByte_WideChar.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\LCMapStringA.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\LCMapStringW.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\GetLocaleInfoA.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\_wctype.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\iswctype.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\GetStringTypeW.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="mbstring\mbctype.cpp">
+      <Filter>源文件\mbstring</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\SetEnvironmentVariableA.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="mbstring\mbsdec.cpp">
+      <Filter>源文件\mbstring</Filter>
+    </ClCompile>
+    <ClCompile Include="mbstring\ismbbyte.cpp">
+      <Filter>源文件\mbstring</Filter>
+    </ClCompile>
+    <ClCompile Include="string\wcsncmp.cpp">
+      <Filter>源文件\string</Filter>
+    </ClCompile>
+    <ClCompile Include="locale\lcidtoname_downlevel.cpp">
+      <Filter>源文件\locale</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\mbstowcs.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\mbrtowc.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\mbrtoc32.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp">
+      <Filter>源文件\internal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

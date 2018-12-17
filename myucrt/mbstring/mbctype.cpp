@@ -1,12 +1,4 @@
-/***
-*mbctype.c - MBCS table used by the functions that test for types of char
-*
-*       Copyright (c) Microsoft Corporation.  All rights reserved.
-*
-*Purpose:
-*       table used to determine the type of char
-*
-*******************************************************************************/
+
 #include <corecrt_internal.h>
 #include <locale.h>
 #include <corecrt_internal_mbstring.h>
@@ -910,8 +902,8 @@ extern "C" bool __cdecl __acrt_initialize_multibyte()
         __acrt_current_multibyte_data.initialize(&__acrt_initial_multibyte_data);
 
         // initialize mbc pointers
-        _mbcasemap.initialize_from_array(_mbcasemaps);
-        _mbctype  .initialize_from_array(_mbctypes);
+        //_mbcasemap.initialize_from_array(_mbcasemaps);
+        //_mbctype  .initialize_from_array(_mbctypes);
 
         // initialize the multibyte globals
         __acrt_ptd* const ptd_head = __acrt_getptd_head();

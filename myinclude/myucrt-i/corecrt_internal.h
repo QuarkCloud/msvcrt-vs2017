@@ -98,7 +98,7 @@ extern "C++"
 			T value_;
 		};
 
-		static const size_t state_index_count = 0;
+		static const size_t state_index_count = 16;
 
 		inline int get_current_state_index(const DWORD & last_error) { return 0; }
     }
