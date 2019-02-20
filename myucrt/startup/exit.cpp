@@ -109,10 +109,12 @@ static void __cdecl try_cor_exit_process(UINT const return_code) throw()
 // compatibility with the legacy runtimes.
 static bool __cdecl should_call_terminate_process() throw()
 {
-    if (__acrt_get_process_end_policy() == process_end_policy_exit_process)
+    /*
+	if (__acrt_get_process_end_policy() == process_end_policy_exit_process)
     {
         return false;
     }
+	*/
 
     // If application verifier is running, we still want to call ExitProcess,
     // to enable tools that require DLLs to be unloaded cleanly at process exit

@@ -576,5 +576,26 @@
     <ClCompile Include="lowio\read.cpp">
       <Filter>源文件\lowio</Filter>
     </ClCompile>
+    <ClCompile Include="internal\OutputDebugStringA.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\GetModuleFileNameA.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\setvbuf.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\_freebuf.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\close.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\stream.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\commit.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

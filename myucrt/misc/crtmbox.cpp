@@ -55,8 +55,9 @@ static int __cdecl common_show_message_box(
         }
     }
 
-    bool const show_ui = __acrt_get_developer_information_policy() == developer_information_policy_ui;
-    if (!show_ui || !__acrt_can_show_message_box())
+	//bool const show_ui = __acrt_get_developer_information_policy() == developer_information_policy_ui;
+    //if (!show_ui || !__acrt_can_show_message_box())
+	if (!__acrt_can_show_message_box())
     {
         // If we can't get the message box pointers (perhaps because running on CoreSys),
         // just abort, unless a debugger is attached--then break into the debugger instead.

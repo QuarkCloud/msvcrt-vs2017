@@ -230,7 +230,9 @@
     <ClCompile Include="initializers\console_output_initializer.cpp" />
     <ClCompile Include="initializers\locale_initializer.cpp" />
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp" />
+    <ClCompile Include="internal\GetModuleFileNameA.cpp" />
     <ClCompile Include="internal\locks.cpp" />
+    <ClCompile Include="internal\OutputDebugStringA.cpp" />
     <ClCompile Include="internal\per_thread_data.cpp" />
     <ClCompile Include="internal\report_runtime_error.cpp" />
     <ClCompile Include="internal\SetEnvironmentVariableA.cpp" />
@@ -261,6 +263,8 @@
     <ClCompile Include="locale\nlsdata.cpp" />
     <ClCompile Include="locale\setlocale.cpp" />
     <ClCompile Include="locale\wsetlocale.cpp" />
+    <ClCompile Include="lowio\close.cpp" />
+    <ClCompile Include="lowio\commit.cpp" />
     <ClCompile Include="lowio\ioinit.cpp" />
     <ClCompile Include="lowio\isatty.cpp" />
     <ClCompile Include="lowio\lseek.cpp" />
@@ -319,7 +323,10 @@
     <ClCompile Include="stdio\fileno.cpp" />
     <ClCompile Include="stdio\ncommode.cpp" />
     <ClCompile Include="stdio\output.cpp" />
+    <ClCompile Include="stdio\setvbuf.cpp" />
+    <ClCompile Include="stdio\stream.cpp" />
     <ClCompile Include="stdio\_file.cpp" />
+    <ClCompile Include="stdio\_freebuf.cpp" />
     <ClCompile Include="stdlib\qsort.cpp" />
     <ClCompile Include="string\strcat_s.cpp" />
     <ClCompile Include="string\strcmp.c" />
