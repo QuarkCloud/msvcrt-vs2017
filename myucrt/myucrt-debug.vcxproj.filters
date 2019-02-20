@@ -630,5 +630,26 @@
     <ClCompile Include="stdio\_getbuf.cpp">
       <Filter>源文件\stdio</Filter>
     </ClCompile>
+    <ClCompile Include="time\gmtime.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="time\localtime.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="time\days.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="time\timeset.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="initializers\timeset_initializer.cpp">
+      <Filter>源文件\initializers</Filter>
+    </ClCompile>
+    <ClCompile Include="time\tzset.cpp">
+      <Filter>源文件\time</Filter>
+    </ClCompile>
+    <ClCompile Include="env\getenv.cpp">
+      <Filter>源文件\env</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

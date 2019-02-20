@@ -206,6 +206,7 @@
     <ClCompile Include="convert\_wctype.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="env\environment_initialization.cpp" />
+    <ClCompile Include="env\getenv.cpp" />
     <ClCompile Include="env\get_environment_from_os.cpp" />
     <ClCompile Include="env\setenv.cpp" />
     <ClCompile Include="filesystem\makepath.cpp" />
@@ -234,6 +235,7 @@
     <ClCompile Include="initializers\console_output_initializer.cpp" />
     <ClCompile Include="initializers\locale_initializer.cpp" />
     <ClCompile Include="initializers\stdio_initializer.cpp" />
+    <ClCompile Include="initializers\timeset_initializer.cpp" />
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp" />
     <ClCompile Include="internal\GetModuleFileNameA.cpp" />
     <ClCompile Include="internal\locks.cpp" />
@@ -362,7 +364,12 @@
     <ClCompile Include="string\wcsnicmp.cpp" />
     <ClCompile Include="string\wcsnicol.cpp" />
     <ClCompile Include="string\wcspbrk.cpp" />
+    <ClCompile Include="time\days.cpp" />
+    <ClCompile Include="time\gmtime.cpp" />
+    <ClCompile Include="time\localtime.cpp" />
     <ClCompile Include="time\mktime.cpp" />
+    <ClCompile Include="time\timeset.cpp" />
+    <ClCompile Include="time\tzset.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
