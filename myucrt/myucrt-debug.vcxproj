@@ -229,6 +229,7 @@
     <ClCompile Include="initializers\console_input_initializer.cpp" />
     <ClCompile Include="initializers\console_output_initializer.cpp" />
     <ClCompile Include="initializers\locale_initializer.cpp" />
+    <ClCompile Include="initializers\stdio_initializer.cpp" />
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp" />
     <ClCompile Include="internal\GetModuleFileNameA.cpp" />
     <ClCompile Include="internal\locks.cpp" />

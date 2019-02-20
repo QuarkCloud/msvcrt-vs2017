@@ -597,5 +597,8 @@
     <ClCompile Include="lowio\commit.cpp">
       <Filter>源文件\lowio</Filter>
     </ClCompile>
+    <ClCompile Include="initializers\stdio_initializer.cpp">
+      <Filter>源文件\initializers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
