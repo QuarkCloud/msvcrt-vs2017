@@ -61,6 +61,9 @@
     <Filter Include="源文件\initializers">
       <UniqueIdentifier>{c638fd1f-855e-4cdf-a3d6-822213d9bf82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\conio">
+      <UniqueIdentifier>{09794fb9-855b-40e0-9ac8-0b6a07b84015}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="startup\abort.cpp">
@@ -542,6 +545,36 @@
     </ClCompile>
     <ClCompile Include="initializers\locale_initializer.cpp">
       <Filter>源文件\initializers</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fileno.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\isatty.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\mbtowc.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\lseek.cpp">
+      <Filter>源文件\lowio</Filter>
+    </ClCompile>
+    <ClCompile Include="conio\initcon.cpp">
+      <Filter>源文件\conio</Filter>
+    </ClCompile>
+    <ClCompile Include="initializers\console_input_initializer.cpp">
+      <Filter>源文件\initializers</Filter>
+    </ClCompile>
+    <ClCompile Include="initializers\console_output_initializer.cpp">
+      <Filter>源文件\initializers</Filter>
+    </ClCompile>
+    <ClCompile Include="conio\initconin.cpp">
+      <Filter>源文件\conio</Filter>
+    </ClCompile>
+    <ClCompile Include="conio\putwch.cpp">
+      <Filter>源文件\conio</Filter>
+    </ClCompile>
+    <ClCompile Include="lowio\read.cpp">
+      <Filter>源文件\lowio</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

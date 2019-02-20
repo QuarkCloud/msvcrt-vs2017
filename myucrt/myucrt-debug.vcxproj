@@ -179,6 +179,9 @@
     <ClCompile Include="..\myvcruntime\std_type_info.cpp" />
     <ClCompile Include="..\myvcruntime\strchr.c" />
     <ClCompile Include="..\myvcruntime\wcschr.c" />
+    <ClCompile Include="conio\initcon.cpp" />
+    <ClCompile Include="conio\initconin.cpp" />
+    <ClCompile Include="conio\putwch.cpp" />
     <ClCompile Include="convert\atox.cpp" />
     <ClCompile Include="convert\c16rtomb.cpp" />
     <ClCompile Include="convert\c32rtomb.cpp" />
@@ -188,6 +191,7 @@
     <ClCompile Include="convert\mbrtoc32.cpp" />
     <ClCompile Include="convert\mbrtowc.cpp" />
     <ClCompile Include="convert\mbstowcs.cpp" />
+    <ClCompile Include="convert\mbtowc.cpp" />
     <ClCompile Include="convert\swab.cpp" />
     <ClCompile Include="convert\tolower_toupper.cpp" />
     <ClCompile Include="convert\wcrtomb.cpp" />
@@ -222,6 +226,8 @@
     <ClCompile Include="heap\realloc.cpp" />
     <ClCompile Include="heap\realloc_base.cpp" />
     <ClCompile Include="heap\recalloc.cpp" />
+    <ClCompile Include="initializers\console_input_initializer.cpp" />
+    <ClCompile Include="initializers\console_output_initializer.cpp" />
     <ClCompile Include="initializers\locale_initializer.cpp" />
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp" />
     <ClCompile Include="internal\locks.cpp" />
@@ -256,7 +262,10 @@
     <ClCompile Include="locale\setlocale.cpp" />
     <ClCompile Include="locale\wsetlocale.cpp" />
     <ClCompile Include="lowio\ioinit.cpp" />
+    <ClCompile Include="lowio\isatty.cpp" />
+    <ClCompile Include="lowio\lseek.cpp" />
     <ClCompile Include="lowio\osfinfo.cpp" />
+    <ClCompile Include="lowio\read.cpp" />
     <ClCompile Include="lowio\setmode.cpp" />
     <ClCompile Include="lowio\txtmode.cpp" />
     <ClCompile Include="lowio\write.cpp" />
@@ -307,6 +316,7 @@
     <ClCompile Include="stdio\closeall.cpp" />
     <ClCompile Include="stdio\fclose.cpp" />
     <ClCompile Include="stdio\fflush.cpp" />
+    <ClCompile Include="stdio\fileno.cpp" />
     <ClCompile Include="stdio\ncommode.cpp" />
     <ClCompile Include="stdio\output.cpp" />
     <ClCompile Include="stdio\_file.cpp" />
