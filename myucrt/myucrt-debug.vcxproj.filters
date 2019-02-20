@@ -600,5 +600,35 @@
     <ClCompile Include="initializers\stdio_initializer.cpp">
       <Filter>源文件\initializers</Filter>
     </ClCompile>
+    <ClCompile Include="convert\towlower.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\strtox.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="convert\wctomb.cpp">
+      <Filter>源文件\convert</Filter>
+    </ClCompile>
+    <ClCompile Include="..\myvcruntime\strrchr.c">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fputwc.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fputc.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\_flsbuf.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\printf_count_output.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\_sftbuf.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\_getbuf.cpp">
+      <Filter>源文件\stdio</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@
 #include <locale.h>
 #include <limits.h>
 #include <corecrt_internal_mbstring.h>
-
+#include <suppress.h>
 
 extern "C" int __cdecl _wctomb_s_l(
     int*      const return_value,

@@ -190,7 +190,7 @@ char * __cdecl strrchr (
 
 #else
 
-char * __cdecl strrchr (
+const char * __cdecl strrchr (
         const char * string,
         int ch
         )
