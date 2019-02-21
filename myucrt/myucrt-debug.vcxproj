@@ -99,6 +99,7 @@
       <ShowIncludes>false</ShowIncludes>
       <AdditionalIncludeDirectories>$(SolutionDir)myinclude\myucrt-i;$(SolutionDir)myinclude\myucrt-g\ucrt;$(SolutionDir)myinclude\myvcruntime;$(SolutionDir)myvcruntime;$(SolutionDir)myinclude\myucrt-g\um;$(SolutionDir)myinclude\myucrt-g\shared;$(SolutionDir)myinclude\myucrt-g\winrt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -280,6 +281,8 @@
     <ClCompile Include="lowio\setmode.cpp" />
     <ClCompile Include="lowio\txtmode.cpp" />
     <ClCompile Include="lowio\write.cpp" />
+    <ClCompile Include="math\ceil.cpp" />
+    <ClCompile Include="math\log10.cpp" />
     <ClCompile Include="mbstring\ismbbyte.cpp" />
     <ClCompile Include="mbstring\mbctype.cpp" />
     <ClCompile Include="mbstring\mbsdec.cpp" />

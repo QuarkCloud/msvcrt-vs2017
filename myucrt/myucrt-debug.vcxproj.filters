@@ -64,6 +64,9 @@
     <Filter Include="源文件\conio">
       <UniqueIdentifier>{09794fb9-855b-40e0-9ac8-0b6a07b84015}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\math">
+      <UniqueIdentifier>{e781e23d-a112-4950-8e34-99d524c03bb9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="startup\abort.cpp">
@@ -206,15 +209,6 @@
     </ClCompile>
     <ClCompile Include="misc\signal.cpp">
       <Filter>源文件\misc</Filter>
-    </ClCompile>
-    <ClCompile Include="runtime\memcpy.cpp">
-      <Filter>源文件\runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="runtime\memmove.cpp">
-      <Filter>源文件\runtime</Filter>
-    </ClCompile>
-    <ClCompile Include="runtime\memset.cpp">
-      <Filter>源文件\runtime</Filter>
     </ClCompile>
     <ClCompile Include="internal\locks.cpp">
       <Filter>源文件\internal</Filter>
@@ -507,9 +501,6 @@
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp">
       <Filter>源文件\internal</Filter>
     </ClCompile>
-    <ClCompile Include="runtime\memcmp.cpp">
-      <Filter>源文件\runtime</Filter>
-    </ClCompile>
     <ClCompile Include="convert\wcstombs.cpp">
       <Filter>源文件\convert</Filter>
     </ClCompile>
@@ -650,6 +641,24 @@
     </ClCompile>
     <ClCompile Include="stdio\fputc.cpp">
       <Filter>源文件\stdio</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memcmp.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memcpy.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memmove.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="runtime\memset.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="math\ceil.cpp">
+      <Filter>源文件\math</Filter>
+    </ClCompile>
+    <ClCompile Include="math\log10.cpp">
+      <Filter>源文件\math</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

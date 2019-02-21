@@ -78,7 +78,6 @@
     <Object Include="llshl.obj" />
     <Object Include="llshr.obj" />
     <Object Include="loadcfg.obj" />
-    <Object Include="matherr.obj" />
     <Object Include="matherr_detection.obj" />
     <Object Include="mpxinit.obj" />
     <Object Include="new_array.obj" />

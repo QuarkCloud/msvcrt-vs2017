@@ -2369,6 +2369,7 @@ private:
             return false;
 
         // Format the number into the buffer:
+		/*
         __acrt_fp_format(
             &tmp.x,
             _buffer.data<char>(),
@@ -2379,6 +2380,7 @@ private:
             _precision,
             _options,
             _locale);
+		*/
 
         // If the precision is zero but the '#' flag is part of the specifier,
         // we force a decimal point:
