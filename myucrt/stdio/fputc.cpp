@@ -33,7 +33,18 @@ extern "C" int __cdecl _putc_nolock(int const c, FILE* const stream)
     return _fputc_nolock(c, stream);
 }
 
+int __cdecl __fputc_finally__(FILE * const stream)
+{
+	try {
+		_VALIDATE_STREAM_ANSI_RETURN(stream, EINVAL, EOF);
+	}
+	catch (...)
+	{
+		//
+	}
 
+	return 0;
+}
 
 // Writes a character to a stream.  Returns the character on success; returns
 // EOF on failure.
@@ -44,16 +55,13 @@ extern "C" int __cdecl fputc(int const c, FILE* const stream)
     int return_value = 0;
 
     _lock_file(stream);
-    __try
-    {
-        _VALIDATE_STREAM_ANSI_RETURN(stream, EINVAL, EOF);
 
-        return_value = _fputc_nolock(c, stream);
-    }
-    __finally
-    {
-        _unlock_file(stream);
-    }
+	if ((return_value = __fputc_finally__(stream)) == 0)
+	{
+		return_value = _fputc_nolock(c, stream);
+	}
+
+	_unlock_file(stream);
 
     return return_value;
 }

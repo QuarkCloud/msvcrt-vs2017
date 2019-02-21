@@ -615,9 +615,6 @@
     <ClCompile Include="stdio\fputwc.cpp">
       <Filter>源文件\stdio</Filter>
     </ClCompile>
-    <ClCompile Include="stdio\fputc.cpp">
-      <Filter>源文件\stdio</Filter>
-    </ClCompile>
     <ClCompile Include="stdio\_flsbuf.cpp">
       <Filter>源文件\stdio</Filter>
     </ClCompile>
@@ -650,6 +647,9 @@
     </ClCompile>
     <ClCompile Include="env\getenv.cpp">
       <Filter>源文件\env</Filter>
+    </ClCompile>
+    <ClCompile Include="stdio\fputc.cpp">
+      <Filter>源文件\stdio</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
