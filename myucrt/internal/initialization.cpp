@@ -154,7 +154,7 @@ static bool __cdecl initialize_pointers()
     __acrt_initialize_invalid_parameter_handler(encoded_null);
     __acrt_initialize_new_handler(encoded_null);
     __acrt_initialize_signal_handlers(encoded_null);
-    __acrt_initialize_user_matherr(encoded_null);
+    //__acrt_initialize_user_matherr(encoded_null);
     __acrt_initialize_thread_local_exit_callback(encoded_null);
     return true;
 }
@@ -166,15 +166,13 @@ static bool __cdecl uninitialize_vcruntime(const bool /* terminating */)
 
 static bool __cdecl uninitialize_allocated_memory(bool const /* terminating */)
 {
-    __acrt_current_multibyte_data.uninitialize([](__crt_multibyte_data*& multibyte_data)
-    {
-        if (_InterlockedDecrement(&multibyte_data->refcount) == 0 &&
-            multibyte_data != &__acrt_initial_multibyte_data)
-        {
-            _free_crt(multibyte_data);
-            multibyte_data = &__acrt_initial_multibyte_data;
-        }
-    });
+	__crt_multibyte_data * multibyte_data = __acrt_current_multibyte_data.value();
+	if (_InterlockedDecrement(&multibyte_data->refcount) == 0 &&
+		multibyte_data != &__acrt_initial_multibyte_data)
+	{
+		_free_crt(multibyte_data);
+		multibyte_data = &__acrt_initial_multibyte_data;
+	}
 
     return true;
 }

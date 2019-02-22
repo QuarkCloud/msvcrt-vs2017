@@ -176,7 +176,7 @@ static int __cdecl common_initialize_environment_nolock() throw()
 
     pre_initialize(Character());
 
-    __crt_unique_heap_ptr<Character> const os_environment(traits::get_environment_from_os());
+	__crt_unique_heap_ptr<Character> const os_environment(traits::get_environment_from_os());
     if (!os_environment)
         return -1;
 

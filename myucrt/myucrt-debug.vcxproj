@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CRTBLD;CRTDLL;_WINDOWS;_USRDLL;_CORECRT_BUILD;_DLL;_CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY;_VCRT_BUILD;_VCRT_ALLOW_INTERNALS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CRTBLD;CRTDLL;_WINDOWS;_USRDLL;_CORECRT_BUILD;_CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY;_DLL;_VCRT_BUILD;_VCRT_ALLOW_INTERNALS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
@@ -177,6 +177,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\myvcruntime\fixup-lost.cpp" />
+    <ClCompile Include="..\myvcruntime\matherr.cpp" />
     <ClCompile Include="..\myvcruntime\std_type_info.cpp" />
     <ClCompile Include="..\myvcruntime\strchr.c" />
     <ClCompile Include="..\myvcruntime\strrchr.c" />
@@ -239,6 +240,7 @@
     <ClCompile Include="initializers\timeset_initializer.cpp" />
     <ClCompile Include="internal\acrt_get_windowing_model_policy.cpp" />
     <ClCompile Include="internal\GetModuleFileNameA.cpp" />
+    <ClCompile Include="internal\initialization.cpp" />
     <ClCompile Include="internal\locks.cpp" />
     <ClCompile Include="internal\OutputDebugStringA.cpp" />
     <ClCompile Include="internal\per_thread_data.cpp" />

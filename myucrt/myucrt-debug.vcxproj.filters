@@ -660,5 +660,11 @@
     <ClCompile Include="math\log10.cpp">
       <Filter>源文件\math</Filter>
     </ClCompile>
+    <ClCompile Include="..\myvcruntime\matherr.cpp">
+      <Filter>源文件\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\initialization.cpp">
+      <Filter>源文件\internal</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

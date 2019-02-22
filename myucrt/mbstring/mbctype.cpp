@@ -886,6 +886,7 @@ extern "C" int __cdecl _getmbcp()
 extern "C" bool __cdecl __acrt_initialize_multibyte()
 {
     static bool initialized = false;
+	return true;
 
     // Synchronization note:  it is not possible for a data race to occur here.
     // In the CRT DLLs, this function is called during CRT startup, befor any
@@ -901,9 +902,11 @@ extern "C" bool __cdecl __acrt_initialize_multibyte()
         // initialize global pointer to the current per-thread mbc information structure
         __acrt_current_multibyte_data.initialize(&__acrt_initial_multibyte_data);
 
-        // initialize mbc pointers
-        //_mbcasemap.initialize_from_array(_mbcasemaps);
-        //_mbctype  .initialize_from_array(_mbctypes);
+        // initialize mbc pointers		
+		unsigned char ** mbpaddr = (unsigned char **)(&_mbcasemaps);
+		unsigned char ** mbcaddr = (unsigned char **)(&_mbctypes);
+        _mbcasemap.initialize_from_array((unsigned char **)&mbpaddr);
+        _mbctype.initialize_from_array((unsigned char **)&mbcaddr);
 
         // initialize the multibyte globals
         __acrt_ptd* const ptd_head = __acrt_getptd_head();

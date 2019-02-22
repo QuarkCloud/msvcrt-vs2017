@@ -41,3 +41,5 @@ __p__commode
 _configthreadlocale
 _controlfp_s
 __setusermatherr
+_except_handler4_common
+_matherr

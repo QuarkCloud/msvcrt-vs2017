@@ -90,8 +90,9 @@ extern "C++"
 		public:
 			inline const T& value() const { return value_; }
 			inline T& value() { return value_; }
-			inline void initialize(const T& p) { value_ = p; }
-			inline void initialize_from_array(const T * arrs) { value_ = arrs[0]; }
+			inline void initialize(const T& p) { value_ = p; }			
+			inline void initialize_from_array(const T * arrs) { value_ = *arrs; }
+
 			inline T* dangerous_get_state_array() { return &value_; }
 		private:
 			T value_;

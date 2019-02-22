@@ -295,8 +295,8 @@ ValidateLocalCookies(
 *   is called and a value of continue search is returned.
 *
 *******************************************************************************/
-
-EXCEPTION_DISPOSITION
+extern "C"
+EXCEPTION_DISPOSITION __cdecl
 _except_handler4_common(
     IN PUINT_PTR                        CookiePointer,
     IN PCOOKIE_CHECK                    CookieCheckFunction,
