@@ -1,3 +1,0 @@
-LIBRARY libc-scratch-debug
-EXPORTS
-_DllMainCRTStartup
